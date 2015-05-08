@@ -1,0 +1,425 @@
+<script type="text/javascript" charset="utf-8">
+    $(document).ready(function() {
+
+        $("#plantilla_form").validate({
+            rules: {
+                unidad_negocio: {
+                    required: true
+                },
+                tipo_empleado: {
+                    required: true
+                },
+                nombre: {
+                    required: true,
+                    minlength: 5,
+                    remote: {
+                        url: "/plantilla/checkName",
+                        type: "POST",
+                        async: false,
+                        data:{
+                            id_plantilla: function() {
+                                return $( "#id_plantilla" ).val();
+                            },
+                            nombre: function() {
+                                return $( "#nombre" ).val();
+                            }
+                        }
+                    }
+                },
+                descripcion: {
+                    minlength: 5
+                }
+            },
+            messages: {
+                unidad_negocio: {
+                    required: "Elija una Unidad de Negocio."
+                },
+                tipo_empleado: {
+                    required: "Elija un tipo de empleado."
+                },
+                nombre: {
+                    required: "Ingrese un nombre para la plantilla.",
+                    minlength: "El nombre de la plantilla debe contener al menos 5 carácteres.",
+                    remote: "El nombre no se encuentra disponible."
+                },
+                descripcion: {
+                    minlength: "La descripción debe contener al menos 5 carácteres."
+                }
+            },
+            invalidHandler: function(form, validator) {
+                var errors = validator.numberOfInvalids();
+                if (errors) {
+                    validator.errorList[0].element.focus();
+                }
+            }
+        });
+
+        var fetch = function(){
+            $.executeFetch({
+                action: "/plantilla/fetch",
+                data: {id_plantilla: $("#id_plantilla").val()},
+                method: "POST",
+                dataType:"json",
+                success: function(data){
+                    $("#headerSection").html(data.nombre);
+                    $("#plantillaBC").html(data.nombre);
+                    $("#plantillaBC").attr("href","/plantilla?id="+data.id);
+                    $("#unidad_negocio").val(data.id_unidad_negocio);
+                    $("#tipo_empleado").val(data.id_tipo_empleado);
+                    $("#nombre").val(data.nombre);
+                    $("#descripcion").val(data.descripcion);
+                    $("#agregarBT").attr("href","/campo?id_plantilla="+data.id);
+                    $("#camposSection").show();
+                    $("#previewSection").show();
+                    $("#reglasSection").show();
+                    $("#reglasSection").attr("href","/reglas?id="+data.id);
+                    $("#reportesSection").show();
+                    $("#reportesSection").attr("href","/reportes?id="+data.id);
+                },
+                errorMsg: "Ocurrió un error al obtener la plantilla."
+            });
+        }
+
+        if(parseInt($("#id_plantilla").val()) !== 0){
+            fetch();
+        }
+
+        $("#addPlantillaBT").click( function( e ){
+            $.executePostValid({
+                form: $("#plantilla_form"),
+                action: "/plantilla/update",
+                method: "POST",
+                dataType:"json",
+                success: function(data){
+                    $("#id_plantilla").val(data.id);
+                    $("#headerSection").html(data.nombre);
+                    $("#plantillaBC").html(data.nombre);
+                    $("#plantillaBC").attr("href","/plantilla?id="+data.id);
+                    $("#agregarBT").attr("href","/campo?id_plantilla="+data.id);
+                    $("#camposSection").show(500);
+                    $("#previewSection").show(500);
+                    $("#reglasSection").show(500);
+                    $("#reglasSection").attr("href","/reglas?id="+data.id);
+                    $("#reportesSection").show(500);
+                    $("#reportesSection").attr("href","/reportes?id="+data.id);
+                },
+                successMsg: "Plantilla guardada.",
+                errorMsg: "Ocurrió un error al guardar la plantilla."
+            });
+        });
+
+        /******************************************** CAMPOS ************************************************/
+
+        var table;
+
+        var refreshTable = function(){
+            $.executeFetch({
+                action: "/campo/fetchAll",
+                method: "POST",
+                dataType:"json",
+                data: {id_plantilla: $("#id_plantilla").val()},
+                success: function(data){
+                    var html = "";
+                    var html2 = "";
+                    var html3 = "";
+                    var no = 1;
+                    data.forEach(function(campo) {
+
+                        if(campo.id_repetir_campo){
+                            if(campo.id_repetir_campo === "1"){
+                                campo.tipo_campo = "Repetir Fecha - " + campo.tipo_campo;
+                            }else{
+                                campo.tipo_campo = "Repetir Veces - " + campo.tipo_campo;
+                            }
+                        }
+
+                        html += "<tr id='tr_"+campo.id+"'>"
+                        + "<td class='text-center'><input type='checkbox' class='camposCB' id='cb_"+campo.id+"' checked/></td>"
+                        + "<td>"+no+++"</td>"
+                        + "<td>"+campo.nombre+"</td>"
+                        + "<td>"+campo.tipo_campo+"</td>"
+                        + "<td>"+campo.prefijo+"</td>"
+                        + "<td>"+campo.sufijo+"</td>"
+                        + "<td>"+campo.valor+"</td>"
+                        + "<td class='text-center'>"
+                        + "<a href='/campo?id="+campo.id+"&id_plantilla="+campo.id_tab_plantilla+"'>"
+                        + "<i class='icon_md icon_search_alt'></i>"
+                        + "</a>"
+                        + "</td>"
+                        + "<td class='text-center'>"
+                        + "<a href='#eliminarModal' data-toggle='modal' data-id='"+campo.id+"'>"
+                        + "<i class='icon_md icon_trash'></i>"
+                        + "</a>"
+                        + "</td>"
+                        + "</tr>\n";
+
+                        var contenido;
+
+                        if(campo.id_tipo_campo === "4"){
+                            contenido = "<input type='text' class='form-control'/>";
+                        }else if(campo.id_tipo_campo === "1"){
+                            var opts = campo.valor.split("|");
+                            var optsHtml = "";
+                            for(var i=0; i<opts.length; i++){
+                                optsHtml += "<option value='"+opts[i]+"'>"+opts[i]+"</option>";
+                            }
+                            contenido = "<select class='form-control'>"+ optsHtml + "</select>";
+                        }else{
+                            contenido = campo.prefijo+campo.valor+campo.sufijo;
+                        }
+
+                        if(campo.repetir){
+                            if(campo.id_repetir_campo === "1"){
+                                var fechas = campo.repetir.split("-");
+                                var inicio = fechas[0];
+                                var fin = fechas[1];
+                                inicio = inicio.split("/");
+                                fin = fin.split("/");
+                                inicio = new Date(parseInt(inicio[2]),parseInt(inicio[1])-1,parseInt(inicio[0]));
+                                fin = new Date(parseInt(fin[2]),parseInt(fin[1])-1,parseInt(fin[0]));
+                                while(inicio <= fin){
+                                    var label = inicio.toLocaleString().split(" ");
+                                    html2 += "<td class='col_"+campo.id+"'>"+label[0]+"</td>";
+                                    html3 += "<td class='col_"+campo.id+"'>"+contenido+"</td>";
+                                    var newDate = inicio.setDate(inicio.getDate() + 1);
+                                    inicio = new Date(newDate);
+                                }
+                            }else{
+                                for(var i=0; i<parseInt(campo.repetir); i++){
+                                    html2 += "<td class='col_"+campo.id+"'>"+campo.nombre+"</td>";
+                                    html3 += "<td class='col_"+campo.id+"'>"+campo.prefijo+campo.valor+campo.sufijo+"</td>";
+                                }
+                            }
+                        }else{
+                            html2 += "<td class='col_"+campo.id+"'>"+campo.nombre+"</td>";
+                            html3 += "<td class='col_"+campo.id+"'>"+contenido+"</td>";
+                        }
+
+                    });
+                    //Main table
+                    $("#mainTableBody").html(html);
+                    $("#mainTable tbody tr").hover( function( e ) {
+                        if ( $(this).hasClass('row_selected') ) {
+                            $(this).removeClass('row_selected');
+                        }
+                        else {
+                            table.$('tr.row_selected').removeClass('row_selected');
+                            $(this).addClass('row_selected');
+                        }
+                    });
+                    var lastIdx = null;
+                    table = $('#mainTable').DataTable({
+                        "columns": [
+                            { "width": "5%" },
+                            { "width": "5%" },
+                            { "width": "30%" },
+                            { "width": "15%" },
+                            { "width": "10%" },
+                            { "width": "10%" },
+                            { "width": "15%" },
+                            { "width": "5%" },
+                            { "width": "5%" }
+                        ],
+                        "language": {
+                            "url": "/app/lang/Spanish.json"
+                        },
+                        "order": [[ 1, "asc" ]],
+                        "aoColumnDefs": [
+                            { 'bSortable': false, 'aTargets': [0]}
+                        ]
+                    });
+                    $(".camposCB").click(function(e){
+                        var id = $(this).attr("id").substring(3);
+                        $(".col_"+id).toggle(500);
+                    });
+
+                    if(data.length > 0){
+                        //Preview table
+                        $("#previewTableHR").html(html2);
+                        $("#previewTableBR").html(html3);
+                        $('#previewTable').DataTable( {
+                            dom: 'Rlfrtip',
+                            "bPaginate": false,
+                            "language": {
+                                "url": "/app/lang/Spanish.json"
+                            }
+                        } );
+                    }
+
+                },
+                errorMsg: "Ocurrió un error al obtener los campos."
+            });
+        }
+
+        refreshTable();
+
+        $("#eliminarBT").click( function( e ){
+            $.executePost({
+                action: "/campo/remove",
+                method: "POST",
+                data: {id_campo: $("#id_campo").val()},
+                dataType:"json",
+                success: function(data){
+                    table.row('#tr_'+$("#id_campo").val()).remove().draw( false );
+                    $(".col_"+$("#id_campo").val()).hide(500);
+                },
+                successMsg: "Campo eliminado.",
+                errorMsg: "Ocurrió un error al eliminar el campo."
+            });
+        });
+
+        $('#eliminarModal').on('show.bs.modal', function(e) {
+            var id_campo = $(e.relatedTarget).data('id');
+            $("#id_campo").val(id_campo);
+        });
+
+        $("#previewHint").click( function( e ){
+            $.showMsg("info", "Puedes cambiar el orden de las columnas arrastrandolas desde el encabezado.");
+        });
+
+    });
+</script>
+
+<div class="row">
+    <div class="col-lg-12">
+
+        <a href="" id="reglasSection" class="no-display">
+            <button type="button" class="btn btn-default">
+                <i class='icon_md icon_calculator_alt'></i>
+                &nbsp;&nbsp;Reglas de Negocio&nbsp;&nbsp;
+            </button>
+        </a>
+
+        <a href="" id="reportesSection" class="no-display">
+            <button type="button" class="btn btn-default">
+                <i class='icon_md icon_documents_alt'></i>
+                &nbsp;&nbsp;Reportes&nbsp;&nbsp;
+            </button>
+        </a>
+
+        <div class="spacer-md"></div>
+
+        <section class="panel">
+            <header class="panel-heading" id="headerSection">
+                Nueva Plantilla
+            </header>
+            <div class="panel-body">
+                <div class="form">
+                    <form class="form-validate form-horizontal" id="plantilla_form">
+                        <input type="hidden" id="id_plantilla" name="id_plantilla" value="<?php if($id){ echo $id; }else{ echo "0"; } ?>"/>
+                        <div class="form-group">
+                            <label for="cname" class="control-label col-lg-2">Unidad de Negocio <span class="required">*</span></label>
+                            <div class="col-lg-5">
+                                <select class="form-control" id="unidad_negocio" name="unidad_negocio" required>
+                                    <option value="">Seleccionar</option>
+                                    <option value="1">Club de Asistencia</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="cname" class="control-label col-lg-2">Tipo Empleado <span class="required">*</span></label>
+                            <div class="col-lg-5">
+                                <select class="form-control m-bot15" id="tipo_empleado" name="tipo_empleado" required>
+                                    <option value="">Seleccionar</option>
+                                    <option value="1">call center</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="cname" class="control-label col-lg-2">Nombre <span class="required">*</span></label>
+                            <div class="col-lg-5">
+                                <input class="form-control" id="nombre" name="nombre" minlength="5" type="text" required />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="cname" class="control-label col-lg-2">Descripción</label>
+                            <div class="col-lg-5">
+                                <textarea class="form-control" id="descripcion" name="descripcion" rows="6"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-lg-offset-2 col-lg-10">
+                                <button class="btn btn-primary" type="button" id="addPlantillaBT">Guardar</button>
+                                <a class="btn btn-default" href="/plantillas">Regresar</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel no-display" id="camposSection">
+            <header class="panel-heading">
+                Campos Disponibles
+                <a id="agregarBT" class="btn  btn-primary pull-right">
+                    Agregar
+                </a>
+            </header>
+            <div class="panel-body">
+                <table id="mainTable" class="table table-bordered" cellspacing="0" width="100%">
+                    <thead>
+                    <tr>
+                        <th>Seleccionar</th>
+                        <th>No.</th>
+                        <th>Nombre</th>
+                        <th>Tipo</th>
+                        <th>Prefijo</th>
+                        <th>Sufijo</th>
+                        <th>Valor</th>
+                        <th>Consultar</th>
+                        <th>Eliminar</th>
+                    </tr>
+                    </thead>
+                    <tbody id="mainTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="panel no-display" id="previewSection">
+            <header class="panel-heading">
+                <i class='icon_md icon_table'></i>
+                Vista Previa&nbsp;&nbsp;
+                <i class='icon_md icon_question_alt' id="previewHint"></i>
+            </header>
+            <div class="panel-body">
+                <table id="previewTable" class="table table-bordered" cellspacing="0" width="100%">
+                    <thead id="previewTableHead">
+                        <tr id="previewTableHR"></tr>
+                    </thead>
+                    <tbody id="previewTableBody">
+                        <tr id="previewTableBR"></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </div>
+</div>
+
+<div aria-hidden="true" aria-labelledby="eliminarModal" role="dialog" tabindex="-1" id="eliminarModal" class="modal fade">
+    <div class="modal-dialog modal-msg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button aria-hidden="true" data-dismiss="modal" class="close" type="button">x</button>
+                <h4 class="modal-title">Eliminar</h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" role="form">
+                    <input type="hidden" id="id_campo" name="id_campo"/>
+                    <div class="form-group">
+                        <div class="col-lg-offset-1 col-lg-10">
+                            <span>¿Está seguro que desea eliminar el campo?</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-lg-offset-1 col-lg-12">
+                            <button type="button" id="eliminarBT" class="btn btn-primary" data-dismiss="modal">Eliminar</button>
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+

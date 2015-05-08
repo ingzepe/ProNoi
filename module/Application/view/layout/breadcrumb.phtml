@@ -1,0 +1,7 @@
+<ol class="breadcrumb">
+<?php
+echo implode('', array_map(
+    function ($a) { return '<li><i class="'.$a->getClass().'"></i><a id="'.$a->getId().'" href="'.$a->getRoute().'">'.$a->getLabel().'</a></li>'; },
+    $this->pages));
+?>
+</ol>

@@ -15,7 +15,8 @@ return array(
                 'options' => array(
                     'route'    => '/',
                     'defaults' => array(
-                        'controller' => 'Application\Controller\Index',
+//                        'controller' => 'Application\Controller\Index',
+                        'controller' => 'Inicio\Controller\Inicio',
                         'action'     => 'index',
                     ),
                 ),
@@ -52,6 +53,68 @@ return array(
             ),
         ),
     ),
+    'navigation' => array(
+        'default' => array(
+            array(
+                'label' => 'Inicio',
+                'route' => 'inicio',
+                'class' => 'icon_house',
+                'id' => 'homeBC',
+                'pages' => array(
+                    array(
+                        'label' => 'Plantillas',
+                        'route' => 'plantillas',
+                        'class' => 'icon_table',
+                        'id' => 'plantillasBC',
+                        'pages' => array(
+                            array(
+                                'label' => 'Nueva Plantilla',
+                                'route' => 'plantilla',
+                                'class' => 'icon_table',
+                                'id' => 'plantillaBC',
+                                'pages' => array(
+                                    array(
+                                        'label' => 'Nuevo Campo',
+                                        'route' => 'campo',
+                                        'class' => 'icon_tag',
+                                        'id' => 'campoBC',
+                                    ),
+                                    array(
+                                        'label' => 'Reglas de Negocio',
+                                        'route' => 'reglas',
+                                        'class' => 'icon_calculator_alt',
+                                        'id' => 'reglasBC',
+                                        'pages' => array(
+                                            array(
+                                                'label' => 'Nueva Regla de Negocio',
+                                                'route' => 'regla',
+                                                'class' => 'icon_calculator_alt',
+                                                'id' => 'reglaBC'
+                                            ),
+                                        ),
+                                    ),
+                                    array(
+                                        'label' => 'Reportes',
+                                        'route' => 'reportes',
+                                        'class' => 'icon_documents_alt',
+                                        'id' => 'reportesBC',
+                                        'pages' => array(
+                                            array(
+                                                'label' => 'Nuevo Reporte',
+                                                'route' => 'reporte',
+                                                'class' => 'icon_documents_alt',
+                                                'id' => 'reporteBC'
+                                            ),
+                                        ),
+                                    ),
+                                ),
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+        ),
+    ),
     'service_manager' => array(
         'abstract_factories' => array(
             'Zend\Cache\Service\StorageCacheAbstractServiceFactory',
@@ -59,6 +122,15 @@ return array(
         ),
         'aliases' => array(
             'translator' => 'MvcTranslator',
+        ),
+        'factories' => array(
+            'navigation' => 'Zend\Navigation\Service\DefaultNavigationFactory',
+            'Zend\Log' => function ($sm) {
+                $log = new Zend\Log\Logger();
+                $writer = new Zend\Log\Writer\Stream('pronoi.log');
+                $log->addWriter($writer);
+                return $log;
+            },
         ),
     ),
     'translator' => array(

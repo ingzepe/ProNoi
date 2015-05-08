@@ -1,0 +1,940 @@
+<script src="/js/parser-eval.js"></script>
+
+<script type="text/javascript" charset="utf-8">
+    $(document).ready(function() {
+
+        var expressions = new Array();
+
+        $("#regla_form").validate({
+            rules: {
+                tipo_regla: {
+                    required: true
+                },
+                nombre: {
+                    required: true,
+                    minlength: 5,
+                    remote: {
+                        url: "/regla/checkName",
+                        type: "POST",
+                        async: false,
+                        data:{
+                            id_regla: function() {
+                                return $( "#id_regla" ).val();
+                            },
+                            id_plantilla: function() {
+                                return $( "#id_plantilla" ).val();
+                            },
+                            nombre: function() {
+                                return $( "#nombre" ).val();
+                            }
+                        }
+                    }
+                },
+                descripcion: {
+                    minlength: 5
+                },
+                operacion: {
+                    required: true
+                }
+            },
+            messages: {
+                tipo_regla: {
+                    required: "Elija un tipo de regla."
+                },
+                nombre: {
+                    required: "Ingrese un nombre para la regla.",
+                    minlength: "El nombre de la regla debe contener al menos 5 carácteres.",
+                    remote: "El nombre no se encuentra disponible."
+                },
+                descripcion: {
+                    minlength: "La descripción debe contener al menos 5 carácteres."
+                },
+                operacion: {
+                    required: "La operación no puede estar vacía."
+                }
+            },
+            invalidHandler: function(form, validator) {
+                var errors = validator.numberOfInvalids();
+                if (errors) {
+                    validator.errorList[0].element.focus();
+                }
+            }
+        });
+
+        $.executeFetch({
+            action: "/plantilla/fetch",
+            data: {id_plantilla: $("#id_plantilla").val()},
+            method: "POST",
+            dataType:"json",
+            success: function(data){
+                $("#plantillaBC").html(data.nombre);
+                $("#plantillaBC").attr("href","/plantilla?id="+data.id);
+                $("#reglasBC").attr("href","/reglas?id="+data.id);
+                if($("#id_regla").val() === "0"){
+                    $("#reglaBC").attr("href","/regla?id_plantilla="+data.id);
+                }else{
+                    $("#reglaBC").attr("href","/regla?id="+$("#id_regla").val()+"&id_plantilla="+data.id);
+                }
+            },
+            errorMsg: "Ocurrió un error al obtener la plantilla."
+        });
+
+        var fetch = function(){
+            $.executeFetch({
+                action: "/regla/fetch",
+                data: {id_regla: $("#id_regla").val()},
+                method: "POST",
+                dataType:"json",
+                success: function(data){
+                    $("#headerSection").html(data.nombre);
+                    $("#reglaBC").html(data.nombre);
+                    $("#reglaBC").attr("href","/reglas?id="+data.id);
+                    $("#tipo_regla").val(data.id_tipo_regla);
+                    $("#tipo_regla").trigger("change");
+                    if(data.id_tipo_regla === "1"){
+                        console.log("sql");
+                        $("#db").val(data.db);
+                        $("#salida").val(data.salida);
+                        $("#sql").val(data.operacion);
+                    }else {
+                        expressions = JSON.parse(data.operacion);
+                        redrawExpression();
+                    }
+                    $("#nombre").val(data.nombre);
+                    $("#descripcion").val(data.descripcion);
+                },
+                errorMsg: "Ocurrió un error al obtener la regla."
+            });
+        }
+
+        if(parseInt($("#id_regla").val()) !== 0){
+            fetch();
+        }
+
+        $("#addReglaBT").click( function( e ){
+            $.executePostValid({
+                form: $("#regla_form"),
+                action: "/regla/update",
+                method: "POST",
+                dataType:"json",
+                success: function(data){
+                    $("#id_regla").val(data.id);
+                    $("#headerSection").html(data.nombre);
+                    $("#reglaBC").html(data.nombre);
+                    $("#reglaBC").attr("href","/regla?id="+data.id);
+                    $("#agregarBT").attr("href","/campo?id_regla="+data.id);
+                    $("#camposSection").show(500);
+                },
+                successMsg: "Regla guardada.",
+                errorMsg: "Ocurrió un error al guardar la regla."
+            });
+        });
+
+        $("#tipo_regla").change( function( e ){
+            switch($(this).val()){
+                case "1":{
+                    $(".recursiveSection").hide(500);
+                    $(".sqlSection").show(500);
+                    break;
+                }case "2":{
+                    $(".sqlSection").hide(500);
+                    $(".recursiveSection").show(500);
+                    break;
+                }
+            }
+        });
+
+        var sql = "";
+        var sqlParts;
+        var executeSQL = function(){
+            $.executeFetch({
+                action: "/regla/sql",
+                data: {
+                    db: $("#db").val(),
+                    sql: sql
+                },
+                method: "POST",
+                dataType:"json",
+                success: function(data){
+                    if(data.success){
+                        if(data.cols.length === 1 && data.rows.length === 1 ){
+                            $("#addReglaBT").prop('disabled', false);
+                            $.showMsg("success", "El query es válido, resultado: <strong>"
+                            +data.cols[0]+":"+data.rows[0][0]+"</strong>");
+                        }else if(data.cols.length === 1 && data.rows.length === 0 ){
+                            $.showMsg("error", "El sql no ha regresado resultados.");
+                        }else{
+                            var html = "";
+                            data.cols.forEach(function (col){
+                                html += "<th>"+col+"</th>\n";
+                            });
+                            $('#previewTableHR').html(html);
+                            html = "";
+                            data.rows.forEach(function (row){
+                                html += "<tr>\n";
+                                row.forEach(function (cell){
+                                    html += "<td>"+cell+"</td>\n";
+                                });
+                                html += "</tr>\n";
+                            });
+                            $('#previewTableBody').html(html);
+                            $('#sqlResponse').modal('show');
+                        }
+                    }else{
+                        $.showMsg("error", data.message);
+                    }
+                    sql = $("#sql").val();
+                },
+                errorMsg: "Ocurrió un error al ejecutar el sql."
+            });
+        }
+
+        $("#testSqlBT").click( function( e ){
+            if($("#db").val() !== ""){
+                if($("#salida").val() !== ""){
+                    if($("#sql").val() !== ""){
+                        sql = $("#sql").val();
+                        var params = new Array();
+                        if(sql.indexOf("?") !== -1){
+                            sqlParts = sql.split("?");
+                            for(var i=0; i<sqlParts.length; i++){
+                                var param = "";
+                                var equalFounded = false;
+                                var charFounded = false;
+                                for(j=sqlParts[i].length; j>0; j--){
+                                    var chhar = sqlParts[i].substring(j-1, j);
+                                    if(equalFounded){
+                                        if(chhar === " " && charFounded){
+                                            break;
+                                        }else if(chhar !== " "){
+                                            param += chhar;
+                                            charFounded = true;
+                                        }
+                                    }
+                                    if(chhar === "="){
+                                        equalFounded = true;
+                                    }
+                                }
+                                if(param !== ""){
+                                    params.push(reverse(param));
+                                }
+                            }
+                            var paramLayout = $("#paramsLayout").html();
+                            var paramAux;
+                            $("#paramsSection").html("");
+                            params.forEach(function(param){
+                                paramAux = paramLayout;
+                                paramAux = paramAux.replace("?campoLabel",param);
+                                paramAux = paramAux.replace("?campoId", "param_"+param);
+                                paramAux = paramAux.replace("?campoName", "param_"+param);
+                                $("#paramsSection").append(paramAux);
+                            });
+                            $('#sqlParams').modal('show');
+                        }else{
+                            executeSQL();
+                        }
+                    }else{
+                        $.showMsg("error", "Ingresa un script sql.");
+                    }
+                }else{
+                    $.showMsg("error", "Selecciona un tipo de salida.");
+                }
+            }else{
+                $.showMsg("error", "Selecciona una base de datos.");
+            }
+        });
+
+        $("#executeSqlBT").click( function( e ){
+            if($("#paramsForm").valid()){
+                sql = ""
+                var index = 0;
+                $(".params").each(function(){
+                    sql += sqlParts[index++] + $(this).val();
+                });
+                $('#sqlParams').modal('hide');
+                executeSQL();
+            }
+        });
+
+        /**************************** CALCULATOR ********************************/
+
+        /*
+         * Tipo Campo:
+         *   1 Catálogo
+         *   2 Regla
+         *   3 Valor
+         *   4 Dinámico
+         * */
+         var allCampos = new Array();
+         $.executeFetch({
+            action: "/campo/fetchAll",
+            method: "POST",
+            dataType:"json",
+            data: {id_plantilla: $("#id_plantilla").val()},
+            success: function(data){
+                data.forEach(function(campo) {
+                    if(campo.id_tipo_campo !== "2" && !campo.id_repetir_campo){
+                        var canOperate = false;
+                        if(campo.id_tipo_campo === "1"){
+                            var opts = campo.valor.split("|");
+                            var canOperate = true;
+                            opts.forEach(function(opt) {
+                                var integer = parseInteger(opt);
+                                if(!integer){
+                                    canOperate = false;
+                                }
+                            });
+                        }else if(campo.id_tipo_campo === "3"){
+                            var integer = parseInteger(campo.valor);
+                            if(integer){
+                                canOperate = true;
+                            }else{
+                                canOperate = false;
+                            }
+                        }else if(campo.id_tipo_campo === "4"){
+                            canOperate = true;
+                        }
+                        if(canOperate){
+                            $("#recursive_campo").append("<option value='"+campo.id+"'>"+campo.nombre+"</option>");
+                            allCampos[campo.id] = campo;
+                        }
+                    }
+                });
+            },
+            errorMsg: "Ocurrió un error al obtener los campos."
+        });
+
+        var allReglas = new Array();
+        $.executeFetch({
+            action: "/regla/fetchAll",
+            method: "POST",
+            dataType:"json",
+            data: {id_plantilla: $("#id_plantilla").val()},
+            success: function(data){
+                data.forEach(function(regla) {
+                    if(regla.id !== $("id_regla").val() && regla.id_tipo_regla === "1" && regla.id_salida && regla.id_salida === "1"){
+                        $("#recursive_regla").append("<option value='"+regla.id+"'>"+regla.nombre+"</option>");
+                        allReglas[regla.id] = regla;
+                    }
+                });
+            },
+            errorMsg: "Ocurrió un error al obtener los campos."
+        });
+
+        var pharLeft = 0;
+        var pharRight = 0;
+        var redrawExpression = function(){
+            var operacion = "";
+            expressions.forEach(function (expression){
+                operacion += expression.label;
+            });
+            $("#operacionLabel").html(operacion);
+            $("#operacion").val(JSON.stringify(expressions));
+        }
+
+        /*
+        * TYPES:
+        *   1 Campo
+        *   2 Regla de Negocio
+        *   3 Números
+        *   4 + - * /
+        *   5 .
+        *   6 (
+        *   7 )
+        * */
+         var appendExpression = function(expression){
+            if(expressions.length > 0){
+                var lastExpression = expressions.slice(-1)[0];
+                if(lastExpression.type === expression.type && expression.type === 1){
+                    //campo-campo
+                    $.showMsg("error", "Operación incorrecta, campo-campo");
+                }else if(lastExpression.type === expression.type && expression.type === 2){
+                    //regla-regla
+                    $.showMsg("error", "Operación incorrecta, regla-regla");
+                }else if(lastExpression.type === 1 && expression.type === 2){
+                    //campo-regla
+                    $.showMsg("error", "Operación incorrecta, campo-regla");
+                }else if(lastExpression.type === 2 && expression.type === 1){
+                    //regla-campo
+                    $.showMsg("error", "Operación incorrecta, regla-campo");
+                }else if(lastExpression.type === 1 && expression.type === 3){
+                    //campo-número
+                    $.showMsg("error", "Operación incorrecta, campo-número");
+                }else if(lastExpression.type === 3 && expression.type === 1){
+                    //numero-campo
+                    $.showMsg("error", "Operación incorrecta, número-campo");
+                }else if(lastExpression.type === 2 && expression.type === 3){
+                    //regla-número
+                    $.showMsg("error", "Operación incorrecta, regla-número");
+                }else if(lastExpression.type === 3 && expression.type === 2){
+                    //número-regla
+                    $.showMsg("error", "Operación incorrecta, regla-número");
+                }else if(lastExpression.type === 4 && expression.type === 4){
+                    //signos seguidos ++
+                    $.showMsg("error", "Operación incorrecta, dos signos");
+                }else if(lastExpression.type === 4 && expression.type === 5){
+                    //+.
+                    $.showMsg("error", "Operación incorrecta");
+                }else if(lastExpression.type === 5 && expression.type === 4){
+                    //+.
+                    $.showMsg("error", "Operación incorrecta");
+                }else if(lastExpression.type === 5 && expression.type === 6){
+                    //.(
+                    $.showMsg("error", "Operación incorrecta");
+                }else if(lastExpression.type === 5 && expression.type === 7){
+                    //.)
+                    $.showMsg("error", "Operación incorrecta");
+                }else if(lastExpression.type === 7 && expression.type === 5){
+                    //).
+                    $.showMsg("error", "Operación incorrecta");
+                }else{
+                    //append
+                    expressions.push(expression);
+                    redrawExpression();
+                }
+            }else{
+                expressions.push(expression);
+                redrawExpression();
+            }
+        }
+
+        $("#recursive_campo").change(function( e ){
+            var expression = {
+                type: 1,
+                value: $(this).val(),
+                label: "<span class='campo-label'>"+$(this).find('option:selected').text()+"</span>"
+            }
+            $(this).val("");
+            appendExpression(expression);
+        });
+
+        $("#recursive_regla").change(function( e ){
+            var expression = {
+                type: 2,
+                value: $(this).val(),
+                label: "<span class='regla-label'>"+$(this).find('option:selected').text()+"</span>"
+            }
+            $(this).val("");
+            appendExpression(expression);
+        });
+
+        $("#clearOperacionBT").click( function( e ){
+            expressions = new Array();
+            redrawExpression();
+        });
+
+        $(".calculator").click( function( e ){
+            var expression = {
+                type: parseInt($(this).attr("code")),
+                value: $(this).val(),
+                label: $(this).val()
+            }
+            if(expression.value !== "DEL"){
+                appendExpression(expression);
+            }else{
+                expressions.pop();
+                redrawExpression();
+            }
+        });
+
+        $("#testOperacionBT").click( function( e ){
+            var showModal = false;
+            var campoIndex = 0;
+            var reglaIndex = 0;
+            $("#camposSection").html("");
+            $("#reglasSection").html("");
+            expressions.forEach(function (expression){
+                if(expression.type == "1"){
+                    var html;
+                    var campo = allCampos[expression.value];
+                    if(campo.id_tipo_campo === "1"){
+                        showModal = true;
+                        html = "";
+                        var opts = campo.valor.split("|");
+                        opts.forEach(function (opt){
+                            html += "<option value='"+opt+"'>"+opt+"</option>";
+                        });
+                        var paramLayout = $("#expressionSelectLayout").html();
+                        paramLayout = paramLayout.replace("?campoLabel", expression.label);
+                        paramLayout = paramLayout.replace("?campoId", "regla_" + campoIndex);
+                        paramLayout = paramLayout.replace("?campoName", "regla_" + campoIndex++);
+                        paramLayout = paramLayout.replace("?options", html);
+                        $("#camposSection").append(paramLayout);
+                    }else if(campo.id_tipo_campo === "3"){
+                        showModal = true;
+                        var paramLayout = $("#expressionDisabledLayout").html();
+                        paramLayout = paramLayout.replace("?campoLabel", expression.label);
+                        paramLayout = paramLayout.replace("?campoId", "regla_" + campoIndex);
+                        paramLayout = paramLayout.replace("?campoName", "regla_" + campoIndex++);
+                        paramLayout = paramLayout.replace("?campoValue", campo.valor);
+                        $("#camposSection").append(paramLayout);
+                    }else if(campo.id_tipo_campo === "4"){
+                        showModal = true;
+                        var paramLayout = $("#expressionEnabledLayout").html();
+                        paramLayout = paramLayout.replace("?campoLabel", expression.label);
+                        paramLayout = paramLayout.replace("?campoId", "regla_" + campoIndex);
+                        paramLayout = paramLayout.replace("?campoName", "regla_" + campoIndex++);
+                        $("#camposSection").append(paramLayout);
+                    }
+                }else if(expression.type == "2"){
+                    showModal = true;
+                    var html = "";
+                    var regla = allReglas[expression.value];
+                    var sql = regla.operacion;
+                    if(sql.indexOf("?") !== -1){
+                        var params = new Array();
+                        sqlParts = sql.split("?");
+                        for (var i = 0; i < sqlParts.length; i++) {
+                            var param = "";
+                            var equalFounded = false;
+                            var charFounded = false;
+                            for (j = sqlParts[i].length; j > 0; j--) {
+                                var chhar = sqlParts[i].substring(j - 1, j);
+                                if (equalFounded) {
+                                    if (chhar === " " && charFounded) {
+                                        break;
+                                    } else if (chhar !== " ") {
+                                        param += chhar;
+                                        charFounded = true;
+                                    }
+                                }
+                                if (chhar === "=") {
+                                    equalFounded = true;
+                                }
+                            }
+                            if (param !== "") {
+                                params.push(reverse(param));
+                            }
+                        }
+                        expression.params = new Array();
+                        params.forEach(function (param) {
+                            var paramLayout = $("#expressionEnabledLayout").html();
+                            paramLayout = paramLayout.replace("?campoLabel", expression.label+" "+param);
+                            paramLayout = paramLayout.replace("?campoId", "regla_" + reglaIndex);
+                            paramLayout = paramLayout.replace("?campoName", "regla_" + reglaIndex);
+                            $("#reglasSection").append(paramLayout);
+                            expression.params.push("regla_" + reglaIndex++);
+                        });
+                    }else{
+                        $.executeFetch({
+                            action: "/regla/sql",
+                            data: {
+                                db: regla.db,
+                                sql: regla.operacion
+                            },
+                            method: "POST",
+                            dataType:"json",
+                            success: function(data){
+                                if(data.success){
+                                    if(data.cols.length === 1 && data.rows.length === 1 ){
+                                        var result = data.cols[0]+":"+data.rows[0][0];
+                                        var paramLayout = $("#expressionDisabledLayout").html();
+                                        paramLayout = paramLayout.replace("?campoLabel", expression.label+" "+data.cols[0]);
+                                        paramLayout = paramLayout.replace("?campoId", "regla_" + reglaIndex);
+                                        paramLayout = paramLayout.replace("?campoName", "regla_" + reglaIndex++);
+                                        paramLayout = paramLayout.replace("?campoValue", data.rows[0][0]);
+                                        $("#reglasSection").append(paramLayout);
+                                    }else if(data.cols.length === 1 && data.rows.length === 0 ){
+                                        showModal = false;
+                                        $('#paramsModal').modal('hide');
+                                        $.showMsg("error", "El sql no ha regresado resultados.");
+                                    }else{
+                                        showModal = false;
+                                        $('#paramsModal').modal('hide');
+                                        $.showMsg("error", "El sql debe regresar un solo resultado.");
+                                    }
+                                }else{
+                                    showModal = false;
+                                    $('#paramsModal').modal('hide');
+                                    $.showMsg("error", data.message);
+                                }
+                            },
+                            errorMsg: "Ocurrió un error al obtener ejecutar el sql."
+                        });
+                    }
+                }
+            });
+
+            if(showModal){
+                $('#paramsModal').modal('show');
+            }else{
+                var operacion = "";
+                expressions.forEach(function (expression){
+                    operacion += expression.label;
+                });
+                try{
+                    result = Parser.evaluate(operacion);
+                    $.showMsg("success", "Resultado: "+result);
+                }catch(ex){
+                    $.showMsg("error", "Error al evaluar la operación.<br/>"+ex);
+                }
+            }
+
+        });
+
+        function onlyNumbers(){
+            $(".onlyNums").keydown(function (e) {
+                console.log(e);
+                // Allow: backspace, delete, tab, escape, enter and .
+                if ($.inArray(e.keyCode, [46, 8, 9, 27, 13, 110, 190]) !== -1 ||
+                        // Allow: Ctrl+A, Command+A
+                    (e.keyCode == 65 && ( e.ctrlKey === true || e.metaKey === true ) ) ||
+                        // Allow: home, end, left, right, down, up
+                    (e.keyCode >= 35 && e.keyCode <= 40)) {
+                    // let it happen, don't do anything
+                    return;
+                }
+                // Ensure that it is a number and stop the keypress
+                if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+                    e.preventDefault();
+                }
+            });
+        }
+
+        $("#calcularBT").click( function( e ){
+
+            $.showSpinner();
+
+            var operacion = "";
+            var regla;
+            var sqlSplit;
+            var sql;
+            expressions.forEach(function (expression){
+
+                if(expression.type === 2 && expression.params){
+
+                    regla = allReglas[expression.value];
+                    sql = "";
+                    sqlSplit = regla.operacion.split("?");
+
+                    for(var i=0; i<sqlSplit.length-1; i++){
+                        sql += sqlSplit[i] + $("#"+expression.params[i]).val();
+                    }
+
+                    console.log(sql);
+
+                    $.executeSyncFetch({
+                        action: "/regla/sql",
+                        data: {
+                            db: regla.db,
+                            sql: sql
+                        },
+                        method: "POST",
+                        dataType:"json",
+                        success: function(data){
+                            if(data.success){
+                                operacion += data.rows[0][0];
+                            }else{
+                                $.showMsg("error", data.message);
+                            }
+                        },
+                        errorMsg: "Ocurrió un error al ejecutar el sql."
+                    });
+
+                }else{
+                    operacion += expression.value;
+                }
+            });
+
+            $.hideSpinner();
+            console.log("operacion: "+operacion);
+
+            try{
+                result = Parser.evaluate(operacion);
+                $('#paramsModal').modal('hide');
+                $("#addReglaBT").prop('disabled', false);
+                $.showMsg("success", "Resultado: "+result);
+            }catch(ex){
+                $.showMsg("error", "Error al evaluar la operación.<br/>"+ex);
+            }
+
+
+        });
+
+    });
+
+    function reverse(s){
+        return s.split("").reverse().join("");
+    }
+
+    function parseInteger(integer){
+        try{
+            return parseInt(integer);
+        }catch(e){
+            return false;
+        }
+    }
+
+</script>
+
+<div class="row">
+    <div class="col-lg-12">
+
+        <section class="panel">
+            <header class="panel-heading" id="headerSection">
+                Nueva Regla
+            </header>
+            <div class="panel-body">
+                <div class="form">
+                    <form class="form-validate form-horizontal" id="regla_form">
+                        <input type="hidden" id="id_regla" name="id_regla" value="<?php if($id){ echo $id; }else{ echo "0"; } ?>"/>
+                        <input type="hidden" id="id_plantilla" name="id_plantilla" value="<?php echo $id_plantilla; ?>"/>
+                        <div class="form-group">
+                            <label for="cname" class="control-label col-lg-2">Tipo Regla <span class="required">*</span></label>
+                            <div class="col-lg-5">
+                                <select class="form-control m-bot15" id="tipo_regla" name="tipo_regla">
+                                    <option value="">Seleccionar</option>
+                                    <option value="1">SQL</option>
+                                    <option value="2">Recursiva</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="cname" class="control-label col-lg-2">Nombre <span class="required">*</span></label>
+                            <div class="col-lg-5">
+                                <input class="form-control" id="nombre" name="nombre" minlength="5" type="text"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="cname" class="control-label col-lg-2">Descripción</label>
+                            <div class="col-lg-5">
+                                <textarea class="form-control" id="descripcion" name="descripcion" rows="6"></textarea>
+                            </div>
+                        </div>
+                            <div class="form-group sqlSection no-display">
+                                <label class="control-label col-lg-2">Base de datos <span class="required">*</span></label>
+                                <div class="col-lg-5">
+                                    <select class="form-control m-bot15" id="db" name="db">
+                                        <option value="">Seleccionar</option>
+                                        <option value="pronoi">PRONOI</option>
+                                        <option value="mitron">Mitrón</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group sqlSection no-display">
+                                <label class="control-label col-lg-2">Salida del SQL <span class="required">*</span></label>
+                                <div class="col-lg-5">
+                                    <select class="form-control m-bot15" id="salida" name="salida">
+                                        <option value="">Seleccionar</option>
+                                        <option value="1">Número</option>
+                                        <option value="2">Texto</option>
+                                        <option value="3">Fecha</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group sqlSection no-display">
+                                <label for="cname" class="control-label col-lg-2">SQL</label>
+                                <div class="col-lg-5">
+                                    <i class='icon_question_alt'></i> Ingrese el símbolo <strong>?</strong> para enviar parámetros a la consulta.
+                                    <br/>
+                                    <textarea class="form-control" id="sql" name="sql" rows="6"></textarea>
+                                    <br/>
+                                    <button class="btn btn-info" type="button" id="testSqlBT">Probar SQL</button>
+                                </div>
+                            </div>
+                            <div class="form-group recursiveSection no-display">
+                                <label for="cname" class="control-label col-lg-2">Operación</label>
+                                <div class="col-lg-7">
+                                    <div class="row">
+                                        <div class="col-lg-6">
+                                            <select class="form-control m-bot15" id="recursive_campo" name="recursive_campo">
+                                                <option value="">Campo</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <select class="form-control m-bot15" id="recursive_regla" name="recursive_regla">
+                                                <option value="">Regla de Negocio SQL</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-lg-12">
+                                            <button class="btn btn-info calculator" type="button" id="plusBT" value="+" code="4">+</button>
+                                            <button class="btn btn-info calculator" type="button" id="minusBT" value="-" code="4">-</button>
+                                            <button class="btn btn-info calculator" type="button" id="multBT" value="*" code="4">*</button>
+                                            <button class="btn btn-info calculator" type="button" id="divBT" value="/" code="4">/</button>
+                                            <button class="btn btn-info calculator" type="button" id="dotBT" value="." code="5">.</button>
+                                            <button class="btn btn-info calculator" type="button" id="openPharBT" value="(" code="6">(</button>
+                                            <button class="btn btn-info calculator" type="button" id="closePharBT" value=")" code="7">)</button>
+                                            <button class="btn btn-info calculator" type="button" id="deleteBT" value="DEL">DEL</button>
+                                            <div class="spacer-sm"></div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-lg-12">
+                                            <button class="btn btn-info calculator" type="button" id="1BT" value="1" code="3">1</button>
+                                            <button class="btn btn-info calculator" type="button" id="2BT" value="2" code="3">2</button>
+                                            <button class="btn btn-info calculator" type="button" id="3BT" value="3" code="3">3</button>
+                                            <button class="btn btn-info calculator" type="button" id="4BT" value="4" code="3">4</button>
+                                            <button class="btn btn-info calculator" type="button" id="4BT" value="5" code="3">5</button>
+                                            <button class="btn btn-info calculator" type="button" id="4BT" value="6" code="3">6</button>
+                                            <button class="btn btn-info calculator" type="button" id="4BT" value="7" code="3">7</button>
+                                            <button class="btn btn-info calculator" type="button" id="4BT" value="8" code="3">8</button>
+                                            <button class="btn btn-info calculator" type="button" id="4BT" value="9" code="3">9</button>
+                                            <button class="btn btn-info calculator" type="button" id="4BT" value="0" code="3">0</button>
+                                            <div class="spacer-md"></div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-lg-12">
+                                            <input type="hidden" id="operacion" name="operacion"/>
+                                            <div id="operacionLabel" class="operacion"></div>
+                                            <div class="spacer-md"></div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-lg-12">
+                                            <button class="btn btn-info" type="button" id="testOperacionBT">Calcular</button>
+                                            <button class="btn btn-default" type="button" id="clearOperacionBT">Limpiar</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <div class="form-group">
+                            <div class="col-lg-offset-2 col-lg-10">
+                                <button class="btn btn-primary" type="button" id="addReglaBT" disabled>Guardar</button>
+                                <a class="btn btn-default" href="/reglas?id=<?php echo $id_plantilla; ?>">Regresar</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+    </div>
+</div>
+
+<div aria-hidden="true" aria-labelledby="myModalLabel" role="dialog" tabindex="-1" id="sqlResponse" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button aria-hidden="true" data-dismiss="modal" class="close" type="button">x</button>
+                <h4 class="modal-title">Error</h4>
+            </div>
+            <div class="modal-body">
+                <div class="alertFont"><i class="icon_error-triangle"></i><span> El sql debe generar un solo resultado:</span></div>
+                <div class="spacer-sm"></div>
+                <table id="previewTable" class="table table-bordered" cellspacing="0" width="100%">
+                    <thead id="previewTableHead">
+                        <tr id="previewTableHR"></tr>
+                    </thead>
+                    <tbody id="previewTableBody"></tbody>
+                </table>
+                <div class="row">
+                <div class="form-group">
+                    <div class="col-lg-12">
+                        <button class="btn btn-primary pull-right" type="button" data-dismiss="modal">OK</button>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div aria-hidden="true" aria-labelledby="myModalLabel" role="dialog" tabindex="-1" id="sqlParams" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button aria-hidden="true" data-dismiss="modal" class="close" type="button">x</button>
+                <h4 class="modal-title">Parámetros SQL</h4>
+            </div>
+            <div class="modal-body">
+                <span>Ingrese los siguientes parámetros para ejecutar la consulta:</span>
+                <div class="spacer-sm"></div>
+
+                <div class="form">
+                    <form id="paramsForm" class="form-validate form-horizontal">
+
+                        <div id="paramsSection"></div>
+
+                        <div class="spacer-md"></div>
+                        <div class="form-group">
+                            <div class="col-lg-offset-2 col-lg-10">
+                                <button class="btn btn-info" type="button" id="executeSqlBT">Probar SQL</button>
+                                <button class="btn btn-default" type="button" data-dismiss="modal">Cancelar</button>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div id="paramsLayout" class="hidden">
+    <div class="form-group">
+        <label class="control-label col-lg-2">?campoLabel</label>
+        <div class="col-lg-5">
+            <input class="form-control params" id="?campoId" name="?campoName" type="text" required/>
+        </div>
+    </div>
+</div>
+
+<div aria-hidden="true" aria-labelledby="myModalLabel" role="dialog" tabindex="-1" id="paramsModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button aria-hidden="true" data-dismiss="modal" class="close" type="button">x</button>
+                <h4 class="modal-title">Parámetros</h4>
+            </div>
+            <div class="modal-body">
+                <span>Ingrese los siguientes parámetros para continuar:</span>
+                <div class="spacer-sm"></div>
+
+                <div class="form">
+                    <form id="paramsForm" class="form-validate form-horizontal">
+
+                        <span>Campos:</span>
+                        <div id="camposSection"></div>
+                        <div class="spacer-sm"></div>
+
+                        <span>Parametros SQL:</span>
+                        <div id="reglasSection"></div>
+                        <div class="spacer-md"></div>
+
+                        <div class="form-group">
+                            <div class="col-lg-offset-2 col-lg-10">
+                                <button class="btn btn-info" type="button" id="calcularBT">Calcular</button>
+                                <button class="btn btn-default" type="button" data-dismiss="modal">Cancelar</button>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div id="expressionEnabledLayout" class="hidden">
+    <div class="form-group">
+        <label class="control-label col-lg-4">?campoLabel</label>
+        <div class="col-lg-8">
+            <input class="form-control " id="?campoId" name="?campoName" type="text" onlyNums/>
+        </div>
+    </div>
+</div>
+
+<div id="expressionDisabledLayout" class="hidden">
+    <div class="form-group">
+        <label class="control-label col-lg-4">?campoLabel</label>
+        <div class="col-lg-8">
+            <input class="form-control " id="?campoId" name="?campoName" type="text" value="?campoValue" disabled/>
+        </div>
+    </div>
+</div>
+
+<div id="expressionSelectLayout" class="hidden">
+    <div class="form-group">
+        <label class="control-label col-lg-4">?campoLabel</label>
+        <div class="col-lg-8">
+            <select class="form-control" id="?campoId" name="?campoName">?options</select>
+        </div>
+    </div>
+</div>

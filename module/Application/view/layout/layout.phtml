@@ -1,55 +1,185 @@
 <?php echo $this->doctype(); ?>
+<html lang="es">
 
-<html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <?php echo $this->headTitle('ZF2 '. $this->translate('Skeleton Application'))->setSeparator(' - ')->setAutoEscape(false) ?>
+<head>
+    <meta charset="utf-8">
+    <?php echo $this->headTitle($this->translate('Pronoi'))->setSeparator(' - ')->setAutoEscape(false) ?>
 
-        <?php echo $this->headMeta()
-            ->appendName('viewport', 'width=device-width, initial-scale=1.0')
-            ->appendHttpEquiv('X-UA-Compatible', 'IE=edge')
-        ?>
+    <?php echo $this->headMeta()
+        ->appendName('viewport', 'width=device-width, initial-scale=1.0')
+        ->appendHttpEquiv('X-UA-Compatible', 'IE=edge')
+    ?>
 
-        <!-- Le styles -->
-        <?php echo $this->headLink(array('rel' => 'shortcut icon', 'type' => 'image/vnd.microsoft.icon', 'href' => $this->basePath() . '/img/favicon.ico'))
-                        ->prependStylesheet($this->basePath('css/style.css'))
-                        ->prependStylesheet($this->basePath('css/bootstrap-theme.min.css'))
-                        ->prependStylesheet($this->basePath('css/bootstrap.min.css')) ?>
+    <!-- Styles -->
+    <?php echo $this->headLink(array('rel' => 'shortcut icon', 'type' => 'image/vnd.microsoft.icon', 'href' => $this->basePath() . '/img/favicon.ico'))
+        ->prependStylesheet($this->basePath('/css/style.css'))
+        ->prependStylesheet($this->basePath('/css/bootstrap-theme.css'))
+        ->prependStylesheet($this->basePath('/css/bootstrap.min.css'))
+        ->prependStylesheet($this->basePath('/css/elegant-icons-style.css'))
+        ->prependStylesheet($this->basePath('/css/font-awesome.min.css'))
+        ->prependStylesheet($this->basePath('/assets/fullcalendar/fullcalendar/bootstrap-fullcalendar.css'))
+        ->prependStylesheet($this->basePath('/assets/fullcalendar/fullcalendar/fullcalendar.css'))
+        ->prependStylesheet($this->basePath('/assets/jquery-easy-pie-chart/jquery.easy-pie-chart.css'))
+        ->prependStylesheet($this->basePath('/css/owl.carousel.css'))
+        ->prependStylesheet($this->basePath('/css/jquery-jvectormap-1.2.2.css'))
+        ->prependStylesheet($this->basePath('/css/fullcalendar.css'))
+        ->prependStylesheet($this->basePath('/css/widgets.css'))
+        ->prependStylesheet($this->basePath('/css/style.css'))
+        ->prependStylesheet($this->basePath('/css/style-responsive.css'))
+        ->prependStylesheet($this->basePath('/css/xcharts.min.css'))
+        ->prependStylesheet($this->basePath('/css/dataTables.bootstrap.css'))
+        ->prependStylesheet($this->basePath('/css/jquery-ui-1.10.4.min.css'))
+        ->prependStylesheet($this->basePath('/css/animate.css'));
+    ?>
 
-        <!-- Scripts -->
-        <?php echo $this->headScript()
-            ->prependFile($this->basePath('js/bootstrap.min.js'))
-            ->prependFile($this->basePath('js/jquery.min.js'))
-            ->prependFile($this->basePath('js/respond.min.js'), 'text/javascript', array('conditional' => 'lt IE 9',))
-            ->prependFile($this->basePath('js/html5shiv.js'),   'text/javascript', array('conditional' => 'lt IE 9',))
-        ; ?>
+    <!-- Scripts -->
+    <?php echo $this->headScript()
+        ->prependFile($this->basePath('/js/bootstrap.min.js'))
+        ->prependFile($this->basePath('/js/jquery.min.js'))
+        ->prependFile($this->basePath('/js/respond.min.js'), 'text/javascript', array('conditional' => 'lt IE 9',))
+        ->prependFile($this->basePath('/js/html5shiv.js'), 'text/javascript', array('conditional' => 'lt IE 9',))
+        ->prependFile($this->basePath('/js/lte-ie7.js'), 'text/javascript', array('conditional' => 'lt IE 9',))
+        ->prependFile($this->basePath('/js/respond.min.js'));
+    ?>
 
-    </head>
-    <body>
-        <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-            <div class="container">
-                <div class="navbar-header">
-                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                    <a class="navbar-brand" href="<?php echo $this->url('home') ?>"><img src="<?php echo $this->basePath('img/zf2-logo.png') ?>" alt="Zend Framework 2"/>&nbsp;<?php echo $this->translate('Skeleton Application') ?></a>
+    <?php $session = new \Zend\Session\Container('username'); $username = $session->username ?>
+
+</head>
+
+<body>
+
+<?php if(isset($username)){ ?>
+
+<!-- container section start -->
+<section id="container" class="">
+
+    <header class="header dark-bg">
+
+        <div class="toggle-nav">
+            <div class="icon-reorder tooltips" data-original-title="Toggle Navigation" data-placement="bottom"></div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <!--logo start-->
+                <a href="/inicio" class="logo"><img alt="avatar" src="/images/logo-promass.png"></a>
+                <!--logo end-->
+                <div class="nav search-row" id="top_menu">
+                    <!--  search form start -->
+<!--                    <ul class="nav top-menu">-->
+<!--                        <li>-->
+<!--                            <form class="navbar-form">-->
+<!--                                <input class="form-control" placeholder="Buscar" type="text">-->
+<!--                            </form>-->
+<!--                        </li>-->
+<!--                    </ul>-->
+                    <!--  search form end -->
                 </div>
-                <div class="collapse navbar-collapse">
-                    <ul class="nav navbar-nav">
-                        <li class="active"><a href="<?php echo $this->url('home') ?>"><?php echo $this->translate('Home') ?></a></li>
-                    </ul>
-                </div><!--/.nav-collapse -->
             </div>
-        </nav>
-        <div class="container">
+            <div class="col-md-7">
+                <div class="username-row">
+                    <i class="icon_profile"></i>
+                    <span class="username">&nbsp; <?php echo $username;?> &nbsp;</span>
+                    <a href="<?php echo $this->url('login/process', array('action'=>'logout')); ?>"><i class="logout icon_lock-open"></i></a>
+                </div>
+            </div>
+        </div>
+
+    </header>
+    <!--header end-->
+
+    <!--sidebar start-->
+    <aside>
+        <div id="sidebar"  class="nav-collapse ">
+            <!-- sidebar menu start-->
+            <ul class="sidebar-menu">
+                <li>
+                    <a href="/inicio">
+                        <i class="icon_house"></i>
+                        <span>Inicio</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="javascript:;">
+                        <i class="icon_group"></i>
+                        <span>Usuarios</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="javascript:;">
+                        <i class="icon_flowchart"></i>
+                        <span>Unid. de Negocio</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="javascript:;">
+                        <i class="icon_id-2_alt"></i>
+                        <span>Empleados</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/plantillas">
+                        <i class="icon_table"></i>
+                        <span>Plantillas</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/reportes">
+                        <i class="icon_documents_alt"></i>
+                        <span>Reportes</span>
+                    </a>
+                </li>
+            </ul>
+            <!-- sidebar menu end-->
+        </div>
+    </aside>
+    <!--sidebar end-->
+
+    <!--main content start-->
+    <section id="main-content">
+        <section class="wrapper">
+            <!--overview start-->
+            <div class="row">
+                <div class="col-lg-12">
+                    <?php
+                        echo $this->navigation('navigation')->breadcrumbs()
+                            ->setMinDepth(0)->setLinkLast(true)->setPartial('breadcrumb');
+                    ?>
+                </div>
+            </div>
+
             <?php echo $this->content; ?>
-            <hr>
-            <footer>
-                <p>&copy; 2005 - <?php echo date('Y') ?> by Zend Technologies Ltd. <?php echo $this->translate('All rights reserved.') ?></p>
-            </footer>
-        </div> <!-- /container -->
-        <?php echo $this->inlineScript() ?>
-    </body>
+        </section>
+    </section>
+    <!--main content end-->
+</section>
+<!-- container section start -->
+
+<div role="dialog" tabindex="-1" id="spinner" class="modal fade">
+    <div class="modal-dialog spinner">
+        <i class="fa fa-spinner fa-spin"></i>
+    </div>
+</div>
+
+<?php } else { echo $this->content; } ?>
+
+<!-- nice scroll -->
+<script src="/js/jquery.scrollTo.min.js"></script>
+<script src="/js/jquery.nicescroll.js"></script>
+
+<!-- jquery validate js -->
+<script src="/js/jquery.validate.min.js"></script>
+
+<script src="/js/jquery.slimscroll.min.js"></script>
+<script src="/js/jquery.dataTables.min.js"></script>
+<script src="/js/dataTables.colReorder.js"></script>
+<script src="/js/dataTables.bootstrap.js"></script>
+<script src="/js/notify.js"></script>
+
+<script src="/js/spinner.js"></script>
+<script src="/js/message.engine.js"></script>
+<script src="/js/ajax.js"></script>
+<script src="/js/scripts.js"></script>
+
+</body>
 </html>

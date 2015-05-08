@@ -1,0 +1,197 @@
+<script type="text/javascript" charset="utf-8">
+    $(document).ready(function() {
+
+        var table;
+
+        var refreshTable = function(){
+            $.executeFetch({
+                action: "/regla/fetchAll",
+                method: "POST",
+                dataType:"json",
+                data: {id_plantilla: $("#id_plantilla").val()},
+                success: function(data){
+                    var html = "";
+                    var no = 1;
+                    data.forEach(function(regla) {
+                        html += "<tr id='tr_"+regla.id+"'>"
+                        + "<td>"+no+++"</td>"
+                        + "<td>"+regla.nombre+"</td>"
+                        + "<td>"+regla.tipo_regla+"</td>"
+                        + "<td class='ellipsis'>"+regla.operacion+"</td>"
+                        + "<td class='text-center'>"
+                        + "<a href='/regla?id="+regla.id+"&id_plantilla="+$("#id_plantilla").val()+"'>"
+                        + "<i class='icon_md icon_search_alt'></i>"
+                        + "</a>"
+                        + "</td>"
+                        + "<td class='text-center'>"
+                        + "<a href='#eliminarModal' data-toggle='modal' data-id='"+regla.id+"'>"
+                        + "<i class='icon_md icon_trash'></i>"
+                        + "</a>"
+                        + "</td>"
+                        + "</tr>\n";
+                    });
+                    $("#mainTableBody").html(html);
+                    var lastIdx = null;
+                    table = $('#mainTable').DataTable({
+                        "columns": [
+                            { "width": "5%" },
+                            { "width": "30%" },
+                            { "width": "10%" },
+                            { "width": "45%" },
+                            { "width": "5%" },
+                            { "width": "5%" }
+                        ],
+                        "language": {
+                            "url": "/app/lang/Spanish.json"
+                        },
+                        "order": [[ 1, "asc" ]],
+                        "aoColumnDefs": [
+                            { 'bSortable': false, 'aTargets': [0]}
+                        ]
+                    });
+                    $("#mainTable tbody tr").hover( function( e ) {
+                        if ( $(this).hasClass('row_selected') ) {
+                            $(this).removeClass('row_selected');
+                        }
+                        else {
+                            table.$('tr.row_selected').removeClass('row_selected');
+                            $(this).addClass('row_selected');
+                        }
+                    });
+                },
+                errorMsg: "Ocurrió un error al obtener las reglas."
+            });
+        }
+
+        refreshTable();
+
+        $("#eliminarBT").click( function( e ){
+            $.executePost({
+                action: "/regla/remove",
+                method: "POST",
+                data: {id_regla: $("#id_regla").val()},
+                dataType:"json",
+                success: function(data){
+                    table.row('#tr_'+$("#id_regla").val()).remove().draw( false );
+                },
+                successMsg: "Regla eliminada.",
+                errorMsg: "Ocurrió un error al eliminar la regla."
+            });
+        });
+
+        $('#eliminarModal').on('show.bs.modal', function(e) {
+            var id_regla = $(e.relatedTarget).data('id');
+            $("#id_regla").val(id_regla);
+        });
+
+        $.executeFetch({
+            action: "/plantilla/fetch",
+            data: {id_plantilla: $("#id_plantilla").val()},
+            method: "POST",
+            dataType:"json",
+            success: function(data){
+                $("#plantillaBC").html(data.nombre);
+                $("#plantillaBC").attr("href","/plantilla?id="+data.id);
+                $("#reglasBC").attr("href","/reglas?id="+data.id);
+                $("#backBT").attr("href","/plantilla?id="+data.id);
+            },
+            errorMsg: "Ocurrió un error al obtener la plantilla."
+        });
+
+    });
+</script>
+
+<input type="hidden" id="id_plantilla" name="id_plantilla" value="<?php echo $id; ?>"/>
+
+<div class="row">
+    <div class="col-lg-12">
+        <section class="panel">
+            <header class="panel-heading">
+                Reglas Disponibles
+                <a href="/regla?id_plantilla=<?php echo $id; ?>" class="btn  btn-primary pull-right">
+                    Agregar
+                </a>
+            </header>
+            <div class="panel-body">
+                <table id="mainTable" class="table table-bordered" cellspacing="0" width="100%">
+                    <thead>
+                    <tr>
+                        <th>No.</th>
+                        <th>Nombre</th>
+                        <th>Tipo</th>
+                        <th>Operacióon</th>
+                        <th>Consultar</th>
+                        <th>Eliminar</th>
+                    </tr>
+                    </thead>
+                    <tbody id="mainTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</div>
+
+<div aria-hidden="true" aria-labelledby="eliminarModal" role="dialog" tabindex="-1" id="eliminarModal" class="modal fade">
+    <div class="modal-dialog modal-msg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button aria-hidden="true" data-dismiss="modal" class="close" type="button">x</button>
+                <h4 class="modal-title">Eliminar</h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" role="form">
+                    <input type="hidden" id="id_regla" name="id_regla"/>
+                    <div class="form-group modal-msg-label">
+                        <div class="col-lg-offset-1 col-lg-10">
+                            <span>¿Está seguro que desea eliminar la regla?</span>
+                            <div class="spacer-sm"></div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-lg-offset-1 col-lg-12">
+                            <button type="button" id="eliminarBT" class="btn btn-primary" data-dismiss="modal">Eliminar</button>
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div aria-hidden="true" aria-labelledby="myModalLabel" role="dialog" tabindex="-1" id="myModal-1" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+<!--                <i class="icon_close_alt"></i>-->
+                <button aria-hidden="true" data-dismiss="modal" class="close" type="button">x</button>
+                <h4 class="modal-title">Nueva Regla</h4>
+            </div>
+            <div class="modal-body">
+
+                <form class="form-horizontal" role="form">
+                    <div class="form-group">
+                        <label for="inputEmail1" class="col-lg-2 control-label">Email</label>
+                        <div class="col-lg-10">
+                            <input type="email" class="form-control" id="inputEmail4" placeholder="Email">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputPassword1" class="col-lg-2 control-label">Password</label>
+                        <div class="col-lg-10">
+                            <input type="password" class="form-control" id="inputPassword4" placeholder="Password">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-lg-offset-2 col-lg-10">
+                            <button type="submit" class="btn btn-primary">Agregar</button>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
