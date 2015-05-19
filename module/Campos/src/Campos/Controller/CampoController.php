@@ -135,6 +135,8 @@ class CampoController extends AbstractActionController {
             $campos = $this->getCampoTable()->fetchAll($campo->getIdTabPlantilla());
             $count = count($campos);
             $campo->setOrden($count+1);
+        }else{
+            $campo->setOrden($post_data['orden']);
         }
 
         if (!$campo_id = $this->getCampoTable()->save($campo))

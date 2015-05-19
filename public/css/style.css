@@ -5073,8 +5073,17 @@ span.customSelect.changed {
     font-weight: bold;
     color: rgba(70, 135, 177, 0.66);
 }
+.empleado-label{
+    font-weight: bold;
+    color: rgba(177, 101, 50, 0.66);
+}
 
 /* Reportes */
 .col-rep-1{
     width: 100px !important;
+}
+
+
+#festivosInpts{
+    width: 100%;
 }

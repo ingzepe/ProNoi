@@ -1,5 +1,5 @@
-<link rel="stylesheet" href="/css/daterangepicker.css" />
-<link rel="stylesheet" href="/assets/color-picker/css/bootstrap-colorpicker.css" />
+<link rel="stylesheet" href="/css/daterangepicker.css"/>
+<link rel="stylesheet" href="/assets/color-picker/css/bootstrap-colorpicker.css"/>
 
 <script src="/js/parser-eval.js"></script>
 <script type="text/javascript" src="/js/jquery.validate.min.js"></script>
@@ -10,580 +10,1195 @@
 
 
 <script type="text/javascript" charset="utf-8">
-    $(document).ready(function() {
-        
-        $("#reporte_form").validate({
-            rules: {
-                nombre: {
-                    required: true,
-                    minlength: 5,
-                    remote: {
-                        url: "/reporte/checkName",
-                        type: "POST",
-                        async: false,
-                        data:{
-                            id_reporte: function() {
-                                return $( "#id_reporte" ).val();
-                            },
-                            id_plantilla: function() {
-                                return $( "#id_plantilla" ).val();
-                            },
-                            nombre: function() {
-                                return $( "#nombre" ).val();
-                            }
-                        }
-                    }
-                },
-                descripcion: {
-                    minlength: 5
-                },
-                periodo: {
-                    required: true
-                }
-            },
-            messages: {
-                nombre: {
-                    required: "Ingrese un nombre para la reporte.",
-                    minlength: "El nombre de la reporte debe contener al menos 5 carácteres.",
-                    remote: "El nombre no se encuentra disponible."
-                },
-                descripcion: {
-                    minlength: "La descripción debe contener al menos 5 carácteres."
-                },
-                periodo: {
-                    required: "El período no puede estar vacío."
-                }
-            },
-            invalidHandler: function(form, validator) {
-                var errors = validator.numberOfInvalids();
-                if (errors) {
-                    validator.errorList[0].element.focus();
-                }
+  $(document).ready(function () {
+
+    $("#reporte_form").validate({
+      rules: {
+        nombre: {
+          required: true,
+          minlength: 5,
+          remote: {
+            url: "/reporte/checkName",
+            type: "POST",
+            async: false,
+            data: {
+              id_reporte: function () {
+                return $("#id_reporte").val();
+              },
+              id_plantilla: function () {
+                return $("#id_plantilla").val();
+              },
+              nombre: function () {
+                return $("#nombre").val();
+              }
             }
-        });
-
-        $('#periodo').dateRangePicker({
-            format: 'DD/MM/YYYY',
-            separator: ' - ',
-            minDate: new Date()
-        });
-
-        $.executeFetch({
-            action: "/plantilla/fetch",
-            data: {id_plantilla: $("#id_plantilla").val()},
-            method: "POST",
-            dataType:"json",
-            success: function(data){
-                $("#plantillaBC").html(data.nombre);
-                $("#plantillaBC").attr("href","/plantilla?id="+data.id);
-                $("#reportesBC").attr("href","/reportes?id="+data.id);
-                if($("#id_reporte").val() === "0"){
-                    $("#reporteBC").attr("href","/reporte?id_plantilla="+data.id);
-                }else{
-                    $("#reporteBC").attr("href","/reporte?id="+$("#id_reporte").val()+"&id_plantilla="+data.id);
-                }
-            },
-            errorMsg: "Ocurrió un error al obtener la plantilla."
-        });
-
-        var fetch = function(){
-            $.executeFetch({
-                action: "/reporte/fetch",
-                data: {id_reporte: $("#id_reporte").val()},
-                method: "POST",
-                dataType:"json",
-                success: function(data){
-                    $("#headerSection").html(data.nombre);
-                    $("#reporteBC").html(data.nombre);
-                    $("#reporteBC").attr("href","/reportes?id="+data.id);
-                    $("#nombre").val(data.nombre);
-                    $("#descripcion").val(data.descripcion);
-                    $("#periodo").val(data.periodo);
-                },
-                errorMsg: "Ocurrió un error al obtener la reporte."
-            });
+          }
+        },
+        descripcion: {
+          minlength: 5
         }
+      },
+      messages: {
+        nombre: {
+          required: "Ingrese un nombre para la reporte.",
+          minlength: "El nombre de la reporte debe contener al menos 5 carácteres.",
+          remote: "El nombre no se encuentra disponible."
+        },
+        descripcion: {
+          minlength: "La descripción debe contener al menos 5 carácteres."
+        }
+      },
+      invalidHandler: function (form, validator) {
+        var errors = validator.numberOfInvalids();
+        if (errors) {
+          validator.errorList[0].element.focus();
+        }
+      }
+    });
 
-        $("#addReporteBT").click( function( e ){
-            $.executePostValid({
-                form: $("#reporte_form"),
-                action: "/reporte/update",
-                method: "POST",
-                dataType:"json",
-                success: function(data){
-                    $("#id_reporte").val(data.id);
-                    $("#headerSection").html(data.nombre);
-                    $("#reporteBC").html(data.nombre);
-                    $("#reporteBC").attr("href","/reporte?id="+data.id);
-                    //refreshTable
-                    refreshTable();
-                    $("#camposSection").show(500);
+    $('#periodo').dateRangePicker({
+      format: 'DD/MM/YYYY',
+      separator: ' - ',
+      minDate: new Date(),
+      setValue: function (dates) {
+        $("#festivosDiv").show(500);
+        this.value = dates;
+      }
+    });
+
+    $('#periodo').on('input', function () {
+      var val = $(this).val();
+      console.log(val);
+      if (val) {
+        $("#festivosDiv").show(500);
+      } else {
+        $("#festivosDiv").hide(500);
+      }
+    });
+
+    var festivosElements = new Array();
+    var index = 0;
+    festivosElements[index++] = "festivo_0";
+    $("#festivo_0").dateRangePicker({
+      format: 'DD/MM/YYYY',
+      separator: ' - ',
+      singleDatePicker: true,
+      minDate: new Date()
+    });
+    $(".icon_plus_alt").click(function (ev) {
+      var id = "festivo_" + index;
+      var html = $("#calendarLayout").html().replaceAll("?idFestivo", id);
+      festivosElements[index++] = id;
+      $("#festivosInpts").append(html);
+      $("#" + id).dateRangePicker({
+        format: 'DD/MM/YYYY',
+        separator: ' - ',
+        singleDatePicker: true,
+        minDate: new Date()
+      });
+      $("#removeFestivo_" + id).click(function (ev) {
+        $(this).parent().parent().remove();
+        var removeId = $(this).attr("id");
+        var position = parseInt(removeId.substring(22));
+        festivosElements.splice(position, 1);
+      });
+    });
+
+    $.executeFetch({
+      action: "/plantilla/fetch",
+      data: {id_plantilla: $("#id_plantilla").val()},
+      method: "POST",
+      dataType: "json",
+      success: function (data) {
+        $("#plantillaBC").html(data.nombre);
+        $("#plantillaBC").attr("href", "/plantilla?id=" + data.id);
+        $("#reportesBC").attr("href", "/reportes?id=" + data.id);
+        if ($("#id_reporte").val() === "0") {
+          $("#reporteBC").attr("href", "/reporte?id_plantilla=" + data.id);
+        } else {
+          $("#reporteBC").attr("href", "/reporte?id=" + $("#id_reporte").val() + "&id_plantilla=" + data.id);
+        }
+      },
+      errorMsg: "Ocurrió un error al obtener la plantilla."
+    });
+
+    var fetch = function () {
+      $.executeFetch({
+        action: "/reporte/fetch",
+        data: {id_reporte: $("#id_reporte").val()},
+        method: "POST",
+        dataType: "json",
+        success: function (data) {
+          $("#headerSection").html(data.nombre);
+          $("#reporteBC").html(data.nombre);
+          $("#reporteBC").attr("href", "/reportes?id=" + data.id);
+          $("#nombre").val(data.nombre);
+          $("#descripcion").val(data.descripcion);
+          $("#periodo").val(data.periodo);
+        },
+        errorMsg: "Ocurrió un error al obtener la reporte."
+      });
+    }
+
+    $("#addReporteBT").click(function (e) {
+      $.executePostValid({
+        form: $("#reporte_form"),
+        action: "/reporte/update",
+        method: "POST",
+        dataType: "json",
+        success: function (data) {
+          $("#id_reporte").val(data.id);
+          $("#headerSection").html(data.nombre);
+          $("#reporteBC").html(data.nombre);
+          $("#reporteBC").attr("href", "/reporte?id=" + data.id);
+          //refreshTable
+          refreshTable();
+          $("#camposSection").show(500);
 //                    $("#previewSection").show(500);
-                },
-                successMsg: "Reporte guardada.",
-                errorMsg: "Ocurrió un error al guardar la reporte."
-            });
-        });
+        },
+        successMsg: "Reporte guardada.",
+        errorMsg: "Ocurrió un error al guardar la reporte."
+      });
+    });
 
-        /******************************************** CAMPOS ************************************************/
+    /******************************************** CAMPOS ************************************************/
 
-        var table;
+    var table;
 
-        var refreshTable = function(){
-            if(table){
-                table.destroy();
+    var refreshTable = function () {
+      if (table) {
+        table.destroy();
+      }
+      $.executeFetch({
+        action: "/campo/fetchAll",
+        method: "POST",
+        dataType: "json",
+        data: {id_plantilla: $("#id_plantilla").val()},
+        success: function (data) {
+          campos = data;
+          var html = "";
+          data.forEach(function (campo) {
+
+            if (campo.id_repetir_campo) {
+              if (campo.id_repetir_campo === "1") {
+                campo.tipo_campo = "Repetir Fecha - " + campo.tipo_campo;
+              } else {
+                campo.tipo_campo = "Repetir Veces - " + campo.tipo_campo;
+              }
             }
-            $.executeFetch({
-                action: "/campo/fetchAll",
-                method: "POST",
-                dataType:"json",
-                data: {id_plantilla: $("#id_plantilla").val()},
-                success: function(data){
-                    campos = data;
-                    var html = "";
-                    data.forEach(function(campo) {
 
-                        if(campo.id_repetir_campo){
-                            if(campo.id_repetir_campo === "1"){
-                                campo.tipo_campo = "Repetir Fecha - " + campo.tipo_campo;
-                            }else{
-                                campo.tipo_campo = "Repetir Veces - " + campo.tipo_campo;
-                            }
-                        }
+            var campoChecked = "";
+            if (campo.activo === "1") {
+              campoChecked = "checked";
+            }
+            var up = "";
+            if (parseInt(campo.orden) !== 1) {
+              up = "<i class='icon_sm arrow_up_alt upBT' id='up_" + campo.id + "' orden='" + campo.orden + "'></i> ";
+            }
+            var down = "";
+            if (parseInt(campo.orden) < data.length) {
+              down = "<i class='icon_sm arrow_down_alt downBT' id='down_" + campo.id + "' orden='" + campo.orden + "'></i> ";
+            }
 
-                        var campoChecked = "";
-                        if(campo.activo === "1"){
-                            campoChecked = "checked";
-                        }
-                        var up = "";
-                        if(parseInt(campo.orden) !== 1){
-                            up = "<i class='icon_sm arrow_up_alt upBT' id='up_"+campo.id+"' orden='"+campo.orden+"'></i> ";
-                        }
-                        var down = "";
-                        if(parseInt(campo.orden) < data.length){
-                            down = "<i class='icon_sm arrow_down_alt downBT' id='down_"+campo.id+"' orden='"+campo.orden+"'></i> ";
-                        }
+            var colorPicker = $("#colorPickerLayout").html().replaceAll("?colorId", "cp_" + campo.id).replace("?colorValue", campo.color);
 
-                        var colorPicker = $("#colorPickerLayout").html().replaceAll("?colorId","cp_"+campo.id).replace("?colorValue", campo.color);
+            html += "<tr id='tr_" + campo.id + "'>"
+            + "<td class='text-center'>" + up + campo.orden + down + "</td>"
+            + "<td class='text-center'><input type='checkbox' class='camposCB' id='cb_" + campo.id + "' " + campoChecked + "/></td>"
+            + "<td>" + colorPicker + "</td>"
+            + "<td>" + campo.nombre + "</td>"
+            + "<td>" + campo.tipo_campo + "</td>"
+            + "<td>" + campo.prefijo + "</td>"
+            + "<td>" + campo.sufijo + "</td>"
+            + "<td>" + campo.valor + "</td>"
+            + "</tr>\n";
 
-                        html += "<tr id='tr_"+campo.id+"'>"
-                        + "<td class='text-center'>" + up + campo.orden + down + "</td>"
-                        + "<td class='text-center'><input type='checkbox' class='camposCB' id='cb_"+campo.id+"' "+campoChecked+"/></td>"
-                        + "<td>"+colorPicker+"</td>"
-                        + "<td>"+campo.nombre+"</td>"
-                        + "<td>"+campo.tipo_campo+"</td>"
-                        + "<td>"+campo.prefijo+"</td>"
-                        + "<td>"+campo.sufijo+"</td>"
-                        + "<td>"+campo.valor+"</td>"
-                        + "</tr>\n";
+          });
+          //Main table
+          $("#mainTableBody").html(html);
+          table = $('#mainTable').DataTable({
+            "columns": [
+              {"width": "10%"},
+              {"width": "5%"},
+              {"width": "20%"},
+              {"width": "25%"},
+              {"width": "15%"},
+              {"width": "10%"},
+              {"width": "10%"},
+              {"width": "5%"}
+            ],
+            "bSort": false,
+            "language": {
+              "url": "/app/lang/Spanish.json"
+            },
+            "bPaginate": false
+          });
+          $("#mainTable tbody tr").hover(function (e) {
+            if ($(this).hasClass('row_selected')) {
+              $(this).removeClass('row_selected');
+            }
+            else {
+              table.$('tr.row_selected').removeClass('row_selected');
+              $(this).addClass('row_selected');
+            }
+          });
+          refreshTableActions();
+        },
+        errorMsg: "Ocurrió un error al obtener los campos."
+      });
+    }
 
-                    });
-                    //Main table
-                    $("#mainTableBody").html(html);
-                    table = $('#mainTable').DataTable({
-                        "columns": [
-                            { "width": "10%" },
-                            { "width": "5%" },
-                            { "width": "20%" },
-                            { "width": "25%" },
-                            { "width": "15%" },
-                            { "width": "10%" },
-                            { "width": "10%" },
-                            { "width": "5%" }
-                        ],
-                        "bSort": false,
-                        "language": {
-                            "url": "/app/lang/Spanish.json"
-                        },
-                        "bPaginate": false
-                    });
-                    $("#mainTable tbody tr").hover( function( e ) {
-                        if ( $(this).hasClass('row_selected') ) {
-                            $(this).removeClass('row_selected');
-                        }
-                        else {
-                            table.$('tr.row_selected').removeClass('row_selected');
-                            $(this).addClass('row_selected');
-                        }
-                    });
-                    refreshTableActions();
-                },
-                errorMsg: "Ocurrió un error al obtener los campos."
-            });
+    var refreshTableActions = function () {
+      //Activar campos
+      $(".camposCB").click(function (e) {
+        var id = $(this).attr("id").substring(3);
+        if ($(this).is(":checked")) {
+          $.executeFetch({
+            action: "/campo/updateActivo",
+            data: {
+              id_campo: id,
+              activo: true
+            },
+            method: "POST",
+            dataType: "json",
+            success: function () {
+            },
+            successMsg: "Campo activado.",
+            errorMsg: "Ocurrió un error al activar el campo."
+          });
+        } else {
+          $.executeFetch({
+            action: "/campo/updateActivo",
+            data: {
+              id_campo: id,
+              activo: false
+            },
+            method: "POST",
+            dataType: "json",
+            success: function () {
+            },
+            successMsg: "Campo desactivado.",
+            errorMsg: "Ocurrió un error al desactivar el campo."
+          });
         }
-
-        var refreshTableActions = function(){
-            //Activar campos
-            $(".camposCB").click(function(e){
-                var id = $(this).attr("id").substring(3);
-                if($(this).is(":checked")) {
-                    $.executeFetch({
-                        action: "/campo/updateActivo",
-                        data: {
-                            id_campo: id,
-                            activo: true
-                        },
-                        method: "POST",
-                        dataType:"json",
-                        success: function(){},
-                        successMsg: "Campo activado.",
-                        errorMsg: "Ocurrió un error al activar el campo."
-                    });
-                }else{
-                    $.executeFetch({
-                        action: "/campo/updateActivo",
-                        data: {
-                            id_campo: id,
-                            activo: false
-                        },
-                        method: "POST",
-                        dataType:"json",
-                        success: function(){},
-                        successMsg: "Campo desactivado.",
-                        errorMsg: "Ocurrió un error al desactivar el campo."
-                    });
-                }
-            });
-            //Color
-            $('.colorPicker').colorpicker({
-                component: "#colorPreview"
-            });
-            $('.saveColor').click(function(e){
-                var colorId = $(this).attr("color-id");
-                var id = $("#"+colorId).attr("id").substring(3);
-                var color = $("#"+colorId).val();
-                $.executeFetch({
-                    action: "/campo/updateColor",
-                    data: {
-                        id_campo: id,
-                        color: color
-                    },
-                    method: "POST",
-                    dataType:"json",
-                    success: function(){},
-                    successMsg: "Campo desactivado.",
-                    errorMsg: "Ocurrió un error al desactivar el campo."
-                });
-            });
-            //Ordenar campos hacia arriba
-            $(".upBT").click(function(e){
-                var id = $(this).attr("id").substring(3);
-                var orden = parseInt($(this).attr("orden"));
-                $.executeFetch({
-                    action: "/campo/orden",
-                    data: {
-                        id: id,
-                        id_plantilla: $("#id_plantilla").val(),
-                        orden: orden,
-                        action: 'up'
-                    },
-                    method: "POST",
-                    dataType:"json",
-                    success: function(){
-                        refreshTable();
-                    },
-                    successMsg: "Campo ordenado.",
-                    errorMsg: "Ocurrió un error al ordenar el campo."
-                });
-            });
-            //Ordenar campos hacia abajo
-            $(".downBT").click(function(e){
-                var id = $(this).attr("id").substring(5);
-                var orden = parseInt($(this).attr("orden"));
-                $.executeFetch({
-                    action: "/campo/orden",
-                    data: {
-                        id: id,
-                        id_plantilla: $("#id_plantilla").val(),
-                        orden: orden,
-                        action: 'down'
-                    },
-                    method: "POST",
-                    dataType:"json",
-                    success: function(){
-                        refreshTable();
-                    },
-                    successMsg: "Campo ordenado.",
-                    errorMsg: "Ocurrió un error al ordenar el campo."
-                });
-            });
-        }
-
-        if(parseInt($("#id_reporte").val()) !== 0){
-            fetch();
-            refreshTable();
-            $("#camposSection").show(500);
-        }
-
-        /******************************************** REPORTE ************************************************/
-
-        $("#generarReporteBT").click(function(e){
-            refreshReporte();
-            $("#previewSection").show(500);
+      });
+      //Color
+      $('.colorPicker').colorpicker({
+        component: "#colorPreview"
+      });
+      $('.saveColor').click(function (e) {
+        var colorId = $(this).attr("color-id");
+        var id = $("#" + colorId).attr("id").substring(3);
+        var color = $("#" + colorId).val();
+        $.executeFetch({
+          action: "/campo/updateColor",
+          data: {
+            id_campo: id,
+            color: color
+          },
+          method: "POST",
+          dataType: "json",
+          success: function () {
+          },
+          successMsg: "Color guardado.",
+          errorMsg: "Ocurrió un error al desactivar el campo."
         });
+      });
+      //Ordenar campos hacia arriba
+      $(".upBT").click(function (e) {
+        var id = $(this).attr("id").substring(3);
+        var orden = parseInt($(this).attr("orden"));
+        $.executeFetch({
+          action: "/campo/orden",
+          data: {
+            id: id,
+            id_plantilla: $("#id_plantilla").val(),
+            orden: orden,
+            action: 'up'
+          },
+          method: "POST",
+          dataType: "json",
+          success: function () {
+            refreshTable();
+          },
+          successMsg: "Campo ordenado.",
+          errorMsg: "Ocurrió un error al ordenar el campo."
+        });
+      });
+      //Ordenar campos hacia abajo
+      $(".downBT").click(function (e) {
+        var id = $(this).attr("id").substring(5);
+        var orden = parseInt($(this).attr("orden"));
+        $.executeFetch({
+          action: "/campo/orden",
+          data: {
+            id: id,
+            id_plantilla: $("#id_plantilla").val(),
+            orden: orden,
+            action: 'down'
+          },
+          method: "POST",
+          dataType: "json",
+          success: function () {
+            refreshTable();
+          },
+          successMsg: "Campo ordenado.",
+          errorMsg: "Ocurrió un error al ordenar el campo."
+        });
+      });
+    }
 
-        var table2;
-        var colsTmpl;
-        var refreshReporte = function(){
-            colsTmpl = new Array();
-            $.executeFetch({
-                action: "/campo/fetchAll",
-                method: "POST",
-                dataType:"json",
-                data: {id_plantilla: $("#id_plantilla").val()},
-                success: function(data){
-                    var ths = "";
-                    var contenido = "";
+    if (parseInt($("#id_reporte").val()) !== 0) {
+      fetch();
+      refreshTable();
+      $("#camposSection").show(500);
+    }
 
-                    //static
-                    ths += "<th>No. Empleado</th>";
-                    ths += "<th>Nombre</th>";
-                    ths += "<th>Fecha Ingreso</th>";
-                    ths += "<th>Horario</th>";
-                    ths += "<th>Unidad de Negocio</th>";
-                    ths += "<th>Puesto</th>";
-                    ths += "<th>Campaña</th>";
-                    ths += "<th>Jefe Inmediato</th>";
-                    ths += "<th>Sueldo Diario</th>";
-                    ths += "<th>Sueldo Quincenal</th>";
+    /******************************************** REPORTE ************************************************/
 
-                    //periodo
-                    var periodoCols = new Array();
-                    var fechas = $("#periodo").val().split(" - ");
-                    var inicio = fechas[0];
-                    var fin = fechas[1];
-                    inicio = inicio.split("/");
-                    fin = fin.split("/");
-                    inicio = new Date(parseInt(inicio[2]),parseInt(inicio[1])-1,parseInt(inicio[0]));
-                    fin = new Date(parseInt(fin[2]),parseInt(fin[1])-1,parseInt(fin[0]));
-                    while(inicio <= fin){
-                        var label = inicio.toLocaleString().split(" ");
-                        ths += "<th>"+label[0]+"</td>";
-                        periodoCols.push(label[0]);
-                        var newDate = inicio.setDate(inicio.getDate() + 1);
-                        inicio = new Date(newDate);
-                    }
+    $("#generarReporteBT").click(function (e) {
+      refreshReporte();
+      $("#previewSection").show(500);
+    });
 
-                    //cols
-                    data.forEach(function(campo) {
+    var TOLERANCIA = 10;//10 mins de tolerancia
 
-                        if(campo.activo === "1"){
-                            ths += "<th style='background-color: "+campo.color+"'>"+campo.nombre+"</th>";
-                            if(campo.id_tipo_campo === "4"){
-                                contenido = "<input type='text' class='form-control'/>";
-                            }else if(campo.id_tipo_campo === "1"){
-                                var opts = campo.valor.split("|");
-                                var optsHtml = "";
-                                for(var i=0; i<opts.length; i++){
-                                    optsHtml += "<option value='"+opts[i]+"'>"+opts[i]+"</option>";
+    var table2;
+    var colsTmpl;
+    var expressions;
+    var allCampos = new Array();
+    var allReglas = new Array();
+    var allEmpleados = new Array();
+    var selectedCampo;
+    var selectedEmpleado;
+
+    $.executeFetch({
+      action: "/regla/fetchAll",
+      method: "POST",
+      dataType: "json",
+      data: {id_plantilla: $("#id_plantilla").val()},
+      success: function (data) {
+        data.forEach(function (regla) {
+//                    if(regla.id !== $("id_regla").val() && regla.id_tipo_regla === "1" && regla.id_salida && regla.id_salida === "1"){
+          allReglas[regla.id] = regla;
+//                    }
+        });
+      },
+      errorMsg: "Ocurrió un error al obtener los campos."
+    });
+
+    var refreshReporte = function () {
+      colsTmpl = new Array();
+      $.executeFetch({
+        action: "/campo/fetchAll",
+        method: "POST",
+        dataType: "json",
+        data: {id_plantilla: $("#id_plantilla").val()},
+        success: function (campos) {
+
+          var ths = "";
+          var contenido = "";
+
+          //static
+          ths += "<th>Id Empleado Pronoi</th>";
+          ths += "<th>Id Empleado RH</th>";
+          ths += "<th>Id Empleado Mitrol</th>";
+          ths += "<th>Nombre</th>";
+          ths += "<th>Fecha Ingreso</th>";
+          ths += "<th>Horario</th>";
+          ths += "<th>Unidad de Negocio</th>";
+          ths += "<th>Puesto</th>";
+          ths += "<th>Campaña</th>";
+          ths += "<th>Jefe Inmediato</th>";
+          ths += "<th>Sueldo Diario</th>";
+
+          //periodo
+          var periodos = new Array();
+          var fechas = $("#periodo").val().split(" - ");
+          var inicio = fechas[0];
+          var fin = fechas[1];
+          inicio = inicio.split("/");
+          fin = fin.split("/");
+
+          var periodoJSON = {
+            inicio: {
+              dia: inicio[0],
+              mes: inicio[1],
+              anio: inicio[2]
+            },
+            fin: {
+              dia: fin[0],
+              mes: fin[1],
+              anio: fin[2]
+            }
+          };
+
+          inicio = new Date(periodoJSON.inicio.anio, parseInt(periodoJSON.inicio.mes) - 1, periodoJSON.inicio.dia);
+          fin = new Date(periodoJSON.fin.anio, parseInt(periodoJSON.fin.mes) - 1, periodoJSON.fin.dia);
+
+          while (inicio <= fin) {
+            var label = inicio.toLocaleString().split(" ");
+            var periodo = {
+              id: label[0].replaceAll("/", "_"),
+              label: label[0],
+              value: new Date(inicio)
+            };
+            periodos.push(periodo);
+            ths += "<th>" + periodo.label + "</td>";
+            var newDate = inicio.setDate(inicio.getDate() + 1);
+            inicio = new Date(newDate);
+          }
+
+          //cols
+          campos.forEach(function (campo) {
+            allCampos[campo.id] = campo;
+            if (campo.activo === "1") {
+              if (campo.id_tipo_campo === "4") {
+                ths += "<th>" + campo.nombre + "<div style='width: 100%; height: 25px; background-color: " + campo.color + ";'></div></th>";
+                contenido = "<input type='text' class='form-control' id='campo_" + campo.id + "_empleado_?idEmpleado'/>";
+              } else if (campo.id_tipo_campo === "1") {
+                ths += "<th>" + campo.nombre + "<div style='width: 100%; height: 25px; background-color: " + campo.color + ";'></div></th>";
+                var opts = campo.valor.split("|");
+                var optsHtml = "";
+                for (var i = 0; i < opts.length; i++) {
+                  optsHtml += "<option value='" + opts[i] + "'>" + opts[i] + "</option>";
+                }
+                contenido = "<select class='form-control' id='campo_" + campo.id + "_empleado_?idEmpleado'>" + optsHtml + "</select>";
+              } else if (campo.id_tipo_campo === "2") {
+                ths += "<th style='width: 180px !important;'>" + campo.nombre + "<div style='width: 100%; height: 25px; background-color: " + campo.color + ";'></div></th>";
+                contenido = "<div class='input-group' style='width: 200px;'>" +
+                "<input type='text' class='form-control' id='campo_" + campo.id + "_empleado_?idEmpleado' disabled/>" +
+                "<span class='input-group-addon'><i class='icon_sm icon_cog regla' id_campo='" + campo.id
+                + "' id_empleado='?idEmpleado' id_regla='" + campo.id_regla_negocio + "'></i></span></div>";
+              } else {
+                ths += "<th>" + campo.nombre + "<div style='width: 100%; height: 25px; background-color: " + campo.color + ";'></div></th>";
+//                                contenido = campo.prefijo+campo.valor+campo.sufijo;
+                contenido = "<input type='text' class='form-control' id='campo_" + campo.id + "_empleado_?idEmpleado' value='" + campo.valor + "' disabled/>";
+              }
+              colsTmpl.push(contenido);
+            }
+          });
+
+          var tableWidth = (11 + periodos.length + colsTmpl.length) * 200;
+          $("#previewTable").attr("width", tableWidth + "px");
+          $.showSpinner();
+          $.executeSyncFetch({
+            action: "/empleado/fetchAll",
+            method: "POST",
+            dataType: "json",
+            data: {id_tipo_empleado: $("#id_tipo_empleado").val()},
+            success: function (empleados) {
+              var trs = "";
+//              empleados.forEach(function (empleado) {
+              for(var i=0; i<2; i++){
+                var empleado = empleados[i];
+                //static
+                trs += "<tr>";
+                trs += "<td>" + empleado.id + "</td>";
+                trs += "<td>" + empleado.id_rh + "</td>";
+                trs += "<td>" + empleado.id_mitrol + "</td>";
+                trs += "<td>" + empleado.nombre + "</td>";
+                trs += "<td>" + empleado.fecha_ingreso + "</td>";
+                trs += "<td>" + empleado.horario + "</td>";
+                trs += "<td>" + empleado.unidad_negocio + "</td>";
+                trs += "<td>" + empleado.tipo_empleado + "</td>";
+                trs += "<td>" + empleado.campana + "</td>";
+                trs += "<td>" + empleado.jefe + "</td>";
+                trs += "<td>$ " + $.number(empleado.sueldo_diario, 2) + "</td>";
+
+                console.log("Empleado: " + empleado.id_mitrol);
+
+                $.executeSyncFetch({
+                  action: "/regla/empleadoAsistencia",
+                  method: "POST",
+                  dataType: "json",
+                  data: {
+                    id_empleado: empleado.id_mitrol,
+                    inicio: periodoJSON.inicio.anio + "-" + periodoJSON.inicio.mes + "-" + periodoJSON.inicio.dia,
+                    fin: periodoJSON.fin.anio + "-" + periodoJSON.fin.mes + "-" + periodoJSON.fin.dia
+                  },
+                  success: function (data) {
+                    empleado.asistencias = new Array();
+//                    empleado.retardos = new Array();
+                    empleado.retardos = 0;
+                    data.asistencias.forEach(function (asistencia) {
+                      empleado.asistencias[asistencia[0]+"-"+asistencia[1]+"-"+asistencia[2]] = asistencia;
+                      var entrada = empleado.horario.split("-")[0] + ":00";
+                      entrada = entrada.split(":");
+                      var entradaDate = new Date(asistencia[3]);
+                      entradaDate.setHours(entrada[0]);
+                      entradaDate.setMinutes(entrada[1]+TOLERANCIA);
+                      entradaDate.setSeconds(entrada[2]);
+                      var firstEventDate = new Date(asistencia[3]);
+                      if(firstEventDate < entradaDate){
+//                        empleado.retardos.push(asistencia[3]);
+                        empleado.retardos++;
+                      }
+                    });
+                  },
+                  errorMsg: "Ocurrió un error al obtener la asistencia de " + empleado.nombre
+                });
+
+//                console.log(empleado.asistencias);
+
+                //periodo
+                var selectLayout;
+                periodos.forEach(function (periodo) {
+
+                  var dateIndex = periodo.value.getFullYear() + "-" + (periodo.value.getMonth()+1) + "-" + periodo.value.getDate();
+
+                  if(empleado.asistencias[dateIndex]){
+                    selectLayout = "<select class='form-control periodo' id='periodo_"+periodo.id + "_empleado_" + empleado.id+"' value='A'>";
+                    selectLayout += "<option value='A'>Asistencia</option>";
+                  }else{
+                    selectLayout = "<select class='form-control periodo_" + empleado.id+"' id='periodo_"+periodo.id + "_empleado_" + empleado.id+"'>";
+                    selectLayout += "<option value='F'>Falta</option>";
+                    selectLayout += "<option value='I'>Incapacidad</option>";
+                    selectLayout += "<option value='V'>Vacaciones</option>";
+                  }
+
+                  selectLayout += "</select>";
+
+                  trs += "<td>" + selectLayout + "</td>";
+                });
+                //cols
+                colsTmpl.forEach(function (col) {
+                  trs += "<td>" + col.replaceAll("?idEmpleado", empleado.id) + "</td>";
+                });
+                trs += "</tr>";
+
+                allEmpleados[empleado.id] = empleado;
+//              });
+              }
+
+              if (campos.length > 0 && empleados.length > 0) {
+                if (table2)
+                  table2.destroy();
+
+                //Preview table
+                $("#previewTableHR").html(ths);
+                $("#previewTableBody").html(trs);
+                table2 = $('#previewTable').DataTable({
+                  "scrollY": 400,
+                  "scrollX": true,
+                  "bPaginate": false,
+                  "language": {
+                    "url": "/app/lang/Spanish.json"
+                  }
+                });
+                $("#previewTable tbody tr").hover(function (e) {
+                  if ($(this).hasClass('row_selected')) {
+                    $(this).removeClass('row_selected');
+                  }
+                  else {
+                    table2.$('tr.row_selected').removeClass('row_selected');
+                    $(this).addClass('row_selected');
+                  }
+                });
+
+                //******** Click on calcular REGLA ************
+                $(".regla").click(function (e) {
+
+                  var id_campo = $(this).attr("id_campo");
+                  var id_empleado = $(this).attr("id_empleado");
+                  var id_regla = $(this).attr("id_regla");
+                  selectedCampo = id_campo;
+                  selectedEmpleado = allEmpleados[id_empleado];
+//                                    console.log(id_campo + " " + id_empleado);
+
+                  $.executeFetch({
+                    action: "/regla/fetch",
+                    data: {id_regla: id_regla},
+                    method: "POST",
+                    dataType: "json",
+                    success: function (data) {
+//                      console.log(data);
+
+                      if(data.id_tipo_regla === "1"){
+                        expressions = new Array();
+                        var sqlExpression = {
+                          id_regla: data.id,
+                          type: 2,
+                          label: data.nombre
+                        }
+                        expressions.push(sqlExpression);
+                      }else{
+                        expressions = JSON.parse(data.operacion);
+                      }
+
+//                      console.log(expressions);
+
+                      var showModal = false;
+                      var valid = true;
+                      var missingValues = "";
+                      var campoIndex = 0;
+                      var reglaIndex = 0;
+
+                      $("#reglasSectionModal").html("");
+
+                      /*
+                       * TYPES:
+                       *   1 Campo
+                       *   2 Regla de Negocio
+                       *   3 Números
+                       *   4 + - * /
+                       *   5 .
+                       *   6 (
+                       *   7 )
+                       *   8 Empleado
+                       * */
+                      expressions.forEach(function (expression) {
+                        if (expression.type == "1") {
+                          var html;
+                          var campo = allCampos[expression.id_campo];
+                          expression.id = "campo_" + campoIndex;
+                          expression.tipo_campo = campo.id_tipo_campo;
+                          expression.value = $("#campo_" + expression.id_campo + "_empleado_" + selectedEmpleado.id).val();
+                        } else if (expression.type == "2") {
+                          showModal = true;
+                          var html = "";
+                          var regla = allReglas[expression.id_regla];
+                          var sql = regla.operacion;
+                          if (sql.indexOf("?") !== -1) {
+
+                            var params = new Array();
+                            var sqlParts = sql.split("?");
+                            for(var i=1; i<sqlParts.length; i++){
+                              var param = "";
+                              for(var j=0; j<sqlParts[i].length; j++){
+                                var chhar = sqlParts[i].substring(j, j+1);
+                                if(chhar === " " || chhar === "\n"){
+                                  params.push(param);
+                                  break;
+                                }else{
+                                  param += chhar;
                                 }
-                                contenido = "<select class='form-control'>"+ optsHtml + "</select>";
-                            }else{
-                                contenido = campo.prefijo+campo.valor+campo.sufijo;
+                              }
                             }
 
-                            colsTmpl.push(contenido);
-                        }
+                            expression.params = new Array();
+                            params.forEach(function (param) {
+                              var paramLayout = $("#expressionEnabledLayout").html();
+                              paramLayout = paramLayout.replace("?campoLabel", expression.label + " " + param);
+                              paramLayout = paramLayout.replaceAll("?campoId", "regla_" + reglaIndex);
+                              paramLayout = paramLayout.replace("?campoName", "regla_" + reglaIndex);
 
-                    });
+                              var htmlOpts = "";
+                              htmlOpts += "<option value=''>Manual</option>";
 
-                    var tableWidth = (10 + periodoCols.length + colsTmpl.length) * 200;
-                    $("#previewTable").attr("width", tableWidth + "px");
-                    $.executeFetch({
-                        action: "/empleado/fetchAll",
-                        method: "POST",
-                        dataType:"json",
-                        data: {id_tipo_empleado: $("#id_tipo_empleado").val()},
-                        success: function(empleados){
+                              //Empleado constants options
+                              htmlOpts += "<option value='empleado_" + selectedEmpleado.id + "'>Id Empleado Pronoi</option>\n";
+                              htmlOpts += "<option value='empleado_" + selectedEmpleado.id_rh + "'>Id Empleado RH</option>\n";
+                              htmlOpts += "<option value='empleado_" + selectedEmpleado.id_mitrol + "'>Id Empleado Mitrol</option>\n";
+                              htmlOpts += "<option value='empleado_" + selectedEmpleado.sueldo_diario + "'>Sueldo Diario</option>\n";
 
-                            var trs = "";
-                            empleados.forEach(function(empleado) {
-                                //static
-                                trs += "<tr>";
-                                trs += "<td>"+empleado.id_rh+"</td>";
-                                trs += "<td>"+empleado.nombre+"</td>";
-                                trs += "<td>"+empleado.fecha_ingreso+"</td>";
-                                trs += "<td>"+empleado.horario+"</td>";
-                                trs += "<td>"+empleado.unidad_negocio+"</td>";
-                                trs += "<td>"+empleado.tipo_empleado+"</td>";
-                                trs += "<td>"+empleado.campana+"</td>";
-                                trs += "<td>"+empleado.jefe+"</td>";
-                                trs += "<td>$ " + $.number(empleado.sueldo_diario, 2) + "</td>";
-                                trs += "<td>$ " + $.number(empleado.sueldo_quincenal, 2) + "</td>";
-                                //periodo
-                                var selectLayout;
-                                periodoCols.forEach(function(periodo) {
-                                    selectLayout = $("#selectLayout").html().replace("?campoId","periodo_"+empleado.id+"_"+periodo);
-                                    trs += "<td>"+selectLayout+"</td>";
-                                });
-                                //cols
-                                colsTmpl.forEach(function(col) {
-                                    trs += "<td>"+col+"</td>";
-                                });
-                                trs += "</tr>";
+                              //Campos options
+                              campos.forEach(function (campo) {
+//                                if (campo.id_tipo_campo !== "2") {
+                                  htmlOpts += "<option value='" + campo.id + "'>" + campo.nombre + "</option>\n";
+//                                }
+                              });
+                              paramLayout = paramLayout.replace("?options", htmlOpts);
+
+                              $("#reglasSectionModal").append(paramLayout);
+                              var para
+                              expression.params.push({
+                                id: "regla_" + reglaIndex++,
+                                name: param
+                              });
                             });
 
-                            if(data.length > 0 && empleados.length > 0){
-                                if(table2)
-                                    table2.destroy();
+                            $(".selectParams").change(function (e) {
+                              var inputId = $(this).attr("id_campo");
+                              var campoId = $(this).val();
+                              if (campoId) {
+                                if (campoId.indexOf("empleado_") !== -1) {
+                                  $("#" + inputId).val(campoId.substring(9));
+                                  $("#" + inputId).prop('disabled', true);
+                                } else {
+                                  $("#" + inputId).val($("#campo_" + campoId + "_empleado_" + selectedEmpleado.id).val());
+                                  $("#" + inputId).prop('disabled', true);
+                                }
+                              } else {
+                                $("#" + inputId).val("");
+                                $("#" + inputId).prop('disabled', false);
+                              }
+                            });
 
-                                //Preview table
-                                $("#previewTableHR").html(ths);
-                                $("#previewTableBody").html(trs);
-                                table2 = $('#previewTable').DataTable({
-                                    "scrollY": 400,
-                                    "scrollX": true,
-                                    "bPaginate": false,
-                                    "language": {
-                                        "url": "/app/lang/Spanish.json"
-                                    }
-                                });
-                                $("#previewTable tbody tr").hover( function( e ) {
-                                    if ( $(this).hasClass('row_selected') ) {
-                                        $(this).removeClass('row_selected');
-                                    }
-                                    else {
-                                        table2.$('tr.row_selected').removeClass('row_selected');
-                                        $(this).addClass('row_selected');
-                                    }
-                                });
+                          } else {
+                            $.executeFetch({
+                              action: "/regla/sql",
+                              data: {
+                                db: regla.db,
+                                sql: regla.operacion
+                              },
+                              method: "POST",
+                              dataType: "json",
+                              success: function (data) {
+                                if (data.success) {
+                                  if (data.cols.length === 1 && data.rows.length === 1) {
+                                    var result = data.cols[0] + ":" + data.rows[0][0];
+                                    expression.value = data.rows[0][0];
+                                    var paramLayout = $("#expressionDisabledLayout").html();
+                                    paramLayout = paramLayout.replace("?campoLabel", expression.label + " " + data.cols[0]);
+                                    paramLayout = paramLayout.replace("?campoId", "regla_" + reglaIndex);
+                                    paramLayout = paramLayout.replace("?campoName", "regla_" + reglaIndex++);
+                                    paramLayout = paramLayout.replace("?campoValue", expression.value);
+                                    $("#reglasSectionModal").append(paramLayout);
+                                  } else if (data.cols.length === 1 && data.rows.length === 0) {
+                                    showModal = false;
+                                    $('#paramsModal').modal('hide');
+                                    $.showMsg("error", "El sql no ha regresado resultados.");
+                                  } else {
+                                    showModal = false;
+                                    $('#paramsModal').modal('hide');
+                                    $.showMsg("error", "El sql debe regresar un solo resultado.");
+                                  }
+                                } else {
+                                  showModal = false;
+                                  $('#paramsModal').modal('hide');
+                                  $.showMsg("error", data.message);
+                                }
+                              },
+                              errorMsg: "Ocurrió un error al obtener ejecutar el sql."
+                            });
+                          }
+                        } else if (expression.type == "8") {
 
+                          var faltas = 0;
+                          var asistencias = 0;
+//                          var retardos = 0;
+                          $(".periodo_"+selectedEmpleado.id).each(function () {
+                            var val = $(this).val();
+                            switch (val){
+                              case "A":{
+                                asistencias++;
+                                break;
+                              }
+                              case "I":{
+                                break;
+                              }
+                              case "V":{
+                                break;
+                              }
+                              case "F": default:{
+                                faltas++;
+                                break;
+                              }
                             }
 
-                        },
-                        errorMsg: "Ocurrió un error al obtener los campos."
-                    });
-                },
-                errorMsg: "Ocurrió un error al obtener los campos."
-            });
+                          });
+                          selectedEmpleado.faltas = faltas;
+                          selectedEmpleado.asistencias = asistencias;
+//                          selectedEmpleado.retardos = retardos;
+                        }
+                      });
+
+                      //Validar que los campos dinámicos de las expresiones contengan valores
+                      expressions.forEach(function (expression) {
+                        if (expression.type === 1 && expression.tipo_campo &&
+                            (expression.tipo_campo === "1" || expression.tipo_campo === "4")) {
+
+                          expression.value = $("#campo_" + expression.id_campo + "_empleado_" + selectedEmpleado.id).val();
+                          if (!(expression.value && expression.value != "undefined")) {
+                            missingValues += "<br/>" + expression.label;
+                            valid = false;
+                          }
+                        }
+                      });
+
+                      if (valid) {
+                        if (showModal) {
+                          $('#paramsModal').modal('show');
+                        } else {
+                          var operacion = "";
+                          expressions.forEach(function (expression) {
+//                            console.log(expression);
+//                            console.log(selectedEmpleado);
+                            if (expression.type == "1") {
+                              operacion += expression.value;
+                            } else if (expression.type == "8") {
+                              operacion += selectedEmpleado[expression.value];
+                            } else {
+                              operacion += expression.label;
+                            }
+                          });
+                          try {
+                            console.log(operacion);
+                            result = Parser.evaluate(operacion);
+                            $.showMsg("success", allCampos[selectedCampo].nombre + " - Resultado: " + result);
+                            $("#campo_" + selectedCampo + "_empleado_" + selectedEmpleado.id).val(result);
+                          } catch (ex) {
+                            $.showMsg("error", "Error al evaluar la operación.<br/>" + ex);
+                          }
+                        }
+                      } else {
+                        $.showMsg("error", "Por favor ingrese los siguientes valores en los campos:" + missingValues);
+                      }
+
+                    },
+                    errorMsg: "Ocurrió un error al obtener la regla."
+                  });
+
+                });
+
+              }
+            },
+            errorMsg: "Ocurrió un error al obtener los campos."
+          });
+        },
+        errorMsg: "Ocurrió un error al obtener los campos."
+      });
+    }
+
+    $("#calcularBT").click(function (e) {
+
+      $.showSpinner();
+
+      var operacion = "";
+      var regla;
+      var sql;
+      var expValue;
+      var missingValues = "";
+      var calculate = true;
+
+      expressions.forEach(function (expression) {
+
+        if (expression.type === 1 && expression.tipo_campo &&
+            (expression.tipo_campo === "1" || expression.tipo_campo === "4")) {
+          expression.value = $("#campo_" + expression.id_campo + "_empleado_" + selectedEmpleado.id).val();
         }
+
+//      console.log(expression);
+
+        if (expression.type === 2 && expression.params) {
+
+          regla = allReglas[expression.id_regla];
+          sql = regla.operacion;
+
+          for (var i = 0; i < expression.params.length; i++) {
+//            sql = sql.replace("?", $("#" + expression.params[i]).val());
+            sql = sql.replace("?"+expression.params[i].name, $("#"+expression.params[i].id).val());
+          }
+
+//          console.log(sql);
+
+          $.executeSyncFetch({
+            action: "/regla/sql",
+            data: {
+              db: regla.db,
+              sql: sql
+            },
+            method: "POST",
+            dataType: "json",
+            success: function (data) {
+              if (data.success) {
+                expValue = data.rows[0][0];
+              } else {
+                $.showMsg("error", data.message);
+              }
+            },
+            errorMsg: "Ocurrió un error al ejecutar el sql."
+          });
+
+        } else {
+          expValue = expression.value;
+        }
+
+        if (expValue) {
+          operacion += expValue;
+        } else {
+          calculate = false;
+          missingValues += "<br/>" + expression.label;
+        }
+
+      });
+
+      $.hideSpinner();
+
+      if (calculate) {
+        console.log("operacion: " + operacion);
+        try {
+          result = Parser.evaluate(operacion);
+          $('#paramsModal').modal('hide');
+          $.showMsg("success", allCampos[selectedCampo].nombre + " - Resultado: " + result);
+          $("#campo_" + selectedCampo + "_empleado_" + selectedEmpleado.id).val(result);
+        } catch (ex) {
+          $.showMsg("error", "Error al evaluar la operación.<br/>" + ex);
+        }
+      } else {
+        $('#paramsModal').modal('hide');
+        $.showMsg("error", "No se puede completar el cálculo de la regla, por favor ingrese los siguientes valores en los campos:" + missingValues);
+      }
 
     });
 
-    function reverse(s){
-        return s.split("").reverse().join("");
-    }
+  })
+  ;
 
-    function parseInteger(integer){
-        try{
-            return parseInt(integer);
-        }catch(e){
-            return false;
-        }
+  function reverse(s) {
+    return s.split("").reverse().join("");
+  }
+
+  function parseInteger(integer) {
+    try {
+      return parseInt(integer);
+    } catch (e) {
+      return false;
     }
+  }
 
 </script>
 
 <div class="row">
-    <div class="col-lg-12">
+  <div class="col-lg-12">
 
-        <section class="panel">
-            <header class="panel-heading" id="headerSection">
-                Nuevo Reporte
-            </header>
-            <div class="panel-body">
-                <div class="form">
-                    <form class="form-validate form-horizontal" id="reporte_form">
-                        <input type="hidden" id="id_reporte" name="id_reporte" value="<?php if($id){ echo $id; }else{ echo "0"; } ?>"/>
-                        <input type="hidden" id="id_plantilla" name="id_plantilla" value="<?php echo $id_plantilla; ?>"/>
-                        <input type="hidden" id="id_tipo_empleado" name="id_tipo_empleado" value="<?php echo $id_tipo_empleado; ?>"/>
-                        <div class="form-group">
-                            <label class="control-label col-lg-2">Nombre <span class="required">*</span></label>
-                            <div class="col-lg-5">
-                                <input class="form-control" id="nombre" name="nombre" minlength="5" type="text"/>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="control-label col-lg-2">Descripción</label>
-                            <div class="col-lg-5">
-                                <textarea class="form-control" id="descripcion" name="descripcion" rows="6"></textarea>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="control-label col-lg-2">Período</label>
-                            <div class="col-lg-2">
-                                <div class='input-group date'>
-                                    <input type='text' class="form-control" id="periodo" name="periodo"/>
+    <section class="panel">
+      <header class="panel-heading" id="headerSection">
+        Nuevo Reporte
+      </header>
+      <div class="panel-body">
+        <div class="form">
+          <form class="form-validate form-horizontal" id="reporte_form">
+            <input type="hidden" id="id_reporte" name="id_reporte" value="<?php if ($id) {
+              echo $id;
+            } else {
+              echo "0";
+            } ?>"/>
+            <input type="hidden" id="id_plantilla" name="id_plantilla" value="<?php echo $id_plantilla; ?>"/>
+            <input type="hidden" id="id_tipo_empleado" name="id_tipo_empleado"
+                   value="<?php echo $id_tipo_empleado; ?>"/>
+
+            <div class="form-group">
+              <label class="control-label col-lg-2">Nombre <span class="required">*</span></label>
+
+              <div class="col-lg-5">
+                <input class="form-control" id="nombre" name="nombre" minlength="5" type="text"/>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-lg-2">Descripción</label>
+
+              <div class="col-lg-5">
+                <textarea class="form-control" id="descripcion" name="descripcion" rows="6"></textarea>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-lg-2">Período</label>
+
+              <div class="col-lg-3">
+                <div class='input-group date'>
+                  <input type='text' class="form-control" id="periodo" name="periodo"/>
                                     <span class="input-group-addon">
                                         <span class="glyphicon glyphicon-calendar"></span>
                                     </span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <div class="col-lg-offset-2 col-lg-10">
-                                <button class="btn btn-primary" type="button" id="addReporteBT">Guardar</button>
-                                <a class="btn btn-default" href="/reportes?id=<?php echo $id_plantilla; ?>">Regresar</a>
-                            </div>
-                        </div>
-                    </form>
                 </div>
+              </div>
             </div>
-        </section>
+            <div class="form-group" id="festivosDiv">
+              <label class="control-label col-lg-2">Días Festivos:</label>
 
-        <section class="panel no-display" id="camposSection">
-            <header class="panel-heading">
-                Campos Disponibles
-                <a id="generarReporteBT" class="btn  btn-primary pull-right">
-                    Generar Reporte
-                </a>
-            </header>
-            <div class="panel-body">
-                <table id="mainTable" class="table table-bordered" cellspacing="0" width="100%">
-                    <thead>
-                    <tr>
-                        <th>Orden</th>
-                        <th>Activo</th>
-                        <th>Color</th>
-                        <th>Nombre</th>
-                        <th>Tipo</th>
-                        <th>Prefijo</th>
-                        <th>Sufijo</th>
-                        <th>Valor</th>
-                    </tr>
-                    </thead>
-                    <tbody id="mainTableBody"></tbody>
-                </table>
+              <div class="col-lg-3">
+                <div class='input-group date' id="festivosInpts">
+                  <div class="input-group dynamic-inpt">
+                    <input type='text' class="form-control" id="festivo_0"/>
+                                        <span class="input-group-addon">
+                                            <span class="glyphicon glyphicon-calendar"></span>
+                                        </span>
+                                        <span class="input-group-addon">
+                                            <i class="icon_sm icon_plus_alt"></i>
+                                        </span>
+                  </div>
+                </div>
+              </div>
             </div>
-        </section>
-
-        <section class="panel no-display" id="previewSection">
-            <header class="panel-heading">
-                <i class='icon_md icon_table'></i>
-                Vista Previa&nbsp;&nbsp;
-                <i class='icon_md icon_question_alt' id="previewHint"></i>
-            </header>
-            <div class="panel-body">
-                <table id="previewTable" class="table table-bordered" cellspacing="0">
-                    <thead id="previewTableHead">
-                        <tr id="previewTableHR"></tr>
-                    </thead>
-                    <tbody id="previewTableBody"></tbody>
-                </table>
+            <div class="form-group">
+              <div class="col-lg-offset-2 col-lg-10">
+                <button class="btn btn-primary" type="button" id="addReporteBT">Guardar</button>
+                <a class="btn btn-default" href="/reportes?id=<?php echo $id_plantilla; ?>">Regresar</a>
+              </div>
             </div>
-        </section>
+          </form>
+        </div>
+      </div>
+    </section>
 
-    </div>
+    <section class="panel no-display" id="camposSection">
+      <header class="panel-heading">
+        Campos Disponibles
+        <a id="generarReporteBT" class="btn  btn-primary pull-right">
+          Generar Reporte
+        </a>
+      </header>
+      <div class="panel-body">
+        <table id="mainTable" class="table table-bordered" cellspacing="0" width="100%">
+          <thead>
+          <tr>
+            <th>Orden</th>
+            <th>Activo</th>
+            <th>Color</th>
+            <th>Nombre</th>
+            <th>Tipo</th>
+            <th>Prefijo</th>
+            <th>Sufijo</th>
+            <th>Valor</th>
+          </tr>
+          </thead>
+          <tbody id="mainTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel no-display" id="previewSection">
+      <header class="panel-heading">
+        <i class='icon_md icon_table'></i>
+        Vista Previa&nbsp;&nbsp;
+        <i class='icon_md icon_question_alt' id="previewHint"></i>
+      </header>
+      <div class="panel-body">
+        <h4>Valores para todos los empleados:</h4>
+
+        <form role="form" id="paramsForm">
+
+        </form>
+      </div>
+      <div class="panel-body">
+        <table id="previewTable" class="table table-bordered" cellspacing="0">
+          <thead id="previewTableHead">
+          <tr id="previewTableHR"></tr>
+          </thead>
+          <tbody id="previewTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
 </div>
 
 <div id="expressionSelectLayout" class="hidden">
-    <div class="form-group">
-        <label class="control-label col-lg-4">?campoLabel</label>
-        <div class="col-lg-8" id="selectLayout">
-            <select class="form-control" id="?campoId" name="?campoName">
-                <option value="A">Asistencia</option>
-                <option value="F">Falta</option>
-                <option value="I">Incapacidad</option>
-                <option value="V">Vacaciones</option>
-            </select>
-        </div>
+  <div class="form-group">
+    <label class="control-label col-lg-4">?campoLabel</label>
+
+    <div class="col-lg-8" id="selectLayout">
+      <select class="form-control" id="?campoId">
+        <option value="A">Asistencia</option>
+        <option value="F">Falta</option>
+        <option value="I">Incapacidad</option>
+        <option value="V">Vacaciones</option>
+      </select>
     </div>
+  </div>
 </div>
 
 <div id="colorPickerLayout" class="hidden">
-    <div class="input-group colorPicker">
-        <span id="colorPreview" class="input-group-addon"><i></i></span>
-        <input type="text" id="?colorId" class="form-control" value="?colorValue"/>
-        <span class="input-group-addon"><i class="icon_sm icon_check_alt saveColor" color-id="?colorId"></i></span>
+  <div class="input-group colorPicker">
+    <span id="colorPreview" class="input-group-addon"><i></i></span>
+    <input type="text" id="?colorId" class="form-control" value="?colorValue"/>
+    <span class="input-group-addon"><i class="icon_sm icon_check_alt saveColor" color-id="?colorId"></i></span>
+  </div>
+</div>
+
+<div id="paramsContainerLayout" class="hidden">
+  <div class="form-group">
+    <div class="row">
+      <div class="col-md-12">
+        <label id="?paramsTittle"></label>
+      </div>
     </div>
+    <div class="row" id="?inputsContainer">
+
+    </div>
+  </div>
+</div>
+
+<div id="paramsTextLayout" class="hidden">
+  <div class="col-md-2">
+    <label id="?label"></label>
+    <input class="form-control" id="?inputId">
+  </div>
+</div>
+
+<div aria-hidden="true" aria-labelledby="myModalLabel" role="dialog" tabindex="-1" id="paramsModal" class="modal fade">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button aria-hidden="true" data-dismiss="modal" class="close" type="button">x</button>
+        <h4 class="modal-title">Parámetros</h4>
+      </div>
+      <div class="modal-body">
+        <span>Ingrese los siguientes parámetros para continuar:</span>
+
+        <div class="spacer-sm"></div>
+
+        <div class="form">
+          <form id="paramsForm" class="form-validate form-horizontal">
+
+            <!--                        <span>Campos:</span>-->
+            <!--                        <div id="camposSectionModal"></div>-->
+            <!--                        <div class="spacer-sm"></div>-->
+
+            <span>Parametros SQL:</span>
+
+            <div id="reglasSectionModal"></div>
+            <div class="spacer-md"></div>
+
+            <div class="form-group">
+              <div class="col-lg-offset-2 col-lg-10">
+                <button class="btn btn-info" type="button" id="calcularBT">Calcular</button>
+                <button class="btn btn-default" type="button" data-dismiss="modal">Cancelar</button>
+              </div>
+            </div>
+
+          </form>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="expressionEnabledLayout" class="hidden">
+  <div class="form-group">
+    <label class="control-label col-lg-4">?campoLabel</label>
+
+    <div class="col-lg-4">
+      <select class="form-control selectParams" id_campo="?campoId">?options</select>
+    </div>
+    <div class="col-lg-4">
+      <input class="form-control" id="?campoId" name="?campoName" type="text" onlyNums/>
+    </div>
+  </div>
+</div>
+
+<div id="expressionDisabledLayout" class="hidden">
+  <div class="form-group">
+    <label class="control-label col-lg-4">?campoLabel</label>
+
+    <div class="col-lg-8">
+      <input class="form-control " id="?campoId" name="?campoName" type="text" value="?campoValue" disabled/>
+    </div>
+  </div>
+</div>
+
+<div id="expressionSelectLayout" class="hidden">
+  <div class="form-group">
+    <label class="control-label col-lg-4">?campoLabel</label>
+
+    <div class="col-lg-8">
+      <select class="form-control" id="?campoId" name="?campoName">?options</select>
+    </div>
+  </div>
+</div>
+
+<div id="calendarLayout" class="hidden">
+  <div class="input-group dynamic-inpt">
+    <input type='text' class="form-control" id="?idFestivo"/>
+        <span class="input-group-addon">
+            <span class="glyphicon glyphicon-calendar"></span>
+        </span>
+        <span class="input-group-addon">
+            <i class="icon_sm icon_minus_alt" id="removeFestivo_?idFestivo"></i>
+        </span>
+  </div>
 </div>

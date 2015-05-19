@@ -8,7 +8,7 @@ class Empleado {
     protected $_id;
     protected $_id_tipo_empleado;
     protected $_id_unidad;
-    protected $_id_mitron;
+    protected $_id_mitrol;
     protected $_id_rh;
     protected $_tipo_empleado;
     protected $_unidad_negocio;
@@ -19,7 +19,6 @@ class Empleado {
     protected $_campana;
     protected $_jefe;
     protected $_sueldo_diario;
-    protected $_sueldo_quincenal;
 
 
     public function __construct(array $options = null) {
@@ -95,17 +94,17 @@ class Empleado {
     /**
      * @return mixed
      */
-    public function getIdMitron()
+    public function getIdMitrol()
     {
-        return $this->_id_mitron;
+        return $this->_id_mitrol;
     }
 
     /**
-     * @param mixed $id_mitron
+     * @param mixed $id_mitrol
      */
-    public function setIdMitron($id_mitron)
+    public function setIdMitrol($id_mitrol)
     {
-        $this->_id_mitron = $id_mitron;
+        $this->_id_mitrol = $id_mitrol;
     }
 
     /**
@@ -250,22 +249,6 @@ class Empleado {
     public function setSueldoDiario($sueldo_diario)
     {
         $this->_sueldo_diario = $sueldo_diario;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getSueldoQuincenal()
-    {
-        return $this->_sueldo_quincenal;
-    }
-
-    /**
-     * @param mixed $sueldo_quincenal
-     */
-    public function setSueldoQuincenal($sueldo_quincenal)
-    {
-        $this->_sueldo_quincenal = $sueldo_quincenal;
     }
 
 }

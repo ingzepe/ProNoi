@@ -61,6 +61,7 @@
             }
         });
 
+        var firstEmpleado;
         $.executeFetch({
             action: "/plantilla/fetch",
             data: {id_plantilla: $("#id_plantilla").val()},
@@ -75,6 +76,19 @@
                 }else{
                     $("#reglaBC").attr("href","/regla?id="+$("#id_regla").val()+"&id_plantilla="+data.id);
                 }
+                $.executeFetch({
+                    action: "/empleado/fetchAll",
+                    data: {id_tipo_empleado: data.id_tipo_empleado},
+                    method: "POST",
+                    dataType:"json",
+                    success: function(empleado){
+                        firstEmpleado = empleado[0];
+                        firstEmpleado.asistencias = 15;
+                        firstEmpleado.faltas = 0;
+                        firstEmpleado.retardos = 0;
+                    },
+                    errorMsg: "Ocurrió un error al obtener el empleado."
+                });
             },
             errorMsg: "Ocurrió un error al obtener la plantilla."
         });
@@ -147,6 +161,7 @@
         var sql = "";
         var sqlParts;
         var executeSQL = function(){
+            console.log(sql);
             $.executeFetch({
                 action: "/regla/sql",
                 data: {
@@ -160,7 +175,7 @@
                         if(data.cols.length === 1 && data.rows.length === 1 ){
                             $("#addReglaBT").prop('disabled', false);
                             $.showMsg("success", "El query es válido, resultado: <strong>"
-                            +data.cols[0]+":"+data.rows[0][0]+"</strong>");
+                            +data.cols[0]+": "+data.rows[0][0]+"</strong>");
                         }else if(data.cols.length === 1 && data.rows.length === 0 ){
                             $.showMsg("error", "El sql no ha regresado resultados.");
                         }else{
@@ -197,28 +212,44 @@
                         var params = new Array();
                         if(sql.indexOf("?") !== -1){
                             sqlParts = sql.split("?");
-                            for(var i=0; i<sqlParts.length; i++){
+                            for(var i=1; i<sqlParts.length; i++){
                                 var param = "";
-                                var equalFounded = false;
-                                var charFounded = false;
-                                for(j=sqlParts[i].length; j>0; j--){
-                                    var chhar = sqlParts[i].substring(j-1, j);
-                                    if(equalFounded){
-                                        if(chhar === " " && charFounded){
-                                            break;
-                                        }else if(chhar !== " "){
-                                            param += chhar;
-                                            charFounded = true;
-                                        }
+                                for(var j=0; j<sqlParts[i].length; j++){
+                                    var chhar = sqlParts[i].substring(j, j+1);
+                                    if(chhar === " " || chhar === "\n"){
+                                        params.push(param);
+                                        break;
+                                    }else{
+                                        param += chhar;
                                     }
-                                    if(chhar === "="){
-                                        equalFounded = true;
-                                    }
-                                }
-                                if(param !== ""){
-                                    params.push(reverse(param));
                                 }
                             }
+//                            for(var i=0; i<sqlParts.length; i++){
+//                                var param = "";
+//                                var equalFounded = false;
+//                                var charFounded = false;
+//                                for(j=sqlParts[i].length; j>0; j--){
+//                                    var chhar = sqlParts[i].substring(j-1, j);
+//                                    if(equalFounded){
+//                                        if(chhar === " " && charFounded){
+//                                            break;
+//                                        }else if(chhar !== " "){
+//                                            param += chhar;
+//                                            charFounded = true;
+//                                        }
+//                                    }
+//                                    if(chhar === "="){
+//                                        equalFounded = true;
+//                                    }else{
+//                                        param = "?";
+//                                        break;
+//                                    }
+//                                }
+//                                if(param !== ""){
+//                                    params.push(reverse(param));
+//                                }
+//                            }
+
                             var paramLayout = $("#paramsLayout").html();
                             var paramAux;
                             $("#paramsSection").html("");
@@ -246,10 +277,14 @@
 
         $("#executeSqlBT").click( function( e ){
             if($("#paramsForm").valid()){
-                sql = ""
-                var index = 0;
+//                sql = ""
+//                var index = 0;
+//                $(".params").each(function(){
+//                    sql += sqlParts[index++] + $(this).val();
+//                });
                 $(".params").each(function(){
-                    sql += sqlParts[index++] + $(this).val();
+                    var paramId = "?"+$(this).attr("id").substring(6);
+                    sql = sql.replace(paramId, $(this).val());
                 });
                 $('#sqlParams').modal('hide');
                 executeSQL();
@@ -273,7 +308,7 @@
             data: {id_plantilla: $("#id_plantilla").val()},
             success: function(data){
                 data.forEach(function(campo) {
-                    if(campo.id_tipo_campo !== "2" && !campo.id_repetir_campo){
+//                    if(campo.id_tipo_campo !== "2" && !campo.id_repetir_campo){
                         var canOperate = false;
                         if(campo.id_tipo_campo === "1"){
                             var opts = campo.valor.split("|");
@@ -291,14 +326,14 @@
                             }else{
                                 canOperate = false;
                             }
-                        }else if(campo.id_tipo_campo === "4"){
+                        }else if(campo.id_tipo_campo === "2" || campo.id_tipo_campo === "4"){
                             canOperate = true;
                         }
                         if(canOperate){
-                            $("#recursive_campo").append("<option value='"+campo.id+"'>"+campo.nombre+"</option>");
+                            $("#recursive_campo").append("<option id_campo='"+campo.id+"' value='"+campo.valor+"'>"+campo.nombre+"</option>");
                             allCampos[campo.id] = campo;
                         }
-                    }
+//                    }
                 });
             },
             errorMsg: "Ocurrió un error al obtener los campos."
@@ -313,7 +348,7 @@
             success: function(data){
                 data.forEach(function(regla) {
                     if(regla.id !== $("id_regla").val() && regla.id_tipo_regla === "1" && regla.id_salida && regla.id_salida === "1"){
-                        $("#recursive_regla").append("<option value='"+regla.id+"'>"+regla.nombre+"</option>");
+                        $("#recursive_regla").append("<option id_regla='"+regla.id+"' value='"+regla.valor+"'>"+regla.nombre+"</option>");
                         allReglas[regla.id] = regla;
                     }
                 });
@@ -341,6 +376,7 @@
         *   5 .
         *   6 (
         *   7 )
+        *   8 Empleado
         * */
          var appendExpression = function(expression){
             if(expressions.length > 0){
@@ -387,6 +423,24 @@
                 }else if(lastExpression.type === 7 && expression.type === 5){
                     //).
                     $.showMsg("error", "Operación incorrecta");
+                }else if(lastExpression.type === 1 && expression.type === 8){
+                    //campo-empleado
+                    $.showMsg("error", "Operación incorrecta");
+                }else if(lastExpression.type === 8 && expression.type === 1){
+                    //empleado-campo
+                    $.showMsg("error", "Operación incorrecta");
+                }else if(lastExpression.type === 2 && expression.type === 8){
+                    //regla-empleado
+                    $.showMsg("error", "Operación incorrecta");
+                }else if(lastExpression.type === 8 && expression.type === 2){
+                    //empleado-regla
+                    $.showMsg("error", "Operación incorrecta");
+                }else if(lastExpression.type === 3 && expression.type === 8){
+                    //número-empleado
+                    $.showMsg("error", "Operación incorrecta");
+                }else if(lastExpression.type === 8 && expression.type === 3){
+                    //empleado-número
+                    $.showMsg("error", "Operación incorrecta");
                 }else{
                     //append
                     expressions.push(expression);
@@ -400,6 +454,7 @@
 
         $("#recursive_campo").change(function( e ){
             var expression = {
+                id_campo: $(this).children(":selected").attr("id_campo"),
                 type: 1,
                 value: $(this).val(),
                 label: "<span class='campo-label'>"+$(this).find('option:selected').text()+"</span>"
@@ -410,9 +465,21 @@
 
         $("#recursive_regla").change(function( e ){
             var expression = {
+                id_regla: $(this).children(":selected").attr("id_regla"),
                 type: 2,
                 value: $(this).val(),
                 label: "<span class='regla-label'>"+$(this).find('option:selected').text()+"</span>"
+            }
+            $(this).val("");
+            appendExpression(expression);
+        });
+
+        $("#recursive_empleado").change(function( e ){
+            var expression = {
+//                id_regla: $(this).children(":selected").attr("id_regla"),
+                type: 8,
+                value: $(this).val(),
+                label: "<span class='empleado-label'>"+$(this).find('option:selected').text()+"</span>"
             }
             $(this).val("");
             appendExpression(expression);
@@ -444,9 +511,12 @@
             $("#camposSection").html("");
             $("#reglasSection").html("");
             expressions.forEach(function (expression){
+
                 if(expression.type == "1"){
                     var html;
-                    var campo = allCampos[expression.value];
+                    var campo = allCampos[expression.id_campo];
+                    expression.id = "campo_" + campoIndex;
+                    expression.tipo_campo = campo.id_tipo_campo;
                     if(campo.id_tipo_campo === "1"){
                         showModal = true;
                         html = "";
@@ -456,54 +526,69 @@
                         });
                         var paramLayout = $("#expressionSelectLayout").html();
                         paramLayout = paramLayout.replace("?campoLabel", expression.label);
-                        paramLayout = paramLayout.replace("?campoId", "regla_" + campoIndex);
-                        paramLayout = paramLayout.replace("?campoName", "regla_" + campoIndex++);
+                        paramLayout = paramLayout.replace("?campoId", expression.id);
+                        paramLayout = paramLayout.replace("?campoName", expression.id);
                         paramLayout = paramLayout.replace("?options", html);
                         $("#camposSection").append(paramLayout);
+                        campoIndex++;
                     }else if(campo.id_tipo_campo === "3"){
                         showModal = true;
                         var paramLayout = $("#expressionDisabledLayout").html();
                         paramLayout = paramLayout.replace("?campoLabel", expression.label);
-                        paramLayout = paramLayout.replace("?campoId", "regla_" + campoIndex);
-                        paramLayout = paramLayout.replace("?campoName", "regla_" + campoIndex++);
+                        paramLayout = paramLayout.replace("?campoId", expression.id);
+                        paramLayout = paramLayout.replace("?campoName", expression.id);
                         paramLayout = paramLayout.replace("?campoValue", campo.valor);
                         $("#camposSection").append(paramLayout);
-                    }else if(campo.id_tipo_campo === "4"){
+                        campoIndex++;
+                    }else if(campo.id_tipo_campo === "2" || campo.id_tipo_campo === "4"){
                         showModal = true;
                         var paramLayout = $("#expressionEnabledLayout").html();
                         paramLayout = paramLayout.replace("?campoLabel", expression.label);
-                        paramLayout = paramLayout.replace("?campoId", "regla_" + campoIndex);
-                        paramLayout = paramLayout.replace("?campoName", "regla_" + campoIndex++);
+                        paramLayout = paramLayout.replace("?campoId", expression.id);
+                        paramLayout = paramLayout.replace("?campoName", expression.id);
                         $("#camposSection").append(paramLayout);
+                        campoIndex++;
                     }
                 }else if(expression.type == "2"){
                     showModal = true;
                     var html = "";
-                    var regla = allReglas[expression.value];
+                    var regla = allReglas[expression.id_regla];
                     var sql = regla.operacion;
                     if(sql.indexOf("?") !== -1){
                         var params = new Array();
                         sqlParts = sql.split("?");
-                        for (var i = 0; i < sqlParts.length; i++) {
+//                        for (var i = 0; i < sqlParts.length; i++) {
+//                            var param = "";
+//                            var equalFounded = false;
+//                            var charFounded = false;
+//                            for (j = sqlParts[i].length; j > 0; j--) {
+//                                var chhar = sqlParts[i].substring(j - 1, j);
+//                                if (equalFounded) {
+//                                    if (chhar === " " && charFounded) {
+//                                        break;
+//                                    } else if (chhar !== " ") {
+//                                        param += chhar;
+//                                        charFounded = true;
+//                                    }
+//                                }
+//                                if (chhar === "=") {
+//                                    equalFounded = true;
+//                                }
+//                            }
+//                            if (param !== "") {
+//                                params.push(reverse(param));
+//                            }
+//                        }
+                        for(var i=1; i<sqlParts.length; i++){
                             var param = "";
-                            var equalFounded = false;
-                            var charFounded = false;
-                            for (j = sqlParts[i].length; j > 0; j--) {
-                                var chhar = sqlParts[i].substring(j - 1, j);
-                                if (equalFounded) {
-                                    if (chhar === " " && charFounded) {
-                                        break;
-                                    } else if (chhar !== " ") {
-                                        param += chhar;
-                                        charFounded = true;
-                                    }
+                            for(var j=0; j<sqlParts[i].length; j++){
+                                var chhar = sqlParts[i].substring(j, j+1);
+                                if(chhar === " " || chhar === "\n"){
+                                    params.push(param);
+                                    break;
+                                }else{
+                                    param += chhar;
                                 }
-                                if (chhar === "=") {
-                                    equalFounded = true;
-                                }
-                            }
-                            if (param !== "") {
-                                params.push(reverse(param));
                             }
                         }
                         expression.params = new Array();
@@ -528,11 +613,12 @@
                                 if(data.success){
                                     if(data.cols.length === 1 && data.rows.length === 1 ){
                                         var result = data.cols[0]+":"+data.rows[0][0];
+                                        expression.value = data.rows[0][0];
                                         var paramLayout = $("#expressionDisabledLayout").html();
                                         paramLayout = paramLayout.replace("?campoLabel", expression.label+" "+data.cols[0]);
                                         paramLayout = paramLayout.replace("?campoId", "regla_" + reglaIndex);
                                         paramLayout = paramLayout.replace("?campoName", "regla_" + reglaIndex++);
-                                        paramLayout = paramLayout.replace("?campoValue", data.rows[0][0]);
+                                        paramLayout = paramLayout.replace("?campoValue", expression.value);
                                         $("#reglasSection").append(paramLayout);
                                     }else if(data.cols.length === 1 && data.rows.length === 0 ){
                                         showModal = false;
@@ -552,6 +638,8 @@
                             errorMsg: "Ocurrió un error al obtener ejecutar el sql."
                         });
                     }
+                }else if(expression.type == "8"){
+//                    console.log(expression);
                 }
             });
 
@@ -560,11 +648,17 @@
             }else{
                 var operacion = "";
                 expressions.forEach(function (expression){
-                    operacion += expression.label;
+                    if(expression.type == "8"){
+                        operacion += firstEmpleado[expression.value];
+                    }else{
+                        operacion += expression.label;
+                    }
                 });
                 try{
+                    console.log(operacion);
                     result = Parser.evaluate(operacion);
                     $.showMsg("success", "Resultado: "+result);
+                    $("#addReglaBT").prop('disabled', false);
                 }catch(ex){
                     $.showMsg("error", "Error al evaluar la operación.<br/>"+ex);
                 }
@@ -597,18 +691,25 @@
 
             var operacion = "";
             var regla;
-            var sqlSplit;
             var sql;
             expressions.forEach(function (expression){
 
+                console.log(expression);
+
+                if(expression.type === 1 && expression.tipo_campo &&
+                    (expression.tipo_campo === "1" || expression.tipo_campo === "2" || expression.tipo_campo === "4")){
+                    expression.value = $("#"+expression.id).val();
+                }
+
                 if(expression.type === 2 && expression.params){
 
-                    regla = allReglas[expression.value];
-                    sql = "";
-                    sqlSplit = regla.operacion.split("?");
+                    regla = allReglas[expression.id_regla];
+                    sql = regla.operacion;
 
-                    for(var i=0; i<sqlSplit.length-1; i++){
-                        sql += sqlSplit[i] + $("#"+expression.params[i]).val();
+                    for(var i=0; i<expression.params.length; i++){
+//                        sql = sql.replace("?", $("#"+expression.params[i]).val());
+                        var paramId = "?"+$("#"+expression.params[i]).attr("id").substring(6);
+                        sql = sql.replace(paramId, $("#"+expression.params[i]).val());
                     }
 
                     console.log(sql);
@@ -631,7 +732,9 @@
                         errorMsg: "Ocurrió un error al ejecutar el sql."
                     });
 
-                }else{
+                }else if(expression.type === 8){
+                    operacion += firstEmpleado[expression.value];
+                }else {
                     operacion += expression.value;
                 }
             });
@@ -707,7 +810,7 @@
                                     <select class="form-control m-bot15" id="db" name="db">
                                         <option value="">Seleccionar</option>
                                         <option value="pronoi">PRONOI</option>
-                                        <option value="mitron">Mitrón</option>
+                                        <option value="mitrol">Mitrol</option>
                                     </select>
                                 </div>
                             </div>
@@ -736,14 +839,26 @@
                                 <label for="cname" class="control-label col-lg-2">Operación</label>
                                 <div class="col-lg-7">
                                     <div class="row">
-                                        <div class="col-lg-6">
+                                        <div class="col-lg-4">
                                             <select class="form-control m-bot15" id="recursive_campo" name="recursive_campo">
                                                 <option value="">Campo</option>
                                             </select>
                                         </div>
-                                        <div class="col-lg-6">
+                                        <div class="col-lg-4">
                                             <select class="form-control m-bot15" id="recursive_regla" name="recursive_regla">
                                                 <option value="">Regla de Negocio SQL</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-lg-4">
+                                            <select class="form-control m-bot15" id="recursive_empleado" name="recursive_empleado">
+                                                <option value="">Información de empleado</option>
+                                                <option value="id">Id Empleado Pronoi</option>
+                                                <option value="id_rh">Id Empleado RH</option>
+                                                <option value="id_mitrol">Id Empleado Mitrol</option>
+                                                <option value="sueldo_diario">Sueldo Diario</option>
+                                                <option value="asistencias">Asistencias en el período</option>
+                                                <option value="faltas">Faltas en el período</option>
+                                                <option value="retardos">Retardos en el período</option>
                                             </select>
                                         </div>
                                     </div>

@@ -147,4 +147,22 @@ class ReglaController extends AbstractActionController {
         return $response;
     }
 
+    public function empleadoAsistenciaAction() {
+        $this->layout( 'layout/json' );
+        $request = $this->getRequest();
+        $response = $this->getResponse();
+        $post_data = $request->getPost();
+        $id_empleado = $post_data['id_empleado'];
+        $inicio = $post_data['inicio'];
+        $fin = $post_data['fin'];
+//        $db = $this->params()->fromQuery('db');
+//        $query = $this->params()->fromQuery('sql');
+        if (!$result = $this->getReglaTable()->empleadoAsistencia($id_empleado, $inicio, $fin)) {
+            $response->setContent(\Zend\Json\Json::encode(array('status' => false)));
+        } else {
+            $response->setContent(\Zend\Json\Json::encode(array('status' => true, 'data' => $result)));
+        }
+        return $response;
+    }
+
 }

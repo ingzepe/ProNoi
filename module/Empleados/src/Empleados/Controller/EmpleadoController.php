@@ -117,4 +117,19 @@ class EmpleadoController extends AbstractActionController {
         return $response;
     }
 
+    public function fetchFirstAction() {
+        $this->layout( 'layout/json' );
+        $request = $this->getRequest();
+        $response = $this->getResponse();
+        $post_data = $request->getPost();
+        $id_tipo_empleado = $post_data['id_tipo_empleado'];
+        if (!$empleado = $this->getEmpleadoTable()->fetchFirst($id_tipo_empleado)) {
+            $response->setContent(\Zend\Json\Json::encode(array('status' => false)));
+        } else {
+            $empleado = \Zend\Json\Json::encode($empleado);
+            $response->setContent(\Zend\Json\Json::encode(array('status' => true, 'data' => $empleado)));
+        }
+        return $response;
+    }
+
 }

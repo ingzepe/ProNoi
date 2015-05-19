@@ -19,7 +19,7 @@ class EmpleadoTable extends AbstractTableGateway {
         $data = array(
             'id_tipo_empleado' => $empleado->getIdTipoEmpleado(),
             'id_unidad' => $empleado->getIdUnidad(),
-            'id_mitron' => $empleado->getIdMitron(),
+            'id_mitrol' => $empleado->getIdmitrol(),
             'id_rh' => $empleado->getIdRh(),
             'nombre' => $empleado->getNombre(),
             'fecha_ingreso' => $empleado->getFechaIngreso(),
@@ -63,7 +63,7 @@ class EmpleadoTable extends AbstractTableGateway {
                 'id' => $row["id"],
                 'id_tipo_empleado' => $row["id_tipo_empleado"],
                 'id_unidad' => $row["id_unidad"],
-                'id_mitron' => $row["id_mitron"],
+                'id_mitrol' => $row["id_mitrol"],
                 'id_rh' => $row["id_rh"],
                 'tipo_empleado' => $row["tipo_empleado"],
                 'unidad_negocio' => $row["unidad_negocio"],
@@ -73,7 +73,6 @@ class EmpleadoTable extends AbstractTableGateway {
                 'campana' => $row["campana"],
                 'jefe' => $row["jefe"],
                 'sueldo_diario' => $row["sueldo_diario"],
-                'sueldo_quincenal' => $row["sueldo_quincenal"],
             ));
             $entities[] = $entity->toArray();
         }
@@ -102,7 +101,7 @@ class EmpleadoTable extends AbstractTableGateway {
                 'id' => $row["id"],
                 'id_tipo_empleado' => $row["id_tipo_empleado"],
                 'id_unidad' => $row["id_unidad"],
-                'id_mitron' => $row["id_mitron"],
+                'id_mitrol' => $row["id_mitrol"],
                 'id_rh' => $row["id_rh"],
                 'nombre' => $row["nombre"],
                 'fecha_ingreso' => $row["fecha_ingreso"],
@@ -131,7 +130,7 @@ class EmpleadoTable extends AbstractTableGateway {
                 'id' => $row["id"],
                 'id_tipo_empleado' => $row["id_tipo_empleado"],
                 'id_unidad' => $row["id_unidad"],
-                'id_mitron' => $row["id_mitron"],
+                'id_mitrol' => $row["id_mitrol"],
                 'id_rh' => $row["id_rh"],
                 'nombre' => $row["nombre"],
                 'fecha_ingreso' => $row["fecha_ingreso"],

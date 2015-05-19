@@ -82,13 +82,13 @@ return array(
                                     array(
                                         'label' => 'Reglas de Negocio',
                                         'route' => 'reglas',
-                                        'class' => 'icon_calculator_alt',
+                                        'class' => 'icon_cogs',
                                         'id' => 'reglasBC',
                                         'pages' => array(
                                             array(
                                                 'label' => 'Nueva Regla de Negocio',
                                                 'route' => 'regla',
-                                                'class' => 'icon_calculator_alt',
+                                                'class' => 'icon_cog',
                                                 'id' => 'reglaBC'
                                             ),
                                         ),

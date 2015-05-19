@@ -144,6 +144,8 @@
                     $("#formato").val(data.id_formato);
                     $("#valor").val(data.valor);
                     $("#descripcion").val(data.descripcion);
+                    $("#orden").val(data.orden);
+                    $("#color").val(data.color);
 
                     $("#camposSection").show(500);
                 },
@@ -309,6 +311,8 @@
                         <input type="hidden" id="id_plantilla" name="id_plantilla" value="<?php echo $id_plantilla; ?>"/>
                         <input type="hidden" id="id_campo" name="id_campo" value="<?php if($id){ echo $id; }else{ echo "0"; } ?>"/>
                         <input type="hidden" id="cat_ids" name="cat_ids"/>
+                        <input type="hidden" id="orden" name="orden"/>
+                        <input type="hidden" id="color" name="color"/>
                         <div class="form-group ">
                             <label  class="control-label col-lg-2">Nombre <span class="required">*</span></label>
                             <div class="col-lg-5">
