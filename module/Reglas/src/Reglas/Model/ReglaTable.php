@@ -216,7 +216,9 @@ class ReglaTable extends AbstractTableGateway
               DATEPART(MONTH, Fecha) as mes,
               DATEPART(DAY, Fecha) as dia,
               MIN(Fecha) as min
-              from LogEstadosAgentes where idAgente = $id_empleado and Fecha between $inicio and $fin
+              from LogEstadosAgentes where idAgente = $id_empleado
+                  and Fecha between convert(datetime, $inicio, 120)
+                  and convert(datetime, $fin, 120)
               GROUP BY
               DATEPART(YEAR, Fecha),
               DATEPART(MONTH, Fecha),
