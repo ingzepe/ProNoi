@@ -6,15 +6,22 @@ use Zend\Db\Adapter\Adapter;
 use Zend\Db\TableGateway\AbstractTableGateway;
 use Zend\Db\Sql\Sql;
 use Zend\Db\Sql\Where;
+use Zend\Config\Reader\Ini;
 
 class ReglaTable extends AbstractTableGateway
 {
 
+  protected $config;
+  protected $environment;
   protected $table = 'tab_regla_negocio';
 
   public function __construct(Adapter $adapter)
   {
     $this->adapter = $adapter;
+    $reader = new Ini();
+    $this->config = $reader->fromFile('config/autoload/config.ini');
+    $this->environment = $this->config['environment'];
+    $this->config = $this->config[$this->environment];
   }
 
   public function save(Entity\Regla $regla)
@@ -151,13 +158,15 @@ class ReglaTable extends AbstractTableGateway
     error_reporting(0);
 
     if ($db == "mitrol") {
-      $server = "AIR-DELL";
-      $user = "dev";
-      $pass = "d3v";
+      $db = $this->config['mitrol']['db'];
+      $server = $this->config['mitrol']['server'];
+      $user = $this->config['mitrol']['user'];
+      $pass = $this->config['mitrol']['pass'];
     } else {
-      $server = "AIR-DELL";
-      $user = "dev";
-      $pass = "d3v";
+      $db = $this->config['pronoi']['db'];
+      $server = $this->config['pronoi']['server'];
+      $user = $this->config['pronoi']['user'];
+      $pass = $this->config['pronoi']['pass'];
     }
 
     $connection = odbc_connect("Driver={SQL Server Native Client 10.0};Server=$server;Database=$db;", $user, $pass);
@@ -194,24 +203,24 @@ class ReglaTable extends AbstractTableGateway
 
     error_reporting(0);
 
-    $db = "mitrol";
-    $server = "AIR-DELL";
-    $user = "dev";
-    $pass = "d3v";
+    $db = $this->config['mitrol']['db'];
+    $server = $this->config['mitrol']['server'];
+    $user = $this->config['mitrol']['user'];
+    $pass = $this->config['mitrol']['pass'];
 
     $inicio = "'".$inicio." 00:00:00'";
     $fin = "'".$fin." 23:59:59'";
 
     $query = "select
-              DATEPART(YEAR, date) as anio,
-              DATEPART(MONTH, date) as mes,
-              DATEPART(DAY, date) as dia,
-              MIN(date) as min
-              from log where id_operador = $id_empleado and date between $inicio and $fin
+              DATEPART(YEAR, Fecha) as anio,
+              DATEPART(MONTH, Fecha) as mes,
+              DATEPART(DAY, Fecha) as dia,
+              MIN(Fecha) as min
+              from LogEstadosAgentes where idAgente = $id_empleado and Fecha between $inicio and $fin
               GROUP BY
-              DATEPART(YEAR, date),
-              DATEPART(MONTH, date),
-              DATEPART(DAY, date)";
+              DATEPART(YEAR, Fecha),
+              DATEPART(MONTH, Fecha),
+              DATEPART(DAY, Fecha)";
 
     $connection = odbc_connect("Driver={SQL Server Native Client 10.0};Server=$server;Database=$db;", $user, $pass);
     $error = odbc_errormsg();

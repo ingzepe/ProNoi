@@ -50,8 +50,11 @@ class EmpleadoTable extends AbstractTableGateway {
             ->join('tab_unidad_negocio', 'tab_unidad_negocio.id = tab_tipo_empleado.id_unidad',
                 array('unidad_negocio' => 'nombre'));
 
-        $where = new  Where();
-        $where->equalTo('tab_empleado.id_tipo_empleado', $id_tipo_empleado) ;
+        $where = new Where();
+        $where->equalTo('tab_empleado.id_tipo_empleado', $id_tipo_empleado);
+        $select->where($where);
+        $where = new Where();
+        $where->in('tab_empleado.id_mitrol', [144,153,161,162,235,236,242,245,246,247,250,266,272,281,291,292,293]);
         $select->where($where);
 
         $statement = $sql->prepareStatementForSqlObject($select);
