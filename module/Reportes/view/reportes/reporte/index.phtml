@@ -8,9 +8,31 @@
 <script src="/js/jquery.number.js"></script>
 <script src="/assets/color-picker/js/bootstrap-colorpicker.js"></script>
 
+<script src="/js/jquery.dataTables.js"></script>
+<script src="/js/dataTables.fixedColumns.js"></script>
+
+<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
 
 <script type="text/javascript" charset="utf-8">
   $(document).ready(function () {
+
+    var TIPO_REGLA_SQL            = 1;
+    var TIPO_FREGLA_RECURSIVA     = 2;
+    var TIPO_REPETIR_CAMPO_FECHA  = 1;
+    var TIPO_REPETIR_CAMPO_VECES  = 2;
+    var CAMPO_ACTIVO              = 1;
+    var TIPO_CAMPO_CATALOGO       = 1;
+    var TIPO_CAMPO_REGLA          = 2;
+    var TIPO_CAMPO_VALOR          = 3;
+    var TIPO_CAMPO_DINAMICO       = 4;
+    var TIPO_EXP_CAMPO            = 1;
+    var TIPO_EXP_REGLA            = 2;
+    var TIPO_EXP_NUMERO           = 3;
+    var TIPO_EXP_OPERADOR         = 4;
+    var TIPO_EXP_PUNTO            = 5;
+    var TIPO_EXP_PARENT_IZQ       = 6;
+    var TIPO_EXP_PARENT_DER       = 7;
+    var TIPO_EXP_EMPLEADO         = 8;
 
     $("#reporte_form").validate({
       rules: {
@@ -68,7 +90,6 @@
 
     $('#periodo').on('input', function () {
       var val = $(this).val();
-      console.log(val);
       if (val) {
         $("#festivosDiv").show(500);
       } else {
@@ -113,7 +134,7 @@
         $("#plantillaBC").html(data.nombre);
         $("#plantillaBC").attr("href", "/plantilla?id=" + data.id);
         $("#reportesBC").attr("href", "/reportes?id=" + data.id);
-        if ($("#id_reporte").val() === "0") {
+        if ($("#id_reporte").val() == "0") {
           $("#reporteBC").attr("href", "/reporte?id_plantilla=" + data.id);
         } else {
           $("#reporteBC").attr("href", "/reporte?id=" + $("#id_reporte").val() + "&id_plantilla=" + data.id);
@@ -157,7 +178,7 @@
 //                    $("#previewSection").show(500);
         },
         successMsg: "Reporte guardada.",
-        errorMsg: "Ocurrió un error al guardar la reporte."
+        errorMsg: "Ocurrió un error al guardar el reporte."
       });
     });
 
@@ -180,7 +201,7 @@
           data.forEach(function (campo) {
 
             if (campo.id_repetir_campo) {
-              if (campo.id_repetir_campo === "1") {
+              if (campo.id_repetir_campo == TIPO_REPETIR_CAMPO_FECHA) {
                 campo.tipo_campo = "Repetir Fecha - " + campo.tipo_campo;
               } else {
                 campo.tipo_campo = "Repetir Veces - " + campo.tipo_campo;
@@ -188,16 +209,16 @@
             }
 
             var campoChecked = "";
-            if (campo.activo === "1") {
+            if (campo.activo == CAMPO_ACTIVO) {
               campoChecked = "checked";
             }
             var up = "";
-            if (parseInt(campo.orden) !== 1) {
-              up = "<i class='icon_sm arrow_up_alt upBT' id='up_" + campo.id + "' orden='" + campo.orden + "'></i> ";
+            if (parseInt(campo.orden) != 1) {
+              up = "<i class='icon-sm arrow_up_alt upBT' id='up_" + campo.id + "' orden='" + campo.orden + "'></i> ";
             }
             var down = "";
             if (parseInt(campo.orden) < data.length) {
-              down = "<i class='icon_sm arrow_down_alt downBT' id='down_" + campo.id + "' orden='" + campo.orden + "'></i> ";
+              down = "<i class='icon-sm arrow_down_alt downBT' id='down_" + campo.id + "' orden='" + campo.orden + "'></i> ";
             }
 
             var colorPicker = $("#colorPickerLayout").html().replaceAll("?colorId", "cp_" + campo.id).replace("?colorValue", campo.color);
@@ -298,8 +319,7 @@
           },
           method: "POST",
           dataType: "json",
-          success: function () {
-          },
+          success: function () {},
           successMsg: "Color guardado.",
           errorMsg: "Ocurrió un error al desactivar el campo."
         });
@@ -348,7 +368,7 @@
       });
     }
 
-    if (parseInt($("#id_reporte").val()) !== 0) {
+    if (parseInt($("#id_reporte").val()) != 0) {
       fetch();
       refreshTable();
       $("#camposSection").show(500);
@@ -356,8 +376,9 @@
 
     /******************************************** REPORTE ************************************************/
 
-    $("#generarReporteBT").click(function (e) {
-      refreshReporte();
+    $("#generarReporteBT1").click(function (e) {
+      refreshAllCamposSection();
+      $("#reporteTitle").html($("#nombre").val());
       $("#previewSection").show(500);
     });
 
@@ -366,6 +387,7 @@
     var table2;
     var colsTmpl;
     var expressions;
+    var allValores = new Array();
     var allCampos = new Array();
     var allReglas = new Array();
     var allEmpleados = new Array();
@@ -379,13 +401,168 @@
       data: {id_plantilla: $("#id_plantilla").val()},
       success: function (data) {
         data.forEach(function (regla) {
-//                    if(regla.id !== $("id_regla").val() && regla.id_tipo_regla === "1" && regla.id_salida && regla.id_salida === "1"){
+//                    if(regla.id != $("id_regla").val() && regla.id_tipo_regla == "1" && regla.id_salida && regla.id_salida == "1"){
           allReglas[regla.id] = regla;
 //                    }
         });
       },
       errorMsg: "Ocurrió un error al obtener los campos."
     });
+
+    var refreshAllCamposSection = function(){
+      $.executeFetch({
+        action: "/campo/fetchAll",
+        method: "POST",
+        dataType: "json",
+        data: {id_plantilla: $("#id_plantilla").val()},
+        success: function (campos) {
+          var contenido = "";
+          var rules = {};
+          var ruleMsgs = {};
+          //cols
+          $("#paramsAllForm").html("");
+          campos.forEach(function (campo) {
+            allCampos[campo.id] = campo;
+            var regla = allReglas[campo.id_regla_negocio];
+            var drawDOM= true;
+
+            if (campo.activo == CAMPO_ACTIVO) {
+              if (campo.id_tipo_campo == TIPO_CAMPO_DINAMICO) {
+                contenido = "<input type='text' class='form-control allDynamic' id='allCampo_" + campo.id + "' name='allCampo_" + campo.id + "'/>";
+              } else if (campo.id_tipo_campo == TIPO_CAMPO_CATALOGO) {
+                var opts = campo.valor.split("|");
+                var optsHtml = "";
+                optsHtml += "<option value=''>Seleccione una opción</option>";
+                for (var i = 0; i < opts.length; i++) {
+                  optsHtml += "<option value='" + opts[i] + "'>" + opts[i] + "</option>";
+                }
+                contenido = "<select class='form-control allDynamic' id='allCampo_" + campo.id + "' name='allCampo_" + campo.id + "'>" + optsHtml + "</select>";
+              } else if (campo.id_tipo_campo == TIPO_CAMPO_REGLA) {
+                contenido = "<div class='input-group'>"
+                + "<input type='text' class='form-control' id='allCampo_" + campo.id + "' name='allCampo_" + campo.id + "' readonly/>"
+                + "<span class='input-group-addon'><i class='icon-sm glyphicon glyphicon-list reglaAll' id_campo='" + campo.id
+                + "' id_regla='" + campo.id_regla_negocio + "' type='2'></i></span>"
+                + "</div>";
+
+                if(regla.id_tipo_regla == TIPO_REGLA_SQL && regla.operacion.indexOf("?") != -1){
+                  contenido +=  "<div id='allCampo_" + campo.id + "_validate'></div>";
+                  rules["allCampo_"+campo.id] = {required: true};
+                  ruleMsgs["allCampo_"+campo.id] = {required: "Debe asignar un campo a esta regla."};
+                }else{
+                  drawDOM = false;
+                }
+              }
+
+              if(drawDOM){
+                var allCamposLayout = $("#allCamposLayout").html();
+                allCamposLayout = allCamposLayout.replace("?campoLabel", campo.nombre);
+                allCamposLayout = allCamposLayout.replace("?input", contenido);
+                $("#paramsAllForm").append(allCamposLayout);
+              }
+
+            }
+          });
+          $("#paramsAllForm").append($("#generarLayout").html());
+
+          $(".allDynamic").focus(function (e) {
+            $.showMsg("warning", "Al ingresar un valor, el reporte se generará con todos los valores por default.");
+          });
+
+          /* Validate all campos */
+          $("#paramsAllForm").validate({
+            rules: rules,
+            messages: ruleMsgs,
+            errorPlacement: function (error, element) {
+              var name = $(element).attr("name");
+              error.appendTo($("#" + name + "_validate"));
+            }
+          });
+
+          $(".generarReporteBT2").click(function (e) {
+            if($("#paramsAllForm").valid()){
+              refreshReporte();
+            }
+          });
+
+          /* ALL REGLAS */
+          $(".reglaAll").click(function (e) {
+
+            var type = $(this).attr("type");
+            var id_campo = $(this).attr("id_campo");
+            var id_regla = $(this).attr("id_regla");
+
+            if(type == TIPO_CAMPO_REGLA){
+
+              $("#allReglasSectionModal").html("");
+              var html = "";
+              var regla = allReglas[id_regla];
+              var sql = regla.operacion;
+              if (sql.indexOf("?") != -1) {
+
+                var params = splitSQLParams(sql);
+
+                var reglaIndex = 0;
+                //console.log("params");
+                //console.log(params);
+                params.forEach(function (param) {
+                  var paramLayout = $("#expressionAllLayout").html();
+                  paramLayout = paramLayout.replace("?campoLabel", regla.nombre + ": " + param);
+                  paramLayout = paramLayout.replaceAll("?campoId", "regla_" + regla.id + "_param_" + param);
+
+                  var htmlOpts = "";
+
+                  //Empleado constants options
+                  htmlOpts += "<option type='8' value='id'>Id Empleado Pronoi</option>\n";
+                  htmlOpts += "<option type='8' value='id_rh'>Id Empleado RH</option>\n";
+                  htmlOpts += "<option type='8' value='id_mitrol'>Id Empleado Mitrol</option>\n";
+                  htmlOpts += "<option type='8' value='sueldo_diario'>Sueldo Diario</option>\n";
+                  htmlOpts += "<option type='8' value='asistencias'>Asistencias en el período</option>\n";
+                  htmlOpts += "<option type='8' value='faltas'>Faltas en el período</option>\n";
+                  htmlOpts += "<option type='8' value='retardos'>Retardos en el período</option>\n";
+
+                  //Campos options
+                  campos.forEach(function (campo) {
+                    htmlOpts += "<option type='1' value='" + campo.id + "' label='" + campo.nombre + "'>" + campo.nombre + "</option>\n";
+                  });
+
+                  paramLayout = paramLayout.replace("?options", htmlOpts);
+                  $("#allReglasSectionModal").append(paramLayout);
+
+                });
+
+                $('#allParamsModal').modal('show');
+
+                $("#guardarAllBT").unbind();
+                $("#guardarAllBT").click(function (e) {
+                  allValores[regla.id] = [];
+                  params.forEach(function (param) {
+                    var input = "#regla_" + regla.id + "_param_" + param;
+                    //console.log("input");
+                    //console.log(input);
+                    allValores[regla.id][param] = {
+                      type: $(input).children(":selected").attr("type"),
+                      label: $(input).children(":selected").attr("label"),
+                      val: $(input).val()
+                    };
+                    $('#allParamsModal').modal('hide');
+                  });
+                  $("#allCampo_"+id_campo).val("ASIGNADO");
+                  //console.log("allValores");
+                  //console.log(allValores);
+                });
+
+              }
+
+            }else{
+              //todo
+            }
+
+          });
+
+        },
+        errorMsg: "Ocurrió un error al obtener los campos."
+      });
+    };
 
     var refreshReporte = function () {
       colsTmpl = new Array();
@@ -400,10 +577,10 @@
           var contenido = "";
 
           //static
+          ths += "<th>Nombre</th>";
           ths += "<th>Id Empleado Pronoi</th>";
           ths += "<th>Id Empleado RH</th>";
           ths += "<th>Id Empleado Mitrol</th>";
-          ths += "<th>Nombre</th>";
           ths += "<th>Fecha Ingreso</th>";
           ths += "<th>Horario</th>";
           ths += "<th>Unidad de Negocio</th>";
@@ -450,38 +627,44 @@
           }
 
           //cols
+          var reglaOrden = 1;
           campos.forEach(function (campo) {
             allCampos[campo.id] = campo;
-            if (campo.activo === "1") {
-              if (campo.id_tipo_campo === "4") {
-                ths += "<th>" + campo.nombre + "<div style='width: 100%; height: 25px; background-color: " + campo.color + ";'></div></th>";
-                contenido = "<input type='text' class='form-control' id='campo_" + campo.id + "_empleado_?idEmpleado'/>";
-              } else if (campo.id_tipo_campo === "1") {
-                ths += "<th>" + campo.nombre + "<div style='width: 100%; height: 25px; background-color: " + campo.color + ";'></div></th>";
+            if (campo.activo == CAMPO_ACTIVO) {
+              if (campo.id_tipo_campo == TIPO_CAMPO_DINAMICO) {
+                var valSetted = $("#allCampo_"+campo.id).val();
+                ths += "<th>" + campo.nombre + "<div style='width: 90%; height: 25px; background-color: " + campo.color + ";'></div></th>";
+                contenido = "<input type='text' class='form-control' id='campo_" + campo.id + "_empleado_?idEmpleado' value='"+valSetted+"'/>";
+              } else if (campo.id_tipo_campo == TIPO_CAMPO_CATALOGO) {
+                var valSetted = $("#allCampo_"+campo.id).val();
+                ths += "<th>" + campo.nombre + "<div style='width: 90%; height: 25px; background-color: " + campo.color + ";'></div></th>";
                 var opts = campo.valor.split("|");
                 var optsHtml = "";
                 for (var i = 0; i < opts.length; i++) {
                   optsHtml += "<option value='" + opts[i] + "'>" + opts[i] + "</option>";
                 }
-                contenido = "<select class='form-control' id='campo_" + campo.id + "_empleado_?idEmpleado'>" + optsHtml + "</select>";
-              } else if (campo.id_tipo_campo === "2") {
-                ths += "<th style='width: 180px !important;'>" + campo.nombre + "<div style='width: 100%; height: 25px; background-color: " + campo.color + ";'></div></th>";
+                contenido = "<select class='form-control' id='campo_" + campo.id + "_empleado_?idEmpleado' value='"+valSetted+"'>" + optsHtml + "</select>";
+              } else if (campo.id_tipo_campo == TIPO_CAMPO_REGLA) {
+                ths += "<th style='width: 180px !important;'>" + campo.nombre + "<div style='width: 90%; height: 25px; background-color: " + campo.color + ";'></div></th>";
                 contenido = "<div class='input-group' style='width: 200px;'>" +
-                "<input type='text' class='form-control' id='campo_" + campo.id + "_empleado_?idEmpleado' disabled/>" +
-                "<span class='input-group-addon'><i class='icon_sm icon_cog regla' id_campo='" + campo.id
-                + "' id_empleado='?idEmpleado' id_regla='" + campo.id_regla_negocio + "'></i></span></div>";
+                "<input type='text' class='form-control' id='campo_" + campo.id + "_empleado_?idEmpleado' readonly/>" +
+                "<span class='input-group-addon'><i class='icon-sm icon_cog regla' id_campo='" + campo.id
+                + "' id_empleado='?idEmpleado' id_regla='" + campo.id_regla_negocio + "' orden='"+(reglaOrden++)+"'></i></span></div>";
               } else {
-                ths += "<th>" + campo.nombre + "<div style='width: 100%; height: 25px; background-color: " + campo.color + ";'></div></th>";
+                ths += "<th>" + campo.nombre + "<div style='width: 90%; height: 25px; background-color: " + campo.color + ";'></div></th>";
 //                                contenido = campo.prefijo+campo.valor+campo.sufijo;
-                contenido = "<input type='text' class='form-control' id='campo_" + campo.id + "_empleado_?idEmpleado' value='" + campo.valor + "' disabled/>";
+                contenido = "<input type='text' class='form-control' id='campo_" + campo.id + "_empleado_?idEmpleado' value='" + campo.valor + "' readonly/>";
               }
               colsTmpl.push(contenido);
             }
           });
 
+          //Calcular todos los campos
+          ths += "<th>Calcular Todo</th>";
+
           var tableWidth = (11 + periodos.length + colsTmpl.length) * 200;
           $("#previewTable").attr("width", tableWidth + "px");
-          $.showSpinner();
+
           $.executeSyncFetch({
             action: "/empleado/fetchAll",
             method: "POST",
@@ -489,15 +672,17 @@
             data: {id_tipo_empleado: $("#id_tipo_empleado").val()},
             success: function (empleados) {
               var trs = "";
+              var totalEmpleados = empleados.length;
 //              empleados.forEach(function (empleado) {
               for(var i=0; i<2; i++){
+
                 var empleado = empleados[i];
                 //static
                 trs += "<tr>";
+                trs += "<td><i class='icon-sm glyphicon glyphicon-ok-sign icon-pending ok_"+empleado.id+"'></i>&nbsp;" + empleado.nombre + "</td>";
                 trs += "<td>" + empleado.id + "</td>";
                 trs += "<td>" + empleado.id_rh + "</td>";
                 trs += "<td>" + empleado.id_mitrol + "</td>";
-                trs += "<td>" + empleado.nombre + "</td>";
                 trs += "<td>" + empleado.fecha_ingreso + "</td>";
                 trs += "<td>" + empleado.horario + "</td>";
                 trs += "<td>" + empleado.unidad_negocio + "</td>";
@@ -539,8 +724,6 @@
                   errorMsg: "Ocurrió un error al obtener la asistencia de " + empleado.nombre
                 });
 
-//                console.log(empleado.asistencias);
-
                 //periodo
                 var selectLayout;
                 periodos.forEach(function (periodo) {
@@ -548,11 +731,12 @@
                   var dateIndex = periodo.value.getFullYear() + "-" + (periodo.value.getMonth()+1) + "-" + periodo.value.getDate();
 
                   if(empleado.asistencias[dateIndex]){
-                    selectLayout = "<select class='form-control periodo' id='periodo_"+periodo.id + "_empleado_" + empleado.id+"' value='A'>";
+                    selectLayout = "<select class='form-control periodo' id='periodo_"+periodo.id + "_empleado_" + empleado.id + "' value='A'>";
                     selectLayout += "<option value='A'>Asistencia</option>";
                   }else{
                     selectLayout = "<select class='form-control periodo_" + empleado.id+"' id='periodo_"+periodo.id + "_empleado_" + empleado.id+"'>";
                     selectLayout += "<option value='F'>Falta</option>";
+                    selectLayout += "<option value='D'>Descanso</option>";
                     selectLayout += "<option value='I'>Incapacidad</option>";
                     selectLayout += "<option value='V'>Vacaciones</option>";
                   }
@@ -561,13 +745,19 @@
 
                   trs += "<td>" + selectLayout + "</td>";
                 });
+
                 //cols
                 colsTmpl.forEach(function (col) {
                   trs += "<td>" + col.replaceAll("?idEmpleado", empleado.id) + "</td>";
                 });
+
+                //Calcular todos los campos
+                trs += "<td class='text-center'><i class='icon-md icon_cog calcTodo' id_empleado='" + empleado.id + "'></i></td>";
+
                 trs += "</tr>";
 
                 allEmpleados[empleado.id] = empleado;
+
 //              });
               }
 
@@ -586,39 +776,77 @@
                     "url": "/app/lang/Spanish.json"
                   }
                 });
-                $("#previewTable tbody tr").hover(function (e) {
-                  if ($(this).hasClass('row_selected')) {
-                    $(this).removeClass('row_selected');
-                  }
-                  else {
-                    table2.$('tr.row_selected').removeClass('row_selected');
-                    $(this).addClass('row_selected');
-                  }
+                new $.fn.dataTable.FixedColumns( table2, {
+                  leftColumns: 1
+                } );
+
+                //******** Click on calcular ALL REGLAS ************
+                $(".calcTodo").click(function (e) {
+                  var id_empleado = $(this).attr("id_empleado");
+                  var reglas = new Array();
+
+                  $(".regla").each(function() {
+                    var id_campo = $(this).attr("id_campo");
+                    var id_regla = $(this).attr("id_regla");
+                    var orden = $(this).attr("orden");
+                    var id_empleado_regla = $(this).attr("id_empleado");
+                    if(id_empleado == id_empleado_regla){
+                      var regla = {
+                        orden: orden,
+                        id_campo: id_campo,
+                        id_regla: id_regla,
+                        id_empleado: id_empleado
+                      }
+                      reglas.push(regla);
+                    }
+                  });
+
+                  reglas.sort(sortBy("orden"));
+
+                  var nextRegla = true;
+                  $.showSpinner();
+                  setTimeout(function() {
+                    reglas.forEach(function (regla) {
+                      console.log(regla);
+                      if(nextRegla){
+                        nextRegla =calcularRegla(regla.id_campo, regla.id_regla, regla.id_empleado);
+                      }
+                    });
+                    $.hideSpinner();
+                    if(nextRegla){
+                      $(".ok_"+id_empleado).removeClass('icon-pending').addClass('icon-ready');
+                    }else{
+                      $(".ok_"+id_empleado).removeClass('icon-ready').addClass('icon-pending');
+                    }
+                  }, 1000);
                 });
 
                 //******** Click on calcular REGLA ************
                 $(".regla").click(function (e) {
-
                   var id_campo = $(this).attr("id_campo");
-                  var id_empleado = $(this).attr("id_empleado");
                   var id_regla = $(this).attr("id_regla");
+                  var id_empleado = $(this).attr("id_empleado");
+                  calcularRegla(id_campo, id_regla, id_empleado);
+                });
+
+                var calcularRegla = function(id_campo, id_regla, id_empleado){
+
+                  var nextRegla = true;
                   selectedCampo = id_campo;
                   selectedEmpleado = allEmpleados[id_empleado];
-//                                    console.log(id_campo + " " + id_empleado);
 
-                  $.executeFetch({
+                  $.executeSyncFetch({
                     action: "/regla/fetch",
                     data: {id_regla: id_regla},
                     method: "POST",
                     dataType: "json",
                     success: function (data) {
-//                      console.log(data);
 
-                      if(data.id_tipo_regla === "1"){
+                      if(data.id_tipo_regla == TIPO_REGLA_SQL){
                         expressions = new Array();
                         var sqlExpression = {
                           id_regla: data.id,
-                          type: 2,
+                          type: TIPO_EXP_REGLA,
                           label: data.nombre
                         }
                         expressions.push(sqlExpression);
@@ -626,153 +854,27 @@
                         expressions = JSON.parse(data.operacion);
                       }
 
-//                      console.log(expressions);
-
-                      var showModal = false;
                       var valid = true;
                       var missingValues = "";
                       var campoIndex = 0;
-                      var reglaIndex = 0;
 
-                      $("#reglasSectionModal").html("");
-
-                      /*
-                       * TYPES:
-                       *   1 Campo
-                       *   2 Regla de Negocio
-                       *   3 Números
-                       *   4 + - * /
-                       *   5 .
-                       *   6 (
-                       *   7 )
-                       *   8 Empleado
-                       * */
+                      //Calcular asistencias para cada empleado
                       expressions.forEach(function (expression) {
-                        if (expression.type == "1") {
-                          var html;
-                          var campo = allCampos[expression.id_campo];
-                          expression.id = "campo_" + campoIndex;
-                          expression.tipo_campo = campo.id_tipo_campo;
-                          expression.value = $("#campo_" + expression.id_campo + "_empleado_" + selectedEmpleado.id).val();
-                        } else if (expression.type == "2") {
-                          showModal = true;
-                          var html = "";
-                          var regla = allReglas[expression.id_regla];
-                          var sql = regla.operacion;
-                          if (sql.indexOf("?") !== -1) {
-
-                            var params = new Array();
-                            var sqlParts = sql.split("?");
-                            for(var i=1; i<sqlParts.length; i++){
-                              var param = "";
-                              for(var j=0; j<sqlParts[i].length; j++){
-                                var chhar = sqlParts[i].substring(j, j+1);
-                                if(chhar === " " || chhar === "\n"){
-                                  params.push(param);
-                                  break;
-                                }else{
-                                  param += chhar;
-                                }
-                              }
-                            }
-
-                            expression.params = new Array();
-                            params.forEach(function (param) {
-                              var paramLayout = $("#expressionEnabledLayout").html();
-                              paramLayout = paramLayout.replace("?campoLabel", expression.label + " " + param);
-                              paramLayout = paramLayout.replaceAll("?campoId", "regla_" + reglaIndex);
-                              paramLayout = paramLayout.replace("?campoName", "regla_" + reglaIndex);
-
-                              var htmlOpts = "";
-                              htmlOpts += "<option value=''>Manual</option>";
-
-                              //Empleado constants options
-                              htmlOpts += "<option value='empleado_" + selectedEmpleado.id + "'>Id Empleado Pronoi</option>\n";
-                              htmlOpts += "<option value='empleado_" + selectedEmpleado.id_rh + "'>Id Empleado RH</option>\n";
-                              htmlOpts += "<option value='empleado_" + selectedEmpleado.id_mitrol + "'>Id Empleado Mitrol</option>\n";
-                              htmlOpts += "<option value='empleado_" + selectedEmpleado.sueldo_diario + "'>Sueldo Diario</option>\n";
-
-                              //Campos options
-                              campos.forEach(function (campo) {
-//                                if (campo.id_tipo_campo !== "2") {
-                                  htmlOpts += "<option value='" + campo.id + "'>" + campo.nombre + "</option>\n";
-//                                }
-                              });
-                              paramLayout = paramLayout.replace("?options", htmlOpts);
-
-                              $("#reglasSectionModal").append(paramLayout);
-                              var para
-                              expression.params.push({
-                                id: "regla_" + reglaIndex++,
-                                name: param
-                              });
-                            });
-
-                            $(".selectParams").change(function (e) {
-                              var inputId = $(this).attr("id_campo");
-                              var campoId = $(this).val();
-                              if (campoId) {
-                                if (campoId.indexOf("empleado_") !== -1) {
-                                  $("#" + inputId).val(campoId.substring(9));
-                                  $("#" + inputId).prop('disabled', true);
-                                } else {
-                                  $("#" + inputId).val($("#campo_" + campoId + "_empleado_" + selectedEmpleado.id).val());
-                                  $("#" + inputId).prop('disabled', true);
-                                }
-                              } else {
-                                $("#" + inputId).val("");
-                                $("#" + inputId).prop('disabled', false);
-                              }
-                            });
-
-                          } else {
-                            $.executeFetch({
-                              action: "/regla/sql",
-                              data: {
-                                db: regla.db,
-                                sql: regla.operacion
-                              },
-                              method: "POST",
-                              dataType: "json",
-                              success: function (data) {
-                                if (data.success) {
-                                  if (data.cols.length === 1 && data.rows.length === 1) {
-                                    var result = data.cols[0] + ":" + data.rows[0][0];
-                                    expression.value = data.rows[0][0];
-                                    var paramLayout = $("#expressionDisabledLayout").html();
-                                    paramLayout = paramLayout.replace("?campoLabel", expression.label + " " + data.cols[0]);
-                                    paramLayout = paramLayout.replace("?campoId", "regla_" + reglaIndex);
-                                    paramLayout = paramLayout.replace("?campoName", "regla_" + reglaIndex++);
-                                    paramLayout = paramLayout.replace("?campoValue", expression.value);
-                                    $("#reglasSectionModal").append(paramLayout);
-                                  } else if (data.cols.length === 1 && data.rows.length === 0) {
-                                    showModal = false;
-                                    $('#paramsModal').modal('hide');
-                                    $.showMsg("error", "El sql no ha regresado resultados.");
-                                  } else {
-                                    showModal = false;
-                                    $('#paramsModal').modal('hide');
-                                    $.showMsg("error", "El sql debe regresar un solo resultado.");
-                                  }
-                                } else {
-                                  showModal = false;
-                                  $('#paramsModal').modal('hide');
-                                  $.showMsg("error", data.message);
-                                }
-                              },
-                              errorMsg: "Ocurrió un error al obtener ejecutar el sql."
-                            });
-                          }
-                        } else if (expression.type == "8") {
+                         if (expression.type == TIPO_EXP_EMPLEADO) {
 
                           var faltas = 0;
                           var asistencias = 0;
+                          var descansos = 0;
 //                          var retardos = 0;
                           $(".periodo_"+selectedEmpleado.id).each(function () {
                             var val = $(this).val();
                             switch (val){
                               case "A":{
                                 asistencias++;
+                                break;
+                              }
+                              case "D":{
+                                descansos++;
                                 break;
                               }
                               case "I":{
@@ -786,61 +888,123 @@
                                 break;
                               }
                             }
-
                           });
                           selectedEmpleado.faltas = faltas;
                           selectedEmpleado.asistencias = asistencias;
+                          selectedEmpleado.descansos = descansos;
 //                          selectedEmpleado.retardos = retardos;
                         }
                       });
 
-                      //Validar que los campos dinámicos de las expresiones contengan valores
+                      $("#reglasSectionModal").html("");
+
                       expressions.forEach(function (expression) {
-                        if (expression.type === 1 && expression.tipo_campo &&
-                            (expression.tipo_campo === "1" || expression.tipo_campo === "4")) {
+                        if (expression.type == TIPO_EXP_CAMPO) {
+
+                          var campo = allCampos[expression.id_campo];
+                          expression.id = "campo_" + campoIndex;
+                          expression.tipo_campo = campo.id_tipo_campo;
+                          expression.value = $("#campo_" + expression.id_campo + "_empleado_" + selectedEmpleado.id).val();
+                        } else if (expression.type == TIPO_EXP_REGLA) {
+
+                          var regla = allReglas[expression.id_regla];
+                          var sql = regla.operacion;
+
+                          if (sql.indexOf("?") != -1) {
+                            var params = splitSQLParams(sql);
+                            for (var i = 0; i < params.length; i++) {
+                              //console.log(allValores);
+                              //console.log(regla.id + " " + params[i]);
+                              var reglaVal = allValores[regla.id][params[i]];
+                              if(reglaVal.type == TIPO_EXP_EMPLEADO){
+                                sql = sql.replaceAll("?"+params[i], selectedEmpleado[reglaVal.val]);
+                              }else{
+                                var val = $("#campo_" + reglaVal.val + "_empleado_" + selectedEmpleado.id).val();
+                                if(val && val != "undefined"){
+                                  sql = sql.replaceAll("?"+params[i], val);
+                                }else{
+                                  valid = false;
+                                  missingValues += "<br/>" + reglaVal.label;
+                                }
+                              }
+                            }
+                          }
+
+                          if(valid){
+                            //console.log(sql);
+                            $.executeSyncFetch({
+                              action: "/regla/sql",
+                              data: {
+                                db: regla.db,
+                                sql: sql
+                              },
+                              method: "POST",
+                              dataType: "json",
+                              success: function (data) {
+                                if (data.success) {
+                                  if (data.cols.length == 1 && data.rows.length == 1) {
+                                    expression.value = data.rows[0][0];
+                                  } else if (data.cols.length == 1 && data.rows.length == 0) {
+                                    $.showMsg("error", "El sql no ha regresado resultados.");
+                                  } else {
+                                    $.showMsg("error", "El sql debe regresar un solo resultado.");
+                                  }
+                                } else {
+                                  $.showMsg("error", data.message);
+                                }
+                              },
+                              errorMsg: "Ocurrió un error al obtener ejecutar el sql."
+                            });
+                          }
+
+                        }
+                      });
+
+                      //Validar que los campos dinámicos de las expresiones contengan valores
+                      //console.log(expressions);
+                      expressions.forEach(function (expression) {
+                        if (expression.type == TIPO_EXP_CAMPO && expression.tipo_campo &&
+                            (expression.tipo_campo == TIPO_CAMPO_CATALOGO || expression.tipo_campo == TIPO_CAMPO_DINAMICO)) {
 
                           expression.value = $("#campo_" + expression.id_campo + "_empleado_" + selectedEmpleado.id).val();
                           if (!(expression.value && expression.value != "undefined")) {
-                            missingValues += "<br/>" + expression.label;
                             valid = false;
+                            missingValues += "<br/>" + expression.label;
                           }
                         }
                       });
 
                       if (valid) {
-                        if (showModal) {
-                          $('#paramsModal').modal('show');
-                        } else {
-                          var operacion = "";
-                          expressions.forEach(function (expression) {
+                        var operacion = "";
+                        expressions.forEach(function (expression) {
 //                            console.log(expression);
 //                            console.log(selectedEmpleado);
-                            if (expression.type == "1") {
-                              operacion += expression.value;
-                            } else if (expression.type == "8") {
-                              operacion += selectedEmpleado[expression.value];
-                            } else {
-                              operacion += expression.label;
-                            }
-                          });
-                          try {
-                            console.log(operacion);
-                            result = Parser.evaluate(operacion);
-                            $.showMsg("success", allCampos[selectedCampo].nombre + " - Resultado: " + result);
-                            $("#campo_" + selectedCampo + "_empleado_" + selectedEmpleado.id).val(result);
-                          } catch (ex) {
-                            $.showMsg("error", "Error al evaluar la operación.<br/>" + ex);
+                          if (expression.type == TIPO_EXP_CAMPO || expression.type == TIPO_EXP_REGLA) {
+                            operacion += expression.value;
+                          } else if (expression.type == TIPO_EXP_EMPLEADO) {
+                            operacion += selectedEmpleado[expression.value];
+                          } else {
+                            operacion += expression.label;
                           }
+                        });
+                        try {
+                          console.log("Operación: " + operacion);
+                          result = Parser.evaluate(operacion);
+                          $.showMsg("success", allCampos[selectedCampo].nombre + " - Resultado: " + result);
+                          $("#campo_" + selectedCampo + "_empleado_" + selectedEmpleado.id).val(result);
+                        } catch (ex) {
+                          $.showMsg("error", "Error al evaluar la operación.<br/>" + ex);
                         }
                       } else {
+                        nextRegla = false;
                         $.showMsg("error", "Por favor ingrese los siguientes valores en los campos:" + missingValues);
                       }
 
                     },
                     errorMsg: "Ocurrió un error al obtener la regla."
                   });
-
-                });
+                  return nextRegla;
+                };//Calcula Regla
 
               }
             },
@@ -849,7 +1013,7 @@
         },
         errorMsg: "Ocurrió un error al obtener los campos."
       });
-    }
+    };
 
     $("#calcularBT").click(function (e) {
 
@@ -864,14 +1028,14 @@
 
       expressions.forEach(function (expression) {
 
-        if (expression.type === 1 && expression.tipo_campo &&
-            (expression.tipo_campo === "1" || expression.tipo_campo === "4")) {
+        if (expression.type == TIPO_EXP_CAMPO && expression.tipo_campo &&
+            (expression.tipo_campo == TIPO_CAMPO_CATALOGO || expression.tipo_campo == TIPO_CAMPO_DINAMICO)) {
           expression.value = $("#campo_" + expression.id_campo + "_empleado_" + selectedEmpleado.id).val();
         }
 
 //      console.log(expression);
 
-        if (expression.type === 2 && expression.params) {
+        if (expression.type == TIPO_EXP_REGLA && expression.params) {
 
           regla = allReglas[expression.id_regla];
           sql = regla.operacion;
@@ -890,6 +1054,7 @@
               sql: sql
             },
             method: "POST",
+            dataType: "json",
             dataType: "json",
             success: function (data) {
               if (data.success) {
@@ -917,7 +1082,7 @@
       $.hideSpinner();
 
       if (calculate) {
-        console.log("operacion: " + operacion);
+        console.log("Operación: " + operacion);
         try {
           result = Parser.evaluate(operacion);
           $('#paramsModal').modal('hide');
@@ -933,8 +1098,25 @@
 
     });
 
-  })
-  ;
+    var splitSQLParams = function(sql){
+      var params = new Array();
+      var sqlParts = sql.split("?");
+      for(var i=1; i<sqlParts.length; i++){
+        var param = "";
+        for(var j=0; j<sqlParts[i].length; j++){
+          var chhar = sqlParts[i].substring(j, j+1);
+          if(chhar == " " || chhar == "\n"){
+            params.push(param.replace(/(\r\n|\n|\r)/gm,""));
+            break;
+          }else{
+            param += chhar;
+          }
+        }
+      }
+      return params;
+    };
+
+  });
 
   function reverse(s) {
     return s.split("").reverse().join("");
@@ -945,6 +1127,18 @@
       return parseInt(integer);
     } catch (e) {
       return false;
+    }
+  }
+
+  function sortBy(property){
+    var sortOrder = 1;
+    if(property[0] === "-") {
+      sortOrder = -1;
+      property = property.substr(1);
+    }
+    return function (a,b) {
+      var result = (a[property] < b[property]) ? -1 : (a[property] > b[property]) ? 1 : 0;
+      return result * sortOrder;
     }
   }
 
@@ -1006,7 +1200,7 @@
                                             <span class="glyphicon glyphicon-calendar"></span>
                                         </span>
                                         <span class="input-group-addon">
-                                            <i class="icon_sm icon_plus_alt"></i>
+                                            <i class="icon-sm icon_plus_alt"></i>
                                         </span>
                   </div>
                 </div>
@@ -1026,8 +1220,8 @@
     <section class="panel no-display" id="camposSection">
       <header class="panel-heading">
         Campos Disponibles
-        <a id="generarReporteBT" class="btn  btn-primary pull-right">
-          Generar Reporte
+        <a href="javascript:void(0)" id="generarReporteBT1" class="btn  btn-primary pull-right">
+          <i class='icon-sm icon_cog'></i>Generar Reporte - Paso 1
         </a>
       </header>
       <div class="panel-body">
@@ -1051,15 +1245,12 @@
 
     <section class="panel no-display" id="previewSection">
       <header class="panel-heading">
-        <i class='icon_md icon_table'></i>
-        Vista Previa&nbsp;&nbsp;
-        <i class='icon_md icon_question_alt' id="previewHint"></i>
+        <i class='icon-md icon_table'></i>
+        <span id="reporteTitle"></span>
       </header>
       <div class="panel-body">
-        <h4>Valores para todos los empleados:</h4>
-
-        <form role="form" id="paramsForm">
-
+        <h5>Valores para todos los empleados:</h5>
+        <form role="form" class="form-horizontal form-validate" id="paramsAllForm">
         </form>
       </div>
       <div class="panel-body">
@@ -1083,6 +1274,7 @@
       <select class="form-control" id="?campoId">
         <option value="A">Asistencia</option>
         <option value="F">Falta</option>
+        <option value="D">Descanso</option>
         <option value="I">Incapacidad</option>
         <option value="V">Vacaciones</option>
       </select>
@@ -1094,7 +1286,7 @@
   <div class="input-group colorPicker">
     <span id="colorPreview" class="input-group-addon"><i></i></span>
     <input type="text" id="?colorId" class="form-control" value="?colorValue"/>
-    <span class="input-group-addon"><i class="icon_sm icon_check_alt saveColor" color-id="?colorId"></i></span>
+    <span class="input-group-addon"><i class="icon-sm icon_check_alt saveColor" color-id="?colorId"></i></span>
   </div>
 </div>
 
@@ -1176,7 +1368,7 @@
     <label class="control-label col-lg-4">?campoLabel</label>
 
     <div class="col-lg-8">
-      <input class="form-control " id="?campoId" name="?campoName" type="text" value="?campoValue" disabled/>
+      <input class="form-control " id="?campoId" name="?campoName" type="text" value="?campoValue" readonly/>
     </div>
   </div>
 </div>
@@ -1198,7 +1390,71 @@
             <span class="glyphicon glyphicon-calendar"></span>
         </span>
         <span class="input-group-addon">
-            <i class="icon_sm icon_minus_alt" id="removeFestivo_?idFestivo"></i>
+            <i class="icon-sm icon_minus_alt" id="removeFestivo_?idFestivo"></i>
         </span>
+  </div>
+</div>
+
+<div id="allCamposLayout" class="hidden">
+  <div class="form-group">
+    <label class="control-label col-lg-2">?campoLabel</label>
+    <div class="col-lg-2">
+      ?input
+    </div>
+  </div>
+</div>
+
+<div id="generarLayout" class="hidden">
+  <div class="form-group">
+    <label class="control-label col-lg-2">
+      &nbsp;
+    </label>
+    <div class="col-lg-2">
+      <button class="btn btn-primary generarReporteBT2" type="button">
+        <i class='icon-md icon_cog'></i>&nbsp;Generar Reporte - Paso 2
+      </button>
+    </div>
+  </div>
+</div>
+
+<div aria-hidden="true" aria-labelledby="myModalLabel" role="dialog" tabindex="-1" id="allParamsModal" class="modal fade">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button aria-hidden="true" data-dismiss="modal" class="close" type="button">x</button>
+        <h4 class="modal-title">Parámetros</h4>
+      </div>
+      <div class="modal-body">
+        <span>Ingrese los siguientes parámetros para continuar:</span>
+
+        <div class="spacer-sm"></div>
+
+        <div class="form">
+          <form id="allParamsForm" class="form-validate form-horizontal">
+            <span>Parametros SQL:</span>
+            <div id="allReglasSectionModal"></div>
+            <div class="spacer-md"></div>
+            <div class="form-group">
+              <div class="col-lg-offset-2 col-lg-10">
+                <button class="btn btn-info" type="button" id="guardarAllBT">Guardar</button>
+                <button class="btn btn-default" type="button" data-dismiss="modal">Cancelar</button>
+              </div>
+            </div>
+
+          </form>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="expressionAllLayout" class="hidden">
+  <div class="form-group">
+    <label class="control-label col-lg-5">?campoLabel</label>
+    <div class="col-lg-6">
+      <select class="form-control selectParams" id="?campoId">?options</select>
+    </div>
   </div>
 </div>
