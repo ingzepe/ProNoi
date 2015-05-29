@@ -1,5 +1,6 @@
 <link rel="stylesheet" href="/css/daterangepicker.css"/>
 <link rel="stylesheet" href="/assets/color-picker/css/bootstrap-colorpicker.css"/>
+<link rel="stylesheet" href="/css/dataTables.tableTools.css"/>
 
 <script src="/js/parser-eval.js"></script>
 <script type="text/javascript" src="/js/jquery.validate.min.js"></script>
@@ -10,6 +11,7 @@
 
 <script src="/js/jquery.dataTables.js"></script>
 <script src="/js/dataTables.fixedColumns.js"></script>
+<script src="/js/dataTables.tableTools.js"></script>
 
 <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
 
@@ -81,7 +83,6 @@
     $('#periodo').dateRangePicker({
       format: 'DD/MM/YYYY',
       separator: ' - ',
-      minDate: new Date(),
       setValue: function (dates) {
         $("#festivosDiv").show(500);
         this.value = dates;
@@ -97,14 +98,17 @@
       }
     });
 
+    //Festivos
     var festivosElements = new Array();
     var index = 0;
+//    var periodoDate = inputToDates(data.periodo);
     festivosElements[index++] = "festivo_0";
     $("#festivo_0").dateRangePicker({
       format: 'DD/MM/YYYY',
       separator: ' - ',
-      singleDatePicker: true,
-      minDate: new Date()
+      singleDate: true
+//      startDate: periodoDate.inicio,
+//      endDate: periodoDate.fin
     });
     $(".icon_plus_alt").click(function (ev) {
       var id = "festivo_" + index;
@@ -114,8 +118,9 @@
       $("#" + id).dateRangePicker({
         format: 'DD/MM/YYYY',
         separator: ' - ',
-        singleDatePicker: true,
-        minDate: new Date()
+        singleDate: true
+//        startDate: periodoDate.inicio,
+//        endDate: periodoDate.fin
       });
       $("#removeFestivo_" + id).click(function (ev) {
         $(this).parent().parent().remove();
@@ -150,7 +155,8 @@
         method: "POST",
         dataType: "json",
         success: function (data) {
-          $("#headerSection").html(data.nombre);
+          $(".headerSectionTitle").html(data.nombre);
+          $(".headerSectionId").html(data.id);
           $("#reporteBC").html(data.nombre);
           $("#reporteBC").attr("href", "/reportes?id=" + data.id);
           $("#nombre").val(data.nombre);
@@ -169,7 +175,8 @@
         dataType: "json",
         success: function (data) {
           $("#id_reporte").val(data.id);
-          $("#headerSection").html(data.nombre);
+          $(".headerSectionTitle").html(data.nombre);
+          $(".headerSectionId").html(data.id);
           $("#reporteBC").html(data.nombre);
           $("#reporteBC").attr("href", "/reporte?id=" + data.id);
           //refreshTable
@@ -177,7 +184,7 @@
           $("#camposSection").show(500);
 //                    $("#previewSection").show(500);
         },
-        successMsg: "Reporte guardada.",
+        successMsg: "Reporte guardado.",
         errorMsg: "Ocurrió un error al guardar el reporte."
       });
     });
@@ -371,7 +378,7 @@
     if (parseInt($("#id_reporte").val()) != 0) {
       fetch();
       refreshTable();
-      $("#camposSection").show(500);
+//      $("#camposSection").show(500);
     }
 
     /******************************************** REPORTE ************************************************/
@@ -380,6 +387,12 @@
       refreshAllCamposSection();
       $("#reporteTitle").html($("#nombre").val());
       $("#previewSection").show(500);
+    });
+
+    $("#recalcularBT").click(function (e) {
+      $("#contenidoReporteSection").hide(500);
+      $("#reporteInfoSection").show(500);
+      $("#camposSection").show(500);
     });
 
     var TOLERANCIA = 10;//10 mins de tolerancia
@@ -422,6 +435,9 @@
           //cols
           $("#paramsAllForm").html("");
           campos.forEach(function (campo) {
+
+            console.log(campo);
+
             allCampos[campo.id] = campo;
             var regla = allReglas[campo.id_regla_negocio];
             var drawDOM= true;
@@ -485,16 +501,14 @@
           });
 
           /* ALL REGLAS */
+          $(".reglaAll").unbind();
           $(".reglaAll").click(function (e) {
-
             var type = $(this).attr("type");
             var id_campo = $(this).attr("id_campo");
             var id_regla = $(this).attr("id_regla");
 
             if(type == TIPO_CAMPO_REGLA){
-
               $("#allReglasSectionModal").html("");
-              var html = "";
               var regla = allReglas[id_regla];
               var sql = regla.operacion;
               if (sql.indexOf("?") != -1) {
@@ -591,39 +605,19 @@
 
           //periodo
           var periodos = new Array();
-          var fechas = $("#periodo").val().split(" - ");
-          var inicio = fechas[0];
-          var fin = fechas[1];
-          inicio = inicio.split("/");
-          fin = fin.split("/");
+          var periodoDate = inputToDates($("#periodo").val());
 
-          var periodoJSON = {
-            inicio: {
-              dia: inicio[0],
-              mes: inicio[1],
-              anio: inicio[2]
-            },
-            fin: {
-              dia: fin[0],
-              mes: fin[1],
-              anio: fin[2]
-            }
-          };
-
-          inicio = new Date(periodoJSON.inicio.anio, parseInt(periodoJSON.inicio.mes) - 1, periodoJSON.inicio.dia);
-          fin = new Date(periodoJSON.fin.anio, parseInt(periodoJSON.fin.mes) - 1, periodoJSON.fin.dia);
-
-          while (inicio <= fin) {
-            var label = inicio.toLocaleString().split(" ");
+          while (periodoDate.inicio <= periodoDate.fin) {
+            var label = periodoDate.inicio.toLocaleString().split(" ");
             var periodo = {
               id: label[0].replaceAll("/", "_"),
               label: label[0],
-              value: new Date(inicio)
+              value: new Date(periodoDate.inicio)
             };
             periodos.push(periodo);
             ths += "<th>" + periodo.label + "</td>";
-            var newDate = inicio.setDate(inicio.getDate() + 1);
-            inicio = new Date(newDate);
+            var newDate = periodoDate.inicio.setDate(periodoDate.inicio.getDate() + 1);
+            periodoDate.inicio = new Date(newDate);
           }
 
           //cols
@@ -641,9 +635,10 @@
                 var opts = campo.valor.split("|");
                 var optsHtml = "";
                 for (var i = 0; i < opts.length; i++) {
-                  optsHtml += "<option value='" + opts[i] + "'>" + opts[i] + "</option>";
+                  var selected = opts[i] == valSetted ? "selected" : "";
+                  optsHtml += "<option value='" + opts[i] + "' " + selected + ">" + opts[i] + "</option>";
                 }
-                contenido = "<select class='form-control' id='campo_" + campo.id + "_empleado_?idEmpleado' value='"+valSetted+"'>" + optsHtml + "</select>";
+                contenido = "<select class='form-control' id='campo_" + campo.id + "_empleado_?idEmpleado'>" + optsHtml + "</select>";
               } else if (campo.id_tipo_campo == TIPO_CAMPO_REGLA) {
                 ths += "<th style='width: 180px !important;'>" + campo.nombre + "<div style='width: 90%; height: 25px; background-color: " + campo.color + ";'></div></th>";
                 contenido = "<div class='input-group' style='width: 200px;'>" +
@@ -699,8 +694,8 @@
                   dataType: "json",
                   data: {
                     id_empleado: empleado.id_mitrol,
-                    inicio: periodoJSON.inicio.anio + "-" + periodoJSON.inicio.mes + "-" + periodoJSON.inicio.dia,
-                    fin: periodoJSON.fin.anio + "-" + periodoJSON.fin.mes + "-" + periodoJSON.fin.dia
+                    inicio: periodoDate.periodoJSON.inicio.anio + "-" + periodoDate.periodoJSON.inicio.mes + "-" + periodoDate.periodoJSON.inicio.dia,
+                    fin: periodoDate.periodoJSON.fin.anio + "-" + periodoDate.periodoJSON.fin.mes + "-" + periodoDate.periodoJSON.fin.dia
                   },
                   success: function (data) {
                     empleado.asistencias = new Array();
@@ -779,11 +774,28 @@
                 new $.fn.dataTable.FixedColumns( table2, {
                   leftColumns: 1
                 } );
+                $(".calcAllEmpConfirmBT").show();
+
+                var calcsLeft = 0;
+                //******** Click on calcular ALL EMPLEADOS ALL REGLAS ************
+                $("#calcAllEmpBT").unbind();
+                $("#calcAllEmpBT").click(function (e) {
+                  $(".calcTodo").each(function() {
+                    var id_empleado = $(this).attr("id_empleado");
+                    calcAllReglas(id_empleado);
+                  });
+                });
 
                 //******** Click on calcular ALL REGLAS ************
+                $("#calcTodo").unbind();
                 $(".calcTodo").click(function (e) {
                   var id_empleado = $(this).attr("id_empleado");
+                  calcAllReglas(id_empleado);
+                });
+
+                var calcAllReglas = function(id_empleado){
                   var reglas = new Array();
+                  calcsLeft = reglas.length;
 
                   $(".regla").each(function() {
                     var id_campo = $(this).attr("id_campo");
@@ -803,25 +815,46 @@
 
                   reglas.sort(sortBy("orden"));
 
-                  var nextRegla = true;
+                  console.log(calcsLeft + "show!");
                   $.showSpinner();
+                  var nextRegla = true;
                   setTimeout(function() {
                     reglas.forEach(function (regla) {
                       console.log(regla);
                       if(nextRegla){
-                        nextRegla =calcularRegla(regla.id_campo, regla.id_regla, regla.id_empleado);
+                        nextRegla = calcularRegla(regla.id_campo, regla.id_regla, regla.id_empleado);
                       }
                     });
-                    $.hideSpinner();
+                    if(calcsLeft == 0){
+//                      alert(calcsLeft + "hide!");
+                      console.log(calcsLeft + "hide!");
+                      $.hideSpinner();
+                    }
                     if(nextRegla){
                       $(".ok_"+id_empleado).removeClass('icon-pending').addClass('icon-ready');
+                      allEmpleados[id_empleado].ready = true;
                     }else{
                       $(".ok_"+id_empleado).removeClass('icon-ready').addClass('icon-pending');
+                      allEmpleados[id_empleado].ready = false;
+                    }
+                    //Enable last button
+                    var completed = true;
+                    allEmpleados.forEach(function (empleado) {
+                      if(!empleado.ready){
+                        completed = false;
+                      }
+                    });
+                    if(completed){
+                      $(".generarReporteBT3").prop("disabled", false);
+                    }else{
+                      $(".generarReporteBT3").prop("disabled", true);
                     }
                   }, 1000);
-                });
+
+                };
 
                 //******** Click on calcular REGLA ************
+                $(".regla").unbind();
                 $(".regla").click(function (e) {
                   var id_campo = $(this).attr("id_campo");
                   var id_regla = $(this).attr("id_regla");
@@ -1098,6 +1131,146 @@
 
     });
 
+    /******************************************** REPORTE PASO 3 ************************************************/
+
+    $(".generarReporteBT3").click(function (e) {
+      var data = table2.rows().data();
+      var numCols = data[0].length-1;
+      var reportContent = [];
+      reportContent[0] = [];
+
+      //Headers
+      for(i=0; i<numCols; i++){
+        reportContent[0][i] = table2.column(i).header().innerText;
+      }
+
+      //Cols
+      for(i=0; i<data.length; i++){
+        reportContent[i+1] = [];
+        for(j=0; j<numCols; j++){
+          var cell = data[i][j];
+          var id;
+          if(cell.startsWith("<select")){
+            cell = $.parseHTML(cell);
+            id = $(cell).attr("id");
+            cell = $("#"+id+" option:selected").text();
+          }else if(cell.startsWith("<input")){
+            cell = $.parseHTML(cell);
+            id = $(cell).attr("id");
+            cell = $("#"+id).val();
+          }else if(cell.startsWith("<div class=\"input-group\"")){
+            cell = $.parseHTML(cell);
+            cell = $(cell).children(":first");
+            id = $(cell).attr("id");
+            cell = $("#"+id).val();
+          }else if(cell.startsWith("<i class=\"icon-sm")){
+            cell = cell.split("&nbsp;")[1];
+          }
+          reportContent[i+1][j] = cell;
+        }
+      }
+
+      $.executeFetch({
+        action: "/reporte/saveReporte",
+        data: {
+          id_reporte: $("#id_reporte").val(),
+          content: reportContent
+        },
+        method: "POST",
+        dataType: "json",
+        success: function (data) {
+          drawContenidoReporte();
+        },
+        successMsg: "Contenido del reporte guardado.",
+        errorMsg: "Ocurrió un error al guardar el contenido del reporte."
+      });
+
+    });
+
+    var reporteCalculadoTable;
+    var drawContenidoReporte = function(){
+      $.executeFetch({
+        action: "/reporte/fetchAllContent",
+        data: {
+          id_reporte: $("#id_reporte").val()
+        },
+        method: "POST",
+        dataType: "json",
+        success: function (data) {
+
+          if(data.length > 0){
+            var headers = "<tr>";
+            for(j=0; j<data[0].length; j++){
+              headers += "<th>" + data[0][j] + "</th>";
+            }
+            headers += "</tr>";
+
+            var body = "";
+            for(i=1; i<data.length; i++){
+              body += "<tr>";
+              for(j=0; j<data[i].length; j++){
+                body += "<td>" + data[i][j] + "</td>";
+              }
+              body += "</tr>";
+            }
+
+            $("#reporteCalculadoTable").attr("width", data[0].length*200 + "px");
+            $("#reporteCalculadoTableHeader").html(headers);
+            $("#reporteCalculadoTableBody").html(body);
+
+            if (reporteCalculadoTable)
+              reporteCalculadoTable.destroy();
+
+            reporteCalculadoTable = $('#reporteCalculadoTable').DataTable({
+              "scrollY": 400,
+              "scrollX": true,
+              "bPaginate": false,
+              "language": {
+                "url": "/app/lang/Spanish.json"
+              },
+              dom: 'T<"clear">lfrtip',
+              tableTools: {
+                "sSwfPath": "../swf/copy_csv_xls_pdf.swf",
+                "aButtons": [
+                  {
+                    "sExtends": "copy",
+                    "sButtonText": "Copiar al escritorio"
+                  },
+                  {
+                    "sExtends": "xls"
+                  },
+                  {
+                    "sExtends": "pdf"
+                  },
+                  {
+                    "sExtends": "print",
+                    "sButtonText": "Imprimir"
+                  }
+                ]
+              }
+            });
+            new $.fn.dataTable.FixedColumns( reporteCalculadoTable, {
+              leftColumns: 1
+            } );
+
+            $("#reporteInfoSection").hide();
+            $("#camposSection").hide();
+            $("#previewSection").hide();
+            $("#contenidoReporteSection").show();
+
+          }else{
+            $("#reporteInfoSection").show();
+            $("#camposSection").show();
+            $("#contenidoReporteSection").hide();
+          }
+
+        },
+        errorMsg: "Ocurrió un error al obtener el contenido del reporte."
+      });
+    };
+
+    drawContenidoReporte();
+
     var splitSQLParams = function(sql){
       var params = new Array();
       var sqlParts = sql.split("?");
@@ -1117,6 +1290,39 @@
     };
 
   });
+
+  function inputToDates(inputVal){
+    var fechas = inputVal.split(" - ");
+    var inicio = fechas[0];
+    var fin = fechas[1];
+    inicio = inicio.split("/");
+    fin = fin.split("/");
+
+    var periodoJSON = {
+      inicio: {
+        dia: inicio[0],
+        mes: inicio[1],
+        anio: inicio[2]
+      },
+      fin: {
+        dia: fin[0],
+        mes: fin[1],
+        anio: fin[2]
+      }
+    };
+
+    inicio = new Date(periodoJSON.inicio.anio, parseInt(periodoJSON.inicio.mes) - 1, periodoJSON.inicio.dia);
+    fin = new Date(periodoJSON.fin.anio, parseInt(periodoJSON.fin.mes) - 1, periodoJSON.fin.dia);
+
+    var periodoDate = {
+      periodoJSON : periodoJSON,
+      inicio: inicio,
+      fin: fin
+    };
+
+    return periodoDate;
+
+  }
 
   function reverse(s) {
     return s.split("").reverse().join("");
@@ -1147,9 +1353,10 @@
 <div class="row">
   <div class="col-lg-12">
 
-    <section class="panel">
-      <header class="panel-heading" id="headerSection">
-        Nuevo Reporte
+    <section class="panel no-display" id="reporteInfoSection">
+      <header class="panel-heading">
+        <span class="headerSectionTitle"></span>,
+        ID: <span class="headerSectionId"></span>
       </header>
       <div class="panel-body">
         <div class="form">
@@ -1179,7 +1386,6 @@
             </div>
             <div class="form-group">
               <label class="control-label col-lg-2">Período</label>
-
               <div class="col-lg-3">
                 <div class='input-group date'>
                   <input type='text' class="form-control" id="periodo" name="periodo"/>
@@ -1188,8 +1394,11 @@
                                     </span>
                 </div>
               </div>
+              <div class="col-lg-2">
+                <button class="btn btn-primary" type="button" id="addFestivosBT">Agregar días festivos</button>
+              </div>
             </div>
-            <div class="form-group" id="festivosDiv">
+            <div class="form-group no-display" id="festivosDiv">
               <label class="control-label col-lg-2">Días Festivos:</label>
 
               <div class="col-lg-3">
@@ -1259,6 +1468,27 @@
           <tr id="previewTableHR"></tr>
           </thead>
           <tbody id="previewTableBody"></tbody>
+        </table>
+      </div>
+      <div class="panel-body">
+        <button class="btn btn-primary center-block generarReporteBT3" type="button" disabled>
+          <i class='icon-md icon_cog'></i>&nbsp;Completar Reporte
+        </button>
+      </div>
+    </section>
+
+    <section class="panel no-display" id="contenidoReporteSection">
+      <header class="panel-heading">
+        <span class="headerSectionTitle"></span>,
+        ID: <span class="headerSectionId"></span>
+        <a href="javascript:void(0)" id="recalcularBT" class="btn  btn-primary pull-right">
+          <i class='icon-sm icon_cog'></i>Recalcular Reporte
+        </a>
+      </header>
+      <div class="panel-body">
+        <table id="reporteCalculadoTable" class="table table-bordered" cellspacing="0" width="100%">
+          <thead id="reporteCalculadoTableHeader"></thead>
+          <tbody id="reporteCalculadoTableBody"></tbody>
         </table>
       </div>
     </section>
@@ -1409,9 +1639,12 @@
     <label class="control-label col-lg-2">
       &nbsp;
     </label>
-    <div class="col-lg-2">
+    <div class="col-lg-4">
       <button class="btn btn-primary generarReporteBT2" type="button">
         <i class='icon-md icon_cog'></i>&nbsp;Generar Reporte - Paso 2
+      </button>
+      <button class="btn btn-info no-display calcAllEmpConfirmBT" type="button" data-toggle="modal" data-target="#confirmModal">
+        <i class='icon-md icon_cog'></i>&nbsp;Calcular todos los empleados
       </button>
     </div>
   </div>
@@ -1455,6 +1688,36 @@
     <label class="control-label col-lg-5">?campoLabel</label>
     <div class="col-lg-6">
       <select class="form-control selectParams" id="?campoId">?options</select>
+    </div>
+  </div>
+</div>
+
+<div aria-hidden="true" aria-labelledby="confirmModal" role="dialog" tabindex="-1" id="confirmModal" class="modal fade">
+  <div class="modal-dialog modal-msg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button aria-hidden="true" data-dismiss="modal" class="close" type="button">x</button>
+        <h4 class="modal-title">Calcular todos los empleados</h4>
+      </div>
+      <div class="modal-body">
+        <form class="form-horizontal" role="form">
+          <input type="hidden" id="id_reporte" name="id_reporte"/>
+          <div class="form-group modal-msg-label">
+            <div class="col-lg-offset-1 col-lg-10">
+              <span>¿Está seguro que desea calcular todos los campos para todos los empleados con los valores por default?</span>
+              <div class="spacer-sm"></div>
+              <div class="alertFont"><i class="icon_error-triangle"></i><span> Esto podría tomar varios minutos.</span></div>
+              <div class="spacer-sm"></div>
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="col-lg-offset-1 col-lg-12">
+              <button type="button" id="calcAllEmpBT" class="btn btn-primary" data-dismiss="modal">Calcular</button>
+              <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 </div>

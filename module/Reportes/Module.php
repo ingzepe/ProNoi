@@ -29,6 +29,11 @@ class Module {
                     $table = new Model\ReporteTable($dbAdapter);
                     return $table;
                 },
+                'Reportes\Model\ContenidoReporteTable' => function($sm) {
+                    $dbAdapter = $sm->get('Zend\Db\Adapter\Adapter');
+                    $table = new Model\ContenidoReporteTable($dbAdapter);
+                    return $table;
+                },
             ),
         );
     }

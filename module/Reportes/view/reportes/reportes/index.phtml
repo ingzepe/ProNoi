@@ -15,6 +15,7 @@
                     data.forEach(function(reporte) {
                         html += "<tr id='tr_"+reporte.id+"'>"
                         + "<td>"+no+++"</td>"
+                        + "<td>"+reporte.id+"</td>"
                         + "<td>"+reporte.nombre+"</td>"
                         + "<td>"+reporte.descripcion+"</td>"
                         + "<td>"+reporte.periodo+"</td>"
@@ -35,8 +36,9 @@
                     table = $('#mainTable').DataTable({
                         "columns": [
                             { "width": "5%" },
+                            { "width": "5%" },
                             { "width": "25%" },
-                            { "width": "45%" },
+                            { "width": "40%" },
                             { "width": "15%" },
                             { "width": "5%" },
                             { "width": "5%" }
@@ -117,6 +119,7 @@
                     <thead>
                     <tr>
                         <th>No.</th>
+                        <th>ID</th>
                         <th>Nombre</th>
                         <th>Descripción</th>
                         <th>Período</th>
