@@ -1,68 +1,108 @@
+<?php $session = new \Zend\Session\Container('user'); $user = $session->user; ?>
+
 <script type="text/javascript" charset="utf-8">
     $(document).ready(function() {
 
         var table;
+        var id_plantilla = $("#id_plantilla").val();
+        var id_tipo_empleado = $("#id_tipo_empleado").val();
+        var id_usuario = $("#id_usuario").val();
+
+        var drawReportesTB = function(data){
+            var html = "";
+            var no = 1;
+            data.forEach(function(reporte) {
+                html += "<tr id='tr_"+reporte.id+"'>"
+                  + "<td>"+no+++"</td>"
+                  + "<td>"+reporte.id+"</td>"
+                  + "<td>"+reporte.nombre+"</td>"
+                  + "<td>"+reporte.descripcion+"</td>"
+                  + "<td>"+reporte.periodo+"</td>"
+                  + "<td class='text-center'>"
+                  + "<a href='/reporte?id="+reporte.id+"&id_plantilla="+reporte.id_plantilla+"'>"
+                  + "<i class='icon-md icon_search_alt'></i>"
+                  + "</a>"
+                  + "</td>"
+                  + "<td class='text-center'>"
+                  + "<a href='#eliminarModal' data-toggle='modal' data-id='"+reporte.id+"'>"
+                  + "<i class='icon-md icon_trash'></i>"
+                  + "</a>"
+                  + "</td>"
+                  + "</tr>\n";
+            });
+            $("#mainTableBody").html(html);
+            var lastIdx = null;
+            table = $('#mainTable').DataTable({
+                "columns": [
+                    { "width": "5%" },
+                    { "width": "5%" },
+                    { "width": "25%" },
+                    { "width": "40%" },
+                    { "width": "15%" },
+                    { "width": "5%" },
+                    { "width": "5%" }
+                ],
+                "language": {
+                    "url": "/app/lang/Spanish.json"
+                },
+                "order": [[ 1, "asc" ]],
+                "aoColumnDefs": [
+                    { 'bSortable': false, 'aTargets': [0]}
+                ]
+            });
+            $("#mainTable tbody tr").hover( function( e ) {
+                if ( $(this).hasClass('row_selected') ) {
+                    $(this).removeClass('row_selected');
+                }
+                else {
+                    table.$('tr.row_selected').removeClass('row_selected');
+                    $(this).addClass('row_selected');
+                }
+            });
+        };
 
         var refreshTable = function(){
-            $.executeFetch({
-                action: "/reporte/fetchAll",
-                method: "POST",
-                dataType:"json",
-                data: {id_plantilla: $("#id_plantilla").val()},
-                success: function(data){
-                    var html = "";
-                    var no = 1;
-                    data.forEach(function(reporte) {
-                        html += "<tr id='tr_"+reporte.id+"'>"
-                        + "<td>"+no+++"</td>"
-                        + "<td>"+reporte.id+"</td>"
-                        + "<td>"+reporte.nombre+"</td>"
-                        + "<td>"+reporte.descripcion+"</td>"
-                        + "<td>"+reporte.periodo+"</td>"
-                        + "<td class='text-center'>"
-                        + "<a href='/reporte?id="+reporte.id+"&id_plantilla="+$("#id_plantilla").val()+"'>"
-                        + "<i class='icon-md icon_search_alt'></i>"
-                        + "</a>"
-                        + "</td>"
-                        + "<td class='text-center'>"
-                        + "<a href='#eliminarModal' data-toggle='modal' data-id='"+reporte.id+"'>"
-                        + "<i class='icon-md icon_trash'></i>"
-                        + "</a>"
-                        + "</td>"
-                        + "</tr>\n";
-                    });
-                    $("#mainTableBody").html(html);
-                    var lastIdx = null;
-                    table = $('#mainTable').DataTable({
-                        "columns": [
-                            { "width": "5%" },
-                            { "width": "5%" },
-                            { "width": "25%" },
-                            { "width": "40%" },
-                            { "width": "15%" },
-                            { "width": "5%" },
-                            { "width": "5%" }
-                        ],
-                        "language": {
-                            "url": "/app/lang/Spanish.json"
-                        },
-                        "order": [[ 1, "asc" ]],
-                        "aoColumnDefs": [
-                            { 'bSortable': false, 'aTargets': [0]}
-                        ]
-                    });
-                    $("#mainTable tbody tr").hover( function( e ) {
-                        if ( $(this).hasClass('row_selected') ) {
-                            $(this).removeClass('row_selected');
-                        }
-                        else {
-                            table.$('tr.row_selected').removeClass('row_selected');
-                            $(this).addClass('row_selected');
-                        }
-                    });
-                },
-                errorMsg: "Ocurrió un error al obtener las reportes."
-            });
+            if(id_plantilla != 0){
+                $.executeFetch({
+                    action: "/reporte/fetchAllByIdPlantilla",
+                    method: "POST",
+                    dataType:"json",
+                    data: {id_plantilla: id_plantilla},
+                    success: function(data){
+                        drawReportesTB(data);
+                    },
+                    errorMsg: "Ocurrió un error al obtener las reportes."
+                });
+                $.executeFetch({
+                    action: "/plantilla/fetch",
+                    data: {id_plantilla: $("#id_plantilla").val()},
+                    method: "POST",
+                    dataType:"json",
+                    success: function(data){
+                        $("#plantillaBC").html(data.nombre);
+                        $("#plantillaBC").attr("href","/plantilla?id="+data.id);
+                        $("#reportesBC").attr("href","/reportes?id="+data.id);
+                        $("#backBT").attr("href","/plantilla?id="+data.id);
+                    },
+                    errorMsg: "Ocurrió un error al obtener la plantilla."
+                });
+            }else{
+                $.executeFetch({
+                    action: "/reporte/fetchAllByIdTipoEmpleado",
+                    method: "POST",
+                    dataType:"json",
+                    data: {id_usuario: id_usuario},
+                    success: function(data){
+                        drawReportesTB(data);
+                    },
+                    errorMsg: "Ocurrió un error al obtener los reportes."
+                });
+                $(".breadcrumb").children().each(function( index ) {
+                    if(index == 1 || index == 2){
+                        $(this).remove();
+                    }
+                });
+            }
         }
 
         refreshTable();
@@ -77,7 +117,7 @@
                     table.row('#tr_'+$("#id_reporte").val()).remove().draw( false );
                 },
                 successMsg: "Reporte eliminada.",
-                errorMsg: "Ocurrió un error al eliminar la reporte."
+                errorMsg: "Ocurrió un error al eliminar el reporte."
             });
         });
 
@@ -86,24 +126,12 @@
             $("#id_reporte").val(id_reporte);
         });
 
-        $.executeFetch({
-            action: "/plantilla/fetch",
-            data: {id_plantilla: $("#id_plantilla").val()},
-            method: "POST",
-            dataType:"json",
-            success: function(data){
-                $("#plantillaBC").html(data.nombre);
-                $("#plantillaBC").attr("href","/plantilla?id="+data.id);
-                $("#reportesBC").attr("href","/reportes?id="+data.id);
-                $("#backBT").attr("href","/plantilla?id="+data.id);
-            },
-            errorMsg: "Ocurrió un error al obtener la plantilla."
-        });
-
     });
 </script>
 
-<input type="hidden" id="id_plantilla" name="id_plantilla" value="<?php echo $id; ?>"/>
+<input type="hidden" id="id_plantilla" name="id_plantilla" value="<?php echo isset($id) ? $id : 0; ?>"/>
+<input type="hidden" id="id_usuario" name="id_usuario" value="<?php echo $user['id']; ?>"/>
+<input type="hidden" id="id_tipo_empleado" name="id_tipo_empleado" value="<?php echo $user['id_tipo_empleado']; ?>"/>
 
 <div class="row">
     <div class="col-lg-12">

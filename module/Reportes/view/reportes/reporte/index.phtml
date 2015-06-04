@@ -661,7 +661,7 @@
           $("#previewTable").attr("width", tableWidth + "px");
 
           $.executeSyncFetch({
-            action: "/empleado/fetchAll",
+            action: "/empleado/fetchAllByIdTipoEmpleado",
             method: "POST",
             dataType: "json",
             data: {id_tipo_empleado: $("#id_tipo_empleado").val()},

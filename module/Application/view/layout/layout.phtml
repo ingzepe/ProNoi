@@ -42,13 +42,13 @@
         ->prependFile($this->basePath('/js/respond.min.js'));
     ?>
 
-    <?php $session = new \Zend\Session\Container('username'); $username = $session->username ?>
+    <?php $session = new \Zend\Session\Container('user'); $user = $session->user; ?>
 
 </head>
 
 <body>
 
-<?php if(isset($username)){ ?>
+<?php if(isset($user)){ ?>
 
 <!-- container section start -->
 <section id="container" class="">
@@ -79,7 +79,7 @@
             <div class="col-md-7">
                 <div class="username-row">
                     <i class="glyphicon glyphicon-user"></i>
-                    <span class="username">&nbsp; <?php echo $username;?> &nbsp;</span>
+                    <span class="username">&nbsp; <?php echo $user['nombre']; ?> &nbsp;</span>
                     <a href="<?php echo $this->url('login/process', array('action'=>'logout')); ?>"><i class="logout icon_lock-open"></i></a>
                 </div>
             </div>
@@ -112,7 +112,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="javascript:;">
+                    <a href="/empleados">
                         <i class="icon_id-2_alt"></i>
                         <span>Empleados</span>
                     </a>
@@ -121,6 +121,12 @@
                     <a href="/plantillas">
                         <i class="icon_table"></i>
                         <span>Plantillas</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/reportes">
+                        <i class="icon_documents_alt"></i>
+                        <span>Reportes</span>
                     </a>
                 </li>
 <!--                <li>-->

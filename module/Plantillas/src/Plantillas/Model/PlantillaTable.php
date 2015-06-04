@@ -42,10 +42,10 @@ class PlantillaTable extends AbstractTableGateway {
         $sql = new Sql($this->adapter);
         $select = $sql->select();
         $select->from($this->table)
-            ->join('tab_tipo_empleado', 'tab_tipo_empleado.id = tab_plantilla.id_tipo_empleado',
-                array('tipo_empleado' => 'tipo'))
-            ->join('tab_unidad_negocio', 'tab_unidad_negocio.id = tab_tipo_empleado.id_unidad',
-                array('id_unidad_negocio' => 'id', 'unidad_negocio' => 'nombre'));
+          ->join('tab_tipo_empleado', 'tab_tipo_empleado.id = tab_plantilla.id_tipo_empleado',
+            array('tipo_empleado' => 'tipo'))
+          ->join('tab_unidad_negocio', 'tab_unidad_negocio.id = tab_tipo_empleado.id_unidad',
+            array('id_unidad_negocio' => 'id', 'unidad_negocio' => 'nombre'));
 
 //        echo $select->getSqlString();
         $statement = $sql->prepareStatementForSqlObject($select);
@@ -124,6 +124,39 @@ class PlantillaTable extends AbstractTableGateway {
 
     public function removePlantilla($id) {
         return $this->delete(array('id' => (int) $id));
+    }
+
+    public function fetchAllByIdTipoEmpleado($ids) {
+
+        $sql = new Sql($this->adapter);
+        $select = $sql->select();
+        $select->from($this->table)
+          ->join('tab_tipo_empleado', 'tab_tipo_empleado.id = tab_plantilla.id_tipo_empleado',
+            array('tipo_empleado' => 'tipo'))
+          ->join('tab_unidad_negocio', 'tab_unidad_negocio.id = tab_tipo_empleado.id_unidad',
+            array('id_unidad_negocio' => 'id', 'unidad_negocio' => 'nombre'));
+
+        $where = new  Where();
+        $where->in('tab_plantilla.id_tipo_empleado', $ids) ;
+        $select->where($where);
+
+        $statement = $sql->prepareStatementForSqlObject($select);
+        $resultSet = $statement->execute();
+
+        $entities = array();
+        foreach ($resultSet as $row) {
+            $entity = new Entity\Plantilla(array(
+              'id' => $row["id"],
+              'id_tipo_empleado' => $row["id_tipo_empleado"],
+              'tipo_empleado' => $row["tipo_empleado"],
+              'nombre' => $row["nombre"],
+              'descripcion' => $row["descripcion"],
+              'id_unidad_negocio' => $row["id_unidad_negocio"],
+              'unidad_negocio' => $row["unidad_negocio"],
+            ));
+            $entities[] = $entity->toArray();
+        }
+        return $entities;
     }
 
 }

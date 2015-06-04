@@ -38,7 +38,7 @@ class ReporteTable extends AbstractTableGateway {
         }
     }
 
-    public function fetchAll($id_plantilla) {
+    public function fetchAllByIdPlantilla($id_plantilla) {
 
         $sql = new Sql($this->adapter);
         $select = $sql->select();
@@ -118,6 +118,58 @@ class ReporteTable extends AbstractTableGateway {
 
     public function removeReporte($id) {
         return $this->delete(array('id' => (int) $id));
+    }
+
+    /************************************************** With Filters ****************************************************************/
+
+    public function fetchAllInIdPlantillas($ids) {
+
+        $sql = new Sql($this->adapter);
+        $select = $sql->select();
+        $select->from($this->table);
+
+        $where = new  Where();
+        $where->in('tab_reporte.id_plantilla', $ids) ;
+        $select->where($where);
+
+        $statement = $sql->prepareStatementForSqlObject($select);
+        $resultSet = $statement->execute();
+
+        $entities = array();
+        foreach ($resultSet as $row) {
+            $entity = new Entity\Reporte(array(
+              'id' => $row["id"],
+              'id_plantilla' => $row["id_plantilla"],
+              'nombre' => $row["nombre"],
+              'descripcion' => $row["descripcion"],
+              'periodo' => $row["periodo"],
+            ));
+            $entities[] = $entity->toArray();
+        }
+        return $entities;
+    }
+
+    public function fetchAll() {
+
+        $sql = new Sql($this->adapter);
+        $select = $sql->select();
+        $select->from($this->table);
+
+        $statement = $sql->prepareStatementForSqlObject($select);
+        $resultSet = $statement->execute();
+
+        $entities = array();
+        foreach ($resultSet as $row) {
+            $entity = new Entity\Reporte(array(
+              'id' => $row["id"],
+              'id_plantilla' => $row["id_plantilla"],
+              'nombre' => $row["nombre"],
+              'descripcion' => $row["descripcion"],
+              'periodo' => $row["periodo"],
+            ));
+            $entities[] = $entity->toArray();
+        }
+        return $entities;
     }
 
 }
