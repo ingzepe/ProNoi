@@ -1,108 +1,148 @@
 function initializeJS() {
 
-    //tool tips
-    jQuery('.tooltips').tooltip();
+  //tool tips
+  jQuery('.tooltips').tooltip();
 
-    //popovers
-    jQuery('.popovers').popover();
+  //popovers
+  jQuery('.popovers').popover();
 
-    //custom scrollbar
-        //for html
-    jQuery("html").niceScroll({styler:"fb",cursorcolor:"#007AFF", cursorwidth: '6', cursorborderradius: '10px', background: '#F7F7F7', cursorborder: '', zindex: '1000'});
-        //for sidebar
-    jQuery("#sidebar").niceScroll({styler:"fb",cursorcolor:"#007AFF", cursorwidth: '3', cursorborderradius: '10px', background: '#F7F7F7', cursorborder: ''});
-        // for scroll panel
-    jQuery(".scroll-panel").niceScroll({styler:"fb",cursorcolor:"#007AFF", cursorwidth: '3', cursorborderradius: '10px', background: '#F7F7F7', cursorborder: ''});
-    
-    //sidebar dropdown menu
-    jQuery('#sidebar .sub-menu > a').click(function () {
-        var last = jQuery('.sub-menu.open', jQuery('#sidebar'));        
-        jQuery('.menu-arrow').removeClass('arrow_carrot-right');
-        jQuery('.sub', last).slideUp(200);
-        var sub = jQuery(this).next();
-        if (sub.is(":visible")) {
-            jQuery('.menu-arrow').addClass('arrow_carrot-right');            
-            sub.slideUp(200);
-        } else {
-            jQuery('.menu-arrow').addClass('arrow_carrot-down');            
-            sub.slideDown(200);
-        }
-        var o = (jQuery(this).offset());
-        diff = 200 - o.top;
-        if(diff>0)
-            jQuery("#sidebar").scrollTo("-="+Math.abs(diff),500);
-        else
-            jQuery("#sidebar").scrollTo("+="+Math.abs(diff),500);
-    });
+  //custom scrollbar
+  //for html
+  jQuery("html").niceScroll({
+    styler: "fb",
+    cursorcolor: "#007AFF",
+    cursorwidth: '6',
+    cursorborderradius: '10px',
+    background: '#F7F7F7',
+    cursorborder: '',
+    zindex: '1000'
+  });
+  //for sidebar
+  jQuery("#sidebar").niceScroll({
+    styler: "fb",
+    cursorcolor: "#007AFF",
+    cursorwidth: '3',
+    cursorborderradius: '10px',
+    background: '#F7F7F7',
+    cursorborder: ''
+  });
+  // for scroll panel
+  jQuery(".scroll-panel").niceScroll({
+    styler: "fb",
+    cursorcolor: "#007AFF",
+    cursorwidth: '3',
+    cursorborderradius: '10px',
+    background: '#F7F7F7',
+    cursorborder: ''
+  });
 
-    // sidebar menu toggle
-    jQuery(function() {
-        function responsiveView() {
-            var wSize = jQuery(window).width();
-            if (wSize <= 768) {
-                jQuery('#container').addClass('sidebar-close');
-                jQuery('#sidebar > ul').hide();
-            }
+  //sidebar dropdown menu
+  jQuery('#sidebar .sub-menu > a').click(function () {
+    var last = jQuery('.sub-menu.open', jQuery('#sidebar'));
+    jQuery('.menu-arrow').removeClass('arrow_carrot-right');
+    jQuery('.sub', last).slideUp(200);
+    var sub = jQuery(this).next();
+    if (sub.is(":visible")) {
+      jQuery('.menu-arrow').addClass('arrow_carrot-right');
+      sub.slideUp(200);
+    } else {
+      jQuery('.menu-arrow').addClass('arrow_carrot-down');
+      sub.slideDown(200);
+    }
+    var o = (jQuery(this).offset());
+    diff = 200 - o.top;
+    if (diff > 0)
+      jQuery("#sidebar").scrollTo("-=" + Math.abs(diff), 500);
+    else
+      jQuery("#sidebar").scrollTo("+=" + Math.abs(diff), 500);
+  });
 
-            if (wSize > 768) {
-                jQuery('#container').removeClass('sidebar-close');
-                jQuery('#sidebar > ul').show();
-            }
-        }
-        jQuery(window).on('load', responsiveView);
-        jQuery(window).on('resize', responsiveView);
-    });
+  // sidebar menu toggle
+  jQuery(function () {
+    function responsiveView() {
+      var wSize = jQuery(window).width();
+      if (wSize <= 768) {
+        jQuery('#container').addClass('sidebar-close');
+        jQuery('#sidebar > ul').hide();
+      }
 
-    jQuery('.toggle-nav').click(function () {
-        if (jQuery('#sidebar > ul').is(":visible") === true) {
-            jQuery('#main-content').css({
-                'margin-left': '0px'
-            });
-            jQuery('#sidebar').css({
-                'margin-left': '-180px'
-            });
-            jQuery('#sidebar > ul').hide();
-            jQuery("#container").addClass("sidebar-closed");
-        } else {
-            jQuery('#main-content').css({
-                'margin-left': '180px'
-            });
-            jQuery('#sidebar > ul').show();
-            jQuery('#sidebar').css({
-                'margin-left': '0'
-            });
-            jQuery("#container").removeClass("sidebar-closed");
-        }
-    });
-
-    //bar chart
-    if (jQuery(".custom-custom-bar-chart")) {
-        jQuery(".bar").each(function () {
-            var i = jQuery(this).find(".value").html();
-            jQuery(this).find(".value").html("");
-            jQuery(this).find(".value").animate({
-                height: i
-            }, 2000)
-        })
+      if (wSize > 768) {
+        jQuery('#container').removeClass('sidebar-close');
+        jQuery('#sidebar > ul').show();
+      }
     }
 
-    //Default jQuery validator
-    $.validator.messages.required = 'Ingrese un valor.';
+    jQuery(window).on('load', responsiveView);
+    jQuery(window).on('resize', responsiveView);
+  });
+
+  jQuery('.toggle-nav').click(function () {
+    if (jQuery('#sidebar > ul').is(":visible") === true) {
+      jQuery('#main-content').css({
+        'margin-left': '0px'
+      });
+      jQuery('#sidebar').css({
+        'margin-left': '-180px'
+      });
+      jQuery('#sidebar > ul').hide();
+      jQuery("#container").addClass("sidebar-closed");
+    } else {
+      jQuery('#main-content').css({
+        'margin-left': '180px'
+      });
+      jQuery('#sidebar > ul').show();
+      jQuery('#sidebar').css({
+        'margin-left': '0'
+      });
+      jQuery("#container").removeClass("sidebar-closed");
+    }
+  });
+
+  //bar chart
+  if (jQuery(".custom-custom-bar-chart")) {
+    jQuery(".bar").each(function () {
+      var i = jQuery(this).find(".value").html();
+      jQuery(this).find(".value").html("");
+      jQuery(this).find(".value").animate({
+        height: i
+      }, 2000)
+    })
+  }
+
+  //Default jQuery validator
+  $.validator.messages.required = 'Ingrese un valor.';
+
+  if ($("#id_rol_usuario").val() == ROL_ADMINISTRADOR_REPORTES) {
+    $(".breadcrumb").children().each(function () {
+      var remove = false;
+      $(this).children().each(function (index) {
+        if (index === 1) {
+          //if ($(this).attr("id") == "plantillasBC" || $(this).attr("id") == "plantillaBC") {
+          if ($(this).attr("id") == "plantillaBC") {
+            remove = true;
+          }
+        }
+      });
+      if (remove) {
+        $(this).remove();
+      }
+    });
+  }
 
 }
 
-jQuery(document).ready(function(){
-    initializeJS();
+jQuery(document).ready(function () {
+  initializeJS();
 });
 
 String.prototype.replaceAll = function (find, replace) {
-    var str = this;
-    return str.replace(new RegExp(find.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'g'), replace);
+  var str = this;
+  return str.replace(new RegExp(find.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'g'), replace);
 };
 
 if (typeof String.prototype.startsWith != 'function') {
-    // see below for better implementation!
-    String.prototype.startsWith = function (str){
-        return this.indexOf(str) === 0;
-    };
+  // see below for better implementation!
+  String.prototype.startsWith = function (str) {
+    return this.indexOf(str) === 0;
+  };
 }

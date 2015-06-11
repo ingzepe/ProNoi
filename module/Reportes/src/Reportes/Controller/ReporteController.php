@@ -4,6 +4,8 @@ namespace Reportes\Controller;
 
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
+use Zend\Session\Container;
+use Zend\Config\Reader\Ini;
 
 class ReporteController extends AbstractActionController
 {
@@ -12,6 +14,17 @@ class ReporteController extends AbstractActionController
   protected $_contenidoReporteTable;
   protected $_plantillaTable;
   protected $_controlTipoEmpleadoTable;
+  protected $_controlReporteTable;
+
+  public function getCurrentUser(){
+    $session = new Container('user');
+    return $session->user;
+  }
+
+  public function getCurrentRoles(){
+    $reader = new Ini();
+    return $reader->fromFile('config/autoload/roles.ini');
+  }
 
   public function getReporteTable()
   {
@@ -40,13 +53,13 @@ class ReporteController extends AbstractActionController
     return $this->_plantillaTable;
   }
 
-  public function getControlTipoEmpleadoTable()
+  public function getControlReporteTable()
   {
-    if (!$this->_controlTipoEmpleadoTable) {
+    if (!$this->_controlReporteTable) {
       $sm = $this->getServiceLocator();
-      $this->_controlTipoEmpleadoTable = $sm->get('SanAuth\Model\ControlTipoEmpleadoTable');
+      $this->_controlReporteTable = $sm->get('SanAuth\Model\ControlReporteTable');
     }
-    return $this->_controlTipoEmpleadoTable;
+    return $this->_controlReporteTable;
   }
 
   public function indexAction()
@@ -55,10 +68,12 @@ class ReporteController extends AbstractActionController
       $id = $this->params()->fromQuery('id');
       $id_plantilla = $this->params()->fromQuery('id_plantilla');
       $plantilla = $this->getPlantillaTable()->fetch($id_plantilla);
+      $control_reporte = $this->fetchAllPermisosByIdPlantillaAndIdUsuarioOrTipoEmpleado($id_plantilla);
       return new ViewModel(array(
         'id' => $id,
         'id_plantilla' => $id_plantilla,
         'id_tipo_empleado' => $plantilla['id_tipo_empleado'],
+        'control_reporte' => $control_reporte,
       ));
     } else {
       return $this->redirect()->toRoute('login');
@@ -73,7 +88,7 @@ class ReporteController extends AbstractActionController
     $post_data = $request->getPost();
     $id_plantilla = $post_data['id_plantilla'];
 //        $id_plantilla = $this->params()->fromQuery('id_plantilla');
-    $reportes = $this->getReporteTable()->fetchAll($id_plantilla);
+    $reportes = $this->getReporteTable()->fetchAllByIdPlantilla($id_plantilla);
     $count = count($reportes);
     if ($count < 0) {
       $response->setContent(\Zend\Json\Json::encode(array('status' => false)));
@@ -253,49 +268,64 @@ class ReporteController extends AbstractActionController
     return $response;
   }
 
-  /************************************************** With Filters ****************************************************************/
+  /************************************************** By Roles ****************************************************************/
 
-  public function fetchAllByIdTipoEmpleadoAction()
+  public function fetchAllPermisosByIdUsuarioAndTipoEmpleadoAction()
   {
+    $session = new Container('user');
+    $user = $session->user;
+
     $this->layout('layout/json');
     $request = $this->getRequest();
-    $post_data = $request->getPost();
-
     $response = $this->getResponse();
+//    $id_usuario_responsable = $this->params()->fromQuery('id_usuario_responsable');
+//    $id_tipo_empleado_responsable = $this->params()->fromQuery('id_tipo_empleado_responsable');
+    $id_usuario_responsable = $user['id'];
+    $id_tipo_empleado_responsable = $user['id_tipo_empleado'];
 
-    $id_usuario = $post_data['id_usuario'];
-
-    $control = $this->getControlTipoEmpleadoTable()->fetch($id_usuario);
-//        print_r($control);
-    $count = count($control);
+//    $id_plantilla = $post_data['id_plantilla'];
+    $permisos = $this->getControlReporteTable()->fetchAllByIdUsuarioAndTipoEmpleado($id_usuario_responsable, $id_tipo_empleado_responsable);
+    $count = count($permisos);
     if ($count < 1) {
       $response->setContent(\Zend\Json\Json::encode(array('status' => true, 'data' => array())));
     } else {
       $ids = array();
       for ($i = 0; $i < $count; $i++) {
-        $ids[$i] = $control[$i]['id_tipo_empleado'];
+        $ids[$i] = $permisos[$i]['id_plantilla'];
       }
-      $plantillas = $this->getPlantillaTable()->fetchAllByIdTipoEmpleado($ids);
-//            print_r($plantillas);
-      $count = count($plantillas);
+      $reportes = $this->getReporteTable()->fetchAllInIdPlantillas($ids);
+      $count = count($reportes);
       if ($count < 1) {
         $response->setContent(\Zend\Json\Json::encode(array('status' => true, 'data' => array())));
       } else {
-        $ids2 = array();
-        for ($i = 0; $i < $count; $i++) {
-          $ids2[$i] = $plantillas[$i]['id'];
-        }
-        $reportes = $this->getReporteTable()->fetchAllInIdPlantillas($ids2);
-//        print_r($reportes);
-        $count = count($reportes);
-        if ($count < 1) {
-          $response->setContent(\Zend\Json\Json::encode(array('status' => true, 'data' => array())));
-        } else {
-          $reportes = \Zend\Json\Json::encode($reportes);
-          $response->setContent(\Zend\Json\Json::encode(array('status' => true, 'data' => $reportes)));
-        }
-        $plantillas;
+        $reportes = \Zend\Json\Json::encode($reportes);
+        $response->setContent(\Zend\Json\Json::encode(array('status' => true, 'data' => $reportes)));
       }
+    }
+
+    return $response;
+  }
+
+  public function fetchAllPermisosByIdPlantillaAndIdUsuarioOrTipoEmpleado($id_plantilla)
+  {
+    $user = $this->getCurrentUser();
+    $roles = $this->getCurrentRoles();
+
+    $response = $roles['CONTROL_REPORTE_CONSULTAR'];
+
+    $id_usuario_responsable = $user['id'];
+    $id_tipo_empleado_responsable = $user['id_tipo_empleado'];
+
+    $permisos = $this->getControlReporteTable()->fetchByIdPlantillaAndIdUsuario($id_plantilla, $id_usuario_responsable);
+    $count = count($permisos);
+    if ($count < 1) {
+      $permisos = $this->getControlReporteTable()->fetchByIdPlantillaAndTipoEmpleado($id_plantilla, $id_tipo_empleado_responsable);
+      $count = count($permisos);
+      if ($count > 0) {
+        $response = $permisos[0]['id_cat_control_reporte'];
+      }
+    } else {
+      $response = $permisos[0]['id_cat_control_reporte'];
     }
 
     return $response;

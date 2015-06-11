@@ -1,3 +1,10 @@
+<?php
+  $session = new \Zend\Session\Container('user');
+  $user = $session->user;
+  $reader = new Zend\Config\Reader\Ini();
+  $roles = $reader->fromFile('config/autoload/roles.ini');
+?>
+
 <link rel="stylesheet" href="/css/daterangepicker.css"/>
 <link rel="stylesheet" href="/assets/color-picker/css/bootstrap-colorpicker.css"/>
 <link rel="stylesheet" href="/css/dataTables.tableTools.css"/>
@@ -17,24 +24,6 @@
 
 <script type="text/javascript" charset="utf-8">
   $(document).ready(function () {
-
-    var TIPO_REGLA_SQL            = 1;
-    var TIPO_FREGLA_RECURSIVA     = 2;
-    var TIPO_REPETIR_CAMPO_FECHA  = 1;
-    var TIPO_REPETIR_CAMPO_VECES  = 2;
-    var CAMPO_ACTIVO              = 1;
-    var TIPO_CAMPO_CATALOGO       = 1;
-    var TIPO_CAMPO_REGLA          = 2;
-    var TIPO_CAMPO_VALOR          = 3;
-    var TIPO_CAMPO_DINAMICO       = 4;
-    var TIPO_EXP_CAMPO            = 1;
-    var TIPO_EXP_REGLA            = 2;
-    var TIPO_EXP_NUMERO           = 3;
-    var TIPO_EXP_OPERADOR         = 4;
-    var TIPO_EXP_PUNTO            = 5;
-    var TIPO_EXP_PARENT_IZQ       = 6;
-    var TIPO_EXP_PARENT_DER       = 7;
-    var TIPO_EXP_EMPLEADO         = 8;
 
     $("#reporte_form").validate({
       rules: {
@@ -80,36 +69,67 @@
       }
     });
 
+    var index = 0;
     $('#periodo').dateRangePicker({
       format: 'DD/MM/YYYY',
       separator: ' - ',
       setValue: function (dates) {
-        $("#festivosDiv").show(500);
         this.value = dates;
+        index = 1;
+        $("#festivosDiv").hide(500);
+        $("#festivosInpts").children().each(function (index) {
+          if(index == 0){
+            $("#festivo_0").val("");
+          }else{
+            $(this).remove();
+          }
+        });
       }
     });
 
-    $('#periodo').on('input', function () {
-      var val = $(this).val();
-      if (val) {
+    var periodoDate;
+    $("#addFestivosBT").click(function (e) {
+      if($("#periodo").val()){
+        periodoDate = inputToDates($("#periodo").val());
         $("#festivosDiv").show(500);
-      } else {
-        $("#festivosDiv").hide(500);
+        $("#deleteFestivosBT").show(500);
+        $("#festivo_0").dateRangePicker({
+          format: 'DD/MM/YYYY',
+          separator: ' - ',
+          singleDate: true,
+          startDate: periodoDate.inicio,
+          endDate: periodoDate.fin
+        });
+      }else{
+        $.showMsg("error", "Seleccione un período.");
       }
     });
+
+    $("#deleteFestivosBT").click(function (e) {
+      index = 1;
+      $("#deleteFestivosBT").hide(500);
+      $("#festivosDiv").hide(500);
+      $("#festivosInpts").children().each(function (index) {
+        if(index == 0){
+          $("#festivo_0").val("");
+        }else{
+          $(this).remove();
+        }
+      });
+    });
+
+//    $('#periodo').on('input', function () {
+//      var val = $(this).val();
+//      if (val) {
+//        $("#festivosDiv").show(500);
+//      } else {
+//        $("#festivosDiv").hide(500);
+//      }
+//    });
 
     //Festivos
     var festivosElements = new Array();
-    var index = 0;
-//    var periodoDate = inputToDates(data.periodo);
     festivosElements[index++] = "festivo_0";
-    $("#festivo_0").dateRangePicker({
-      format: 'DD/MM/YYYY',
-      separator: ' - ',
-      singleDate: true
-//      startDate: periodoDate.inicio,
-//      endDate: periodoDate.fin
-    });
     $(".icon_plus_alt").click(function (ev) {
       var id = "festivo_" + index;
       var html = $("#calendarLayout").html().replaceAll("?idFestivo", id);
@@ -118,9 +138,9 @@
       $("#" + id).dateRangePicker({
         format: 'DD/MM/YYYY',
         separator: ' - ',
-        singleDate: true
-//        startDate: periodoDate.inicio,
-//        endDate: periodoDate.fin
+        singleDate: true,
+        startDate: periodoDate.inicio,
+        endDate: periodoDate.fin
       });
       $("#removeFestivo_" + id).click(function (ev) {
         $(this).parent().parent().remove();
@@ -531,6 +551,8 @@
                   htmlOpts += "<option type='8' value='id_mitrol'>Id Empleado Mitrol</option>\n";
                   htmlOpts += "<option type='8' value='sueldo_diario'>Sueldo Diario</option>\n";
                   htmlOpts += "<option type='8' value='asistencias'>Asistencias en el período</option>\n";
+                  htmlOpts += "<option type='8' value='descansos'>Descansos en el período</option>\n";
+                  htmlOpts += "<option type='8' value='festivos'>Festivos en el período</option>\n";
                   htmlOpts += "<option type='8' value='faltas'>Faltas en el período</option>\n";
                   htmlOpts += "<option type='8' value='retardos'>Retardos en el período</option>\n";
 
@@ -724,16 +746,32 @@
                 periodos.forEach(function (periodo) {
 
                   var dateIndex = periodo.value.getFullYear() + "-" + (periodo.value.getMonth()+1) + "-" + periodo.value.getDate();
+                  var dateIndexAux = periodo.value.getDate() + "/" + (periodo.value.getMonth()+1) + "/" + periodo.value.getFullYear();
+                  dateIndexAux = fixCeroDate(dateIndexAux, "/");
 
-                  if(empleado.asistencias[dateIndex]){
-                    selectLayout = "<select class='form-control periodo' id='periodo_"+periodo.id + "_empleado_" + empleado.id + "' value='A'>";
-                    selectLayout += "<option value='A'>Asistencia</option>";
-                  }else{
-                    selectLayout = "<select class='form-control periodo_" + empleado.id+"' id='periodo_"+periodo.id + "_empleado_" + empleado.id+"'>";
-                    selectLayout += "<option value='F'>Falta</option>";
-                    selectLayout += "<option value='D'>Descanso</option>";
-                    selectLayout += "<option value='I'>Incapacidad</option>";
-                    selectLayout += "<option value='V'>Vacaciones</option>";
+                  var dateCalculated = false;
+                  $(".festivosInpts").each(function() {
+                    var festivo = $(this).val();
+                    console.log("dateIndexAux" + dateIndexAux);
+                    console.log("festivo" + festivo);
+                    if(festivo && festivo == dateIndexAux){
+                      selectLayout = "<select class='form-control periodo' id='periodo_"+periodo.id + "_empleado_" + empleado.id + "' value='F'>";
+                      selectLayout += "<option value='S'>Festivo</option>";
+                      dateCalculated = true;
+                    }
+                  });
+
+                  if(!dateCalculated){
+                    if(empleado.asistencias[dateIndex]){
+                      selectLayout = "<select class='form-control periodo' id='periodo_"+periodo.id + "_empleado_" + empleado.id + "' value='A'>";
+                      selectLayout += "<option value='A'>Asistencia</option>";
+                    }else{
+                      selectLayout = "<select class='form-control periodo_" + empleado.id+"' id='periodo_"+periodo.id + "_empleado_" + empleado.id+"'>";
+                      selectLayout += "<option value='F'>Falta</option>";
+                      selectLayout += "<option value='D'>Descanso</option>";
+                      selectLayout += "<option value='I'>Incapacidad</option>";
+                      selectLayout += "<option value='V'>Vacaciones</option>";
+                    }
                   }
 
                   selectLayout += "</select>";
@@ -898,6 +936,7 @@
                           var faltas = 0;
                           var asistencias = 0;
                           var descansos = 0;
+                          var festivos = 0;
 //                          var retardos = 0;
                           $(".periodo_"+selectedEmpleado.id).each(function () {
                             var val = $(this).val();
@@ -916,6 +955,10 @@
                               case "V":{
                                 break;
                               }
+                              case "S":{
+                                festivos++;
+                                break;
+                              }
                               case "F": default:{
                                 faltas++;
                                 break;
@@ -925,6 +968,7 @@
                           selectedEmpleado.faltas = faltas;
                           selectedEmpleado.asistencias = asistencias;
                           selectedEmpleado.descansos = descansos;
+                          selectedEmpleado.festivos = festivos;
 //                          selectedEmpleado.retardos = retardos;
                         }
                       });
@@ -1324,6 +1368,22 @@
 
   }
 
+  function fixCeroDate(date, separator){
+    var dateFixed = "";
+    var dates = date.split(separator);
+    for(var i=0; i<dates.length; i++){
+      if(dates[i].length < 2){
+        dateFixed += "0"+dates[i];
+      }else{
+        dateFixed += dates[i];
+      }
+      if(i<dates.length-1){
+        dateFixed += "/";
+      }
+    }
+    return dateFixed;
+  }
+
   function reverse(s) {
     return s.split("").reverse().join("");
   }
@@ -1367,8 +1427,6 @@
               echo "0";
             } ?>"/>
             <input type="hidden" id="id_plantilla" name="id_plantilla" value="<?php echo $id_plantilla; ?>"/>
-            <input type="hidden" id="id_tipo_empleado" name="id_tipo_empleado"
-                   value="<?php echo $id_tipo_empleado; ?>"/>
 
             <div class="form-group">
               <label class="control-label col-lg-2">Nombre <span class="required">*</span></label>
@@ -1394,8 +1452,9 @@
                                     </span>
                 </div>
               </div>
-              <div class="col-lg-2">
+              <div class="col-lg-4">
                 <button class="btn btn-primary" type="button" id="addFestivosBT">Agregar días festivos</button>
+                <button class="btn btn-primary no-display" type="button" id="deleteFestivosBT">Eliminar días festivos</button>
               </div>
             </div>
             <div class="form-group no-display" id="festivosDiv">
@@ -1404,7 +1463,7 @@
               <div class="col-lg-3">
                 <div class='input-group date' id="festivosInpts">
                   <div class="input-group dynamic-inpt">
-                    <input type='text' class="form-control" id="festivo_0"/>
+                    <input type='text' class="form-control festivosInpts" id="festivo_0"/>
                                         <span class="input-group-addon">
                                             <span class="glyphicon glyphicon-calendar"></span>
                                         </span>
@@ -1481,9 +1540,15 @@
       <header class="panel-heading">
         <span class="headerSectionTitle"></span>,
         ID: <span class="headerSectionId"></span>
+        <?php if ($user['id_rol_usuario'] == $roles['ADMINISTRADOR']
+          || $user['id_rol_usuario'] == $roles['ADMINISTRADOR_PLANTILLAS']
+          || ($user['id_rol_usuario'] == $roles['ADMINISTRADOR_REPORTES'] &&
+            $control_reporte == $roles['CONTROL_REPORTE_GENERAR'])) { ?>
         <a href="javascript:void(0)" id="recalcularBT" class="btn  btn-primary pull-right">
           <i class='icon-sm icon_cog'></i>Recalcular Reporte
         </a>
+        <?php } ?>
+        Control: <?php echo $control_reporte; ?>
       </header>
       <div class="panel-body">
         <table id="reporteCalculadoTable" class="table table-bordered" cellspacing="0" width="100%">
@@ -1615,7 +1680,7 @@
 
 <div id="calendarLayout" class="hidden">
   <div class="input-group dynamic-inpt">
-    <input type='text' class="form-control" id="?idFestivo"/>
+    <input type='text' class="form-control festivosInpts" id="?idFestivo"/>
         <span class="input-group-addon">
             <span class="glyphicon glyphicon-calendar"></span>
         </span>

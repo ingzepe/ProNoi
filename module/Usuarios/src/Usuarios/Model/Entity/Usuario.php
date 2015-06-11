@@ -1,6 +1,6 @@
 <?php
 
-namespace SanAuth\Model\Entity;
+namespace Usuarios\Model\Entity;
 
 class Usuario
 {
@@ -9,6 +9,7 @@ class Usuario
   protected $_id_empleado;
   protected $_id_rol_usuario;
   protected $_nombre;
+
   protected $_id_tipo_empleado;
 
   public function __construct(array $options = null)

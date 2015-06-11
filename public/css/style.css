@@ -4121,6 +4121,14 @@ table.dataTable td, table.dataTable th {
   margin-bottom: 10px;
 }
 
+.btn i{
+  color: white;
+}
+
+.btn-default i{
+  color: #337ab7;
+}
+
 /*tabs*/
 
 .tab-head {
@@ -5353,18 +5361,21 @@ span.customSelect.changed {
   cursor: pointer;
   font-size: 18px !important;
   border-right: none !important;
+  color: #337ab7;
 }
 
 .icon-md {
   cursor: pointer;
   font-size: 26px !important;
   border: none;
+  color: #337ab7;
 }
 
 .icon-lg {
   cursor: pointer;
   font-size: 50px !important;
   border: none;
+  color: #337ab7;
 }
 
 .icon-ready{

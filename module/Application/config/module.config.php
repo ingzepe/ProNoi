@@ -124,6 +124,20 @@ return array(
               ),
             ),
           ),
+          array(
+            'label' => 'Usuarios',
+            'route' => 'usuarios',
+            'class' => 'icon_group',
+            'id' => 'usuariosBC',
+            'pages' => array(
+              array(
+                'label' => 'Nuevo Usuario',
+                'route' => 'usuario',
+                'class' => 'icon_profile',
+                'id' => 'usuarioBC'
+              ),
+            ),
+          ),
         ),
       ),
     ),

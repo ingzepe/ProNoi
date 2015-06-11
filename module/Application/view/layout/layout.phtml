@@ -2,172 +2,211 @@
 <html lang="es">
 
 <head>
-    <meta charset="utf-8">
-    <?php echo $this->headTitle($this->translate('Pronoi'))->setSeparator(' - ')->setAutoEscape(false) ?>
+  <meta charset="utf-8">
+  <?php echo $this->headTitle($this->translate('Pronoi'))->setSeparator(' - ')->setAutoEscape(false) ?>
 
-    <?php echo $this->headMeta()
-        ->appendName('viewport', 'width=device-width, initial-scale=1.0')
-        ->appendHttpEquiv('X-UA-Compatible', 'IE=edge')
-    ?>
+  <?php echo $this->headMeta()
+    ->appendName('viewport', 'width=device-width, initial-scale=1.0')
+    ->appendHttpEquiv('X-UA-Compatible', 'IE=edge')
+  ?>
 
-    <!-- Styles -->
-    <?php echo $this->headLink(array('rel' => 'shortcut icon', 'type' => 'image/vnd.microsoft.icon', 'href' => $this->basePath() . '/img/favicon.ico'))
-        ->prependStylesheet($this->basePath('/css/style.css'))
-        ->prependStylesheet($this->basePath('/css/bootstrap-theme.css'))
-        ->prependStylesheet($this->basePath('/css/bootstrap.min.css'))
-        ->prependStylesheet($this->basePath('/css/elegant-icons-style.css'))
-        ->prependStylesheet($this->basePath('/css/font-awesome.min.css'))
-        ->prependStylesheet($this->basePath('/assets/fullcalendar/fullcalendar/bootstrap-fullcalendar.css'))
-        ->prependStylesheet($this->basePath('/assets/fullcalendar/fullcalendar/fullcalendar.css'))
-        ->prependStylesheet($this->basePath('/assets/jquery-easy-pie-chart/jquery.easy-pie-chart.css'))
-        ->prependStylesheet($this->basePath('/css/owl.carousel.css'))
-        ->prependStylesheet($this->basePath('/css/jquery-jvectormap-1.2.2.css'))
-        ->prependStylesheet($this->basePath('/css/fullcalendar.css'))
-        ->prependStylesheet($this->basePath('/css/widgets.css'))
-        ->prependStylesheet($this->basePath('/css/style.css'))
-        ->prependStylesheet($this->basePath('/css/style-responsive.css'))
-        ->prependStylesheet($this->basePath('/css/xcharts.min.css'))
-        ->prependStylesheet($this->basePath('/css/dataTables.bootstrap.css'))
-        ->prependStylesheet($this->basePath('/css/jquery-ui-1.10.4.min.css'))
-        ->prependStylesheet($this->basePath('/css/animate.css'));
-    ?>
+  <!-- Styles -->
+  <?php echo $this->headLink(array('rel' => 'shortcut icon', 'type' => 'image/vnd.microsoft.icon', 'href' => $this->basePath() . '/img/favicon.ico'))
+    ->prependStylesheet($this->basePath('/css/style.css'))
+    ->prependStylesheet($this->basePath('/css/bootstrap-theme.css'))
+    ->prependStylesheet($this->basePath('/css/bootstrap.min.css'))
+    ->prependStylesheet($this->basePath('/css/elegant-icons-style.css'))
+    ->prependStylesheet($this->basePath('/css/font-awesome.min.css'))
+    ->prependStylesheet($this->basePath('/assets/fullcalendar/fullcalendar/bootstrap-fullcalendar.css'))
+    ->prependStylesheet($this->basePath('/assets/fullcalendar/fullcalendar/fullcalendar.css'))
+    ->prependStylesheet($this->basePath('/assets/jquery-easy-pie-chart/jquery.easy-pie-chart.css'))
+    ->prependStylesheet($this->basePath('/css/owl.carousel.css'))
+    ->prependStylesheet($this->basePath('/css/jquery-jvectormap-1.2.2.css'))
+    ->prependStylesheet($this->basePath('/css/fullcalendar.css'))
+    ->prependStylesheet($this->basePath('/css/widgets.css'))
+    ->prependStylesheet($this->basePath('/css/style.css'))
+    ->prependStylesheet($this->basePath('/css/style-responsive.css'))
+    ->prependStylesheet($this->basePath('/css/xcharts.min.css'))
+    ->prependStylesheet($this->basePath('/css/dataTables.bootstrap.css'))
+    ->prependStylesheet($this->basePath('/css/jquery-ui-1.10.4.min.css'))
+    ->prependStylesheet($this->basePath('/css/animate.css'));
+  ?>
 
-    <!-- Scripts -->
-    <?php echo $this->headScript()
-        ->prependFile($this->basePath('/js/bootstrap.min.js'))
-        ->prependFile($this->basePath('/js/jquery.min.js'))
-        ->prependFile($this->basePath('/js/respond.min.js'), 'text/javascript', array('conditional' => 'lt IE 9',))
-        ->prependFile($this->basePath('/js/html5shiv.js'), 'text/javascript', array('conditional' => 'lt IE 9',))
-        ->prependFile($this->basePath('/js/lte-ie7.js'), 'text/javascript', array('conditional' => 'lt IE 9',))
-        ->prependFile($this->basePath('/js/respond.min.js'));
-    ?>
+  <!-- Scripts -->
+  <?php echo $this->headScript()
+    ->prependFile($this->basePath('/js/bootstrap.min.js'))
+    ->prependFile($this->basePath('/js/jquery.min.js'))
+    ->prependFile($this->basePath('/js/respond.min.js'), 'text/javascript', array('conditional' => 'lt IE 9',))
+    ->prependFile($this->basePath('/js/html5shiv.js'), 'text/javascript', array('conditional' => 'lt IE 9',))
+    ->prependFile($this->basePath('/js/lte-ie7.js'), 'text/javascript', array('conditional' => 'lt IE 9',))
+    ->prependFile($this->basePath('/js/respond.min.js'));
+  ?>
 
-    <?php $session = new \Zend\Session\Container('user'); $user = $session->user; ?>
+  <?php
+    $session = new \Zend\Session\Container('user');
+    $user = $session->user;
+
+    $reader = new Zend\Config\Reader\Ini();
+    $roles = $reader->fromFile('config/autoload/roles.ini');
+  ?>
+
+  <script type="text/javascript" charset="utf-8">
+    // Roles JS
+    var ROL_ADMINISTRADOR = <?php echo $roles['ADMINISTRADOR']?>;
+    var ROL_ADMINISTRADOR_PLANTILLAS = <?php echo $roles['ADMINISTRADOR_PLANTILLAS']?>;
+    var ROL_ADMINISTRADOR_REPORTES = <?php echo $roles['ADMINISTRADOR_REPORTES']?>;
+    var ROL_PERSONAL_NOMINA = <?php echo $roles['PERSONAL_NOMINA']?>;
+    var ROL_PERSONAL_RH = <?php echo $roles['PERSONAL_RH']?>;
+    var ROL_CONTROL_REPORTE_GENERAR = <?php echo $roles['CONTROL_REPORTE_GENERAR']?>;
+    var ROL_CONTROL_REPORTE_CONSULTAR = <?php echo $roles['CONTROL_REPORTE_CONSULTAR']?>;
+
+    // Constants
+    var TIPO_REGLA_SQL            = 1;
+    var TIPO_FREGLA_RECURSIVA     = 2;
+    var TIPO_REPETIR_CAMPO_FECHA  = 1;
+    var TIPO_REPETIR_CAMPO_VECES  = 2;
+    var CAMPO_ACTIVO              = 1;
+    var TIPO_CAMPO_CATALOGO       = 1;
+    var TIPO_CAMPO_REGLA          = 2;
+    var TIPO_CAMPO_VALOR          = 3;
+    var TIPO_CAMPO_DINAMICO       = 4;
+    var TIPO_EXP_CAMPO            = 1;
+    var TIPO_EXP_REGLA            = 2;
+    var TIPO_EXP_NUMERO           = 3;
+    var TIPO_EXP_OPERADOR         = 4;
+    var TIPO_EXP_PUNTO            = 5;
+    var TIPO_EXP_PARENT_IZQ       = 6;
+    var TIPO_EXP_PARENT_DER       = 7;
+    var TIPO_EXP_EMPLEADO         = 8;
+  </script>
 
 </head>
 
 <body>
 
-<?php if(isset($user)){ ?>
+<?php if (isset($user)) { ?>
 
-<!-- container section start -->
-<section id="container" class="">
+  <input type="hidden" id="id_usuario" name="id_usuario" value="<?php echo $user['id']; ?>"/>
+  <input type="hidden" id="id_tipo_empleado" name="id_tipo_empleado" value="<?php echo $user['id_tipo_empleado']; ?>"/>
+  <input type="hidden" id="id_rol_usuario" name="id_rol_usuario" value="<?php echo $user['id_rol_usuario']; ?>"/>
+
+  <!-- container section start -->
+  <section id="container" class="">
 
     <header class="header dark-bg">
 
-        <div class="toggle-nav">
-            <div class="icon-reorder tooltips" data-original-title="Toggle Navigation" data-placement="bottom"></div>
-        </div>
+      <div class="toggle-nav">
+        <div class="icon-reorder tooltips" data-original-title="Toggle Navigation" data-placement="bottom"></div>
+      </div>
 
-        <div class="row">
-            <div class="col-md-4">
-                <!--logo start-->
-                <a href="/inicio" class="logo"><img alt="avatar" src="/images/logo-promass.png"></a>
-                <!--logo end-->
-                <div class="nav search-row" id="top_menu">
-                    <!--  search form start -->
-<!--                    <ul class="nav top-menu">-->
-<!--                        <li>-->
-<!--                            <form class="navbar-form">-->
-<!--                                <input class="form-control" placeholder="Buscar" type="text">-->
-<!--                            </form>-->
-<!--                        </li>-->
-<!--                    </ul>-->
-                    <!--  search form end -->
-                </div>
-            </div>
-            <div class="col-md-7">
-                <div class="username-row">
-                    <i class="glyphicon glyphicon-user"></i>
-                    <span class="username">&nbsp; <?php echo $user['nombre']; ?> &nbsp;</span>
-                    <a href="<?php echo $this->url('login/process', array('action'=>'logout')); ?>"><i class="logout icon_lock-open"></i></a>
-                </div>
-            </div>
+      <div class="row">
+        <div class="col-md-4">
+          <!--logo start-->
+          <a href="/inicio" class="logo"><img alt="avatar" src="/images/logo-promass.png"></a>
+          <!--logo end-->
+          <div class="nav search-row" id="top_menu">
+            <!--  search form start -->
+            <!--                    <ul class="nav top-menu">-->
+            <!--                        <li>-->
+            <!--                            <form class="navbar-form">-->
+            <!--                                <input class="form-control" placeholder="Buscar" type="text">-->
+            <!--                            </form>-->
+            <!--                        </li>-->
+            <!--                    </ul>-->
+            <!--  search form end -->
+          </div>
         </div>
+        <div class="col-md-7">
+          <div class="username-row">
+            <i class="glyphicon glyphicon-user"></i>
+            <!--                    <span class="username">&nbsp; -->
+            <?php echo $user['nombre']; ?> &nbsp;</span>
+<!--            <span class="username">&nbsp; --><?php //print_r($user); ?><!-- &nbsp;</span>-->
+            <a href="<?php echo $this->url('login/process', array('action' => 'logout')); ?>"><i
+                class="logout icon_lock-open"></i></a>
+          </div>
+        </div>
+      </div>
 
     </header>
     <!--header end-->
 
     <!--sidebar start-->
     <aside>
-        <div id="sidebar"  class="nav-collapse ">
-            <!-- sidebar menu start-->
-            <ul class="sidebar-menu">
-                <li>
-                    <a href="/inicio">
-                        <i class="icon_house"></i>
-                        <span>Inicio</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="javascript:;">
-                        <i class="icon_group"></i>
-                        <span>Usuarios</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="javascript:;">
-                        <i class="icon_flowchart"></i>
-                        <span>Unid. de Negocio</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="/empleados">
-                        <i class="icon_id-2_alt"></i>
-                        <span>Empleados</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="/plantillas">
-                        <i class="icon_table"></i>
-                        <span>Plantillas</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="/reportes">
-                        <i class="icon_documents_alt"></i>
-                        <span>Reportes</span>
-                    </a>
-                </li>
-<!--                <li>-->
-<!--                    <a href="/reportes">-->
-<!--                        <i class="icon_documents_alt"></i>-->
-<!--                        <span>Reportes</span>-->
-<!--                    </a>-->
-<!--                </li>-->
-            </ul>
-            <!-- sidebar menu end-->
-        </div>
+      <div id="sidebar" class="nav-collapse ">
+        <!-- sidebar menu start-->
+        <ul class="sidebar-menu">
+          <li>
+            <a href="/inicio">
+              <i class="icon_house"></i>
+              <span>Inicio</span>
+            </a>
+          </li>
+          <?php if ($user['id_rol_usuario'] == $roles['ADMINISTRADOR'] || $user['id_rol_usuario'] == $roles['PERSONAL_RH']) { ?>
+            <li>
+              <a href="javascript:;">
+                <i class="icon_group"></i>
+                <span>Usuarios</span>
+              </a>
+            </li>
+            <li>
+              <a href="javascript:;">
+                <i class="icon_flowchart"></i>
+                <span>Unid. de Negocio</span>
+              </a>
+            </li>
+            <li>
+              <a href="/empleados">
+                <i class="icon_id-2_alt"></i>
+                <span>Empleados</span>
+              </a>
+            </li>
+          <?php } ?>
+          <?php if ($user['id_rol_usuario'] == $roles['ADMINISTRADOR']
+            || $user['id_rol_usuario'] == $roles['ADMINISTRADOR_PLANTILLAS']
+            || $user['id_rol_usuario'] == $roles['ADMINISTRADOR_REPORTES']) { ?>
+            <li>
+              <a href="/plantillas">
+                <i class="icon_table"></i>
+                <span>Plantillas</span>
+              </a>
+            </li>
+          <?php } ?>
+        </ul>
+        <!-- sidebar menu end-->
+      </div>
     </aside>
     <!--sidebar end-->
 
     <!--main content start-->
     <section id="main-content">
-        <section class="wrapper">
-            <!--overview start-->
-            <div class="row">
-                <div class="col-lg-12">
-                    <?php
-                        echo $this->navigation('navigation')->breadcrumbs()
-                            ->setMinDepth(0)->setLinkLast(true)->setPartial('breadcrumb');
-                    ?>
-                </div>
-            </div>
+      <section class="wrapper">
+        <!--overview start-->
+        <div class="row">
+          <div class="col-lg-12">
+            <?php
+            echo $this->navigation('navigation')->breadcrumbs()
+              ->setMinDepth(0)->setLinkLast(true)->setPartial('breadcrumb');
+            ?>
+          </div>
+        </div>
 
-            <?php echo $this->content; ?>
-        </section>
+        <?php echo $this->content; ?>
+      </section>
     </section>
     <!--main content end-->
-</section>
-<!-- container section start -->
+  </section>
+  <!-- container section start -->
 
-<div role="dialog" tabindex="-1" id="spinner" class="modal fade">
+  <div role="dialog" tabindex="-1" id="spinner" class="modal fade">
     <div class="modal-dialog spinner">
-        <i class="fa fa-spinner fa-spin"></i>
+      <i class="fa fa-spinner fa-spin"></i>
     </div>
-</div>
+  </div>
 
-<?php } else { echo $this->content; } ?>
+<?php } else {
+  echo $this->content;
+} ?>
 
 <!-- nice scroll -->
 <script src="/js/jquery.scrollTo.min.js"></script>

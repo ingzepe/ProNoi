@@ -1,0 +1,335 @@
+<link rel="stylesheet" href="/css/daterangepicker.css"/>
+
+<script type="text/javascript" src="/js/jquery.validate.min.js"></script>
+<script src="/js/moment.js"></script>
+<script src="/js/daterangepicker.js"></script>
+
+<script type="text/javascript" charset="utf-8">
+  $(document).ready(function () {
+
+    $("#empleado_form").validate({
+      rules: {
+        unidad_negocio: {
+          required: true
+        },
+        tipo_empleado: {
+          required: true
+        },
+        nombre: {
+          required: true,
+          minlength: 5,
+          remote: {
+            url: "/empleado/checkName",
+            type: "POST",
+            async: false,
+            data: {
+              id_empleado: function () {
+                return $("#id_empleado").val();
+              },
+              nombre: function () {
+                return $("#nombre").val();
+              }
+            }
+          }
+        },
+        id_mitrol: {
+          required: true,
+          remote: {
+            url: "/empleado/checkIdMitrol",
+            type: "POST",
+            async: false,
+            data: {
+              id_empleado: function () {
+                return $("#id_empleado").val();
+              },
+              id_mitrol: function () {
+                return $("#id_mitrol").val();
+              }
+            }
+          }
+        },
+        id_rh: {
+          required: true,
+          remote: {
+            url: "/empleado/checkIdRH",
+            type: "POST",
+            async: false,
+            data: {
+              id_empleado: function () {
+                return $("#id_empleado").val();
+              },
+              id_rh: function () {
+                return $("#id_rh").val();
+              }
+            }
+          }
+        },
+        fecha_ingreso: {
+          required: true
+        },
+        horario_1: {
+          required: true
+        },
+        horario_2: {
+          required: true
+        },
+        campana: {
+          required: true
+        },
+        jefe: {
+          required: true
+        },
+        sueldo_diario: {
+          required: true
+        }
+      },
+      messages: {
+        unidad_negocio: {
+          required: "Elija una Unidad de Negocio."
+        },
+        tipo_empleado: {
+          required: "Elija un tipo de empleado."
+        },
+        nombre: {
+          required: "Ingrese un nombre para la empleado.",
+          minlength: "El nombre de la empleado debe contener al menos 5 carácteres.",
+          remote: "El nombre no se encuentra disponible."
+        },
+        id_mitrol: {
+          required: "Ingrese un identificador para mitrol.",
+          remote: "El Id de Mitrol no se encuentra disponible."
+        },
+        id_rh: {
+          required: "Ingrese un identificador del empleado.",
+          remote: "El Id de RH no se encuentra disponible."
+        },
+        fecha_ingreso: {
+          required: "Ingrese una fecha de ingreso."
+        },
+        horario_1: {
+          required: "Ingrese un horario de inicio."
+        },
+        horario_2: {
+          required: "Ingrese un horario de fin."
+        },
+        campana: {
+          required: "Ingrese una campaña."
+        },
+        jefe: {
+          required: "Ingrese el jefe del empleado."
+        },
+        sueldo_diario: {
+          required: "Ingrese el sueldo diario del empleado."
+        }
+      },
+      invalidHandler: function (form, validator) {
+        var errors = validator.numberOfInvalids();
+        if (errors) {
+          validator.errorList[0].element.focus();
+        }
+      }
+    });
+
+    $('#fecha_ingreso').dateRangePicker({
+      format: 'YYYY-MM-DD',
+      separator: ' - ',
+      singleDate: true
+    });
+
+    var fetch = function () {
+      $.executeFetch({
+        action: "/empleado/fetch",
+        data: {id_empleado: $("#id_empleado").val()},
+        method: "POST",
+        dataType: "json",
+        success: function (data) {
+          console.log(data);
+          $("#headerSection").html(data.nombre);
+          $("#empleadoBC").html(data.nombre);
+          $("#empleadoBC").attr("href", "/empleado?id=" + data.id);
+          $("#unidad_negocio").val(data.id_unidad);
+          $("#tipo_empleado").val(data.id_tipo_empleado);
+          $("#nombre").val(data.nombre);
+          $("#id_mitrol").val(data.id_mitrol);
+          $("#id_rh").val(data.id_rh);
+          $("#fecha_ingreso").val(data.fecha_ingreso.substring(0, 10));
+          $("#horario_1").val(data.horario.substring(0, 5));
+          $("#horario_2").val(data.horario.substring(6, 11));
+          $("#campana").val(data.campana);
+          $("#agregarBT").attr("href", "/campo?id_empleado=" + data.id);
+        },
+        errorMsg: "Ocurrió un error al obtener la empleado."
+      });
+    }
+
+    if (parseInt($("#id_empleado").val()) !== 0) {
+      fetch();
+    }
+
+    $("#addEmpleadoBT").click(function (e) {
+      $("#horario").val($("#horario_1").val() + "-" + $("#horario_2").val());
+      $.executePostValid({
+        form: $("#empleado_form"),
+        action: "/empleado/update",
+        method: "POST",
+        dataType: "json",
+        success: function (data) {
+          location.href = "/empleados";
+        },
+        successMsg: "Empleado guardada.",
+        errorMsg: "Ocurrió un error al guardar la empleado."
+      });
+    });
+
+  });
+</script>
+
+<div class="row">
+  <div class="col-lg-12">
+
+    <section class="panel">
+      <header class="panel-heading" id="headerSection">
+        Nuevo Empleado
+      </header>
+      <div class="panel-body">
+        <div class="form">
+          <form class="form-validate form-horizontal" id="empleado_form">
+            <input type="hidden" id="id_empleado" name="id_empleado" value="<?php if ($id) {
+              echo $id;
+            } else {
+              echo "0";
+            } ?>"/>
+
+            <div class="form-group">
+              <label for="cname" class="control-label col-lg-2">Unidad de Negocio <span
+                  class="required">*</span></label>
+
+              <div class="col-lg-5">
+                <select class="form-control" id="unidad_negocio" name="unidad_negocio" required>
+                  <option value="">Seleccionar</option>
+                  <option value="1">Club de Asistencia</option>
+                  <option value="2">Proventel</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="cname" class="control-label col-lg-2">Tipo Empleado <span class="required">*</span></label>
+
+              <div class="col-lg-5">
+                <select class="form-control m-bot15" id="tipo_empleado" name="tipo_empleado" required>
+                  <option value="">Seleccionar</option>
+                  <option value="1">Operador Telefónico</option>
+                  <option value="2">Supervisor</option>
+                  <option value="3">Gerente</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="cname" class="control-label col-lg-2">Nombre <span class="required">*</span></label>
+
+              <div class="col-lg-5">
+                <input class="form-control" id="nombre" name="nombre" minlength="5" type="text" required/>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="cname" class="control-label col-lg-2">Id Mitrol <span class="required">*</span></label>
+
+              <div class="col-lg-1">
+                <input class="form-control" id="id_mitrol" name="id_mitrol" minlength="1" type="text" required/>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="cname" class="control-label col-lg-2">Id RH <span class="required">*</span></label>
+
+              <div class="col-lg-1">
+                <input class="form-control" id="id_rh" name="id_rh" minlength="1" type="text" required/>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="cname" class="control-label col-lg-2">Fecha Ingreso <span class="required">*</span></label>
+
+              <div class="col-lg-2">
+                <div class='input-group date'>
+                  <input type='text' class="form-control" id="fecha_ingreso" name="fecha_ingreso"/>
+                                    <span class="input-group-addon">
+                                        <span class="glyphicon glyphicon-calendar"></span>
+                                    </span>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="cname" class="control-label col-lg-2">Horario <span class="required">*</span></label>
+
+              <div class="col-lg-1">
+                <select class="form-control" id="horario_1" name="horario_1" required>
+                  <option value="">De:</option>
+                  <option value="05:00">05:00</option>
+                  <option value="06:00">06:00</option>
+                  <option value="07:00">07:00</option>
+                  <option value="08:00">08:00</option>
+                  <option value="09:00">09:00</option>
+                  <option value="10:00">10:00</option>
+                  <option value="11:00">11:00</option>
+                  <option value="12:00">12:00</option>
+                  <option value="13:00">13:00</option>
+                  <option value="14:00">14:00</option>
+                  <option value="15:00">15:00</option>
+                  <option value="16:00">16:00</option>
+                  <option value="17:00">17:00</option>
+                  <option value="18:00">18:00</option>
+                  <option value="19:00">19:00</option>
+                  <option value="20:00">20:00</option>
+                  <option value="21:00">21:00</option>
+                  <option value="22:00">22:00</option>
+                  <option value="23:00">23:00</option>
+                  <option value="24:00">24:00</option>
+                </select>
+                <input id="horario" name="horario" type="hidden"/>
+              </div>
+              <div class="col-lg-1">
+                <select class="form-control" id="horario_2" name="horario_2" required>
+                  <option value="">A:</option>
+                  <option value="05:00">05:00</option>
+                  <option value="06:00">06:00</option>
+                  <option value="07:00">07:00</option>
+                  <option value="08:00">08:00</option>
+                  <option value="09:00">09:00</option>
+                  <option value="10:00">10:00</option>
+                  <option value="11:00">11:00</option>
+                  <option value="12:00">12:00</option>
+                  <option value="13:00">13:00</option>
+                  <option value="14:00">14:00</option>
+                  <option value="15:00">15:00</option>
+                  <option value="16:00">16:00</option>
+                  <option value="17:00">17:00</option>
+                  <option value="18:00">18:00</option>
+                  <option value="19:00">19:00</option>
+                  <option value="20:00">20:00</option>
+                  <option value="21:00">21:00</option>
+                  <option value="22:00">22:00</option>
+                  <option value="23:00">23:00</option>
+                  <option value="24:00">24:00</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="cname" class="control-label col-lg-2">Campaña <span class="required">*</span></label>
+
+              <div class="col-lg-5">
+                <input class="form-control" id="campana" name="campana" type="text"/>
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="col-lg-offset-2 col-lg-10">
+                <button class="btn btn-primary" type="button" id="addEmpleadoBT">Guardar</button>
+                <a class="btn btn-default" href="/empleados">Regresar</a>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+

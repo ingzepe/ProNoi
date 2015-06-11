@@ -10,6 +10,7 @@ return array(
         'Reglas',
         'Reportes',
         'Empleados',
+        'Usuarios',
     ),
 
     // These are various options for the listeners attached to the ModuleManager

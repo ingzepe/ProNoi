@@ -6,13 +6,13 @@ use Zend\Mvc\Controller\AbstractActionController;
 use Zend\Form\Annotation\AnnotationBuilder;
 use Zend\Session\Container;
 use SanAuth\Model\User;
-use Zend\Validator\File\Md5;
 
 class AuthController extends AbstractActionController
 {
   protected $form;
   protected $storage;
   protected $authservice;
+  protected $_usuarioTable;
 
   public function getAuthService()
   {
@@ -124,8 +124,11 @@ class AuthController extends AbstractActionController
   {
     if (!$this->_usuarioTable) {
       $sm = $this->getServiceLocator();
-      $this->_usuarioTable = $sm->get('SanAuth\Model\UsuarioTable');
+      $this->_usuarioTable = $sm->get('Usuarios\Model\UsuarioTable');
     }
     return $this->_usuarioTable;
   }
+
+
+
 }

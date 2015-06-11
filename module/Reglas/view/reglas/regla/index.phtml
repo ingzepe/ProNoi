@@ -84,6 +84,7 @@
           success: function (empleado) {
             firstEmpleado = empleado[0];
             firstEmpleado.asistencias = 15;
+            firstEmpleado.descansos = 0;
             firstEmpleado.faltas = 0;
             firstEmpleado.retardos = 0;
           },
@@ -873,6 +874,8 @@
                       <option value="id_mitrol">Id Empleado Mitrol</option>
                       <option value="sueldo_diario">Sueldo Diario</option>
                       <option value="asistencias">Asistencias en el período</option>
+                      <option value="descansos">Descansos en el período</option>
+                      <option value="festivos">Festivos en el período</option>
                       <option value="faltas">Faltas en el período</option>
                       <option value="retardos">Retardos en el período</option>
                     </select>

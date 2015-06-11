@@ -1,13 +1,15 @@
 <?php
 
-namespace SanAuth\Model\Entity;
+namespace Empleados\Model\Entity;
 
-class ControlTipoEmpleado
+class TipoEmpleado
 {
 
+  //pronoi
   protected $_id;
-  protected $_id_usuario;
-  protected $_id_tipo_empleado;
+  protected $_id_unidad;
+  protected $_tipo;
+  protected $_descripcion;
 
   public function __construct(array $options = null)
   {
@@ -53,33 +55,49 @@ class ControlTipoEmpleado
   /**
    * @return mixed
    */
-  public function getIdUsuario()
+  public function getIdUnidad()
   {
-    return $this->_id_usuario;
+    return $this->_id_unidad;
   }
 
   /**
-   * @param mixed $id_usuario
+   * @param mixed $id_unidad
    */
-  public function setIdUsuario($id_usuario)
+  public function setIdUnidad($id_unidad)
   {
-    $this->_id_usuario = $id_usuario;
+    $this->_id_unidad = $id_unidad;
   }
 
   /**
    * @return mixed
    */
-  public function getIdTipoEmpleado()
+  public function getTipo()
   {
-    return $this->_id_tipo_empleado;
+    return $this->_tipo;
   }
 
   /**
-   * @param mixed $id_tipo_empleado
+   * @param mixed $tipo
    */
-  public function setIdTipoEmpleado($id_tipo_empleado)
+  public function setTipo($tipo)
   {
-    $this->_id_tipo_empleado = $id_tipo_empleado;
+    $this->_tipo = $tipo;
+  }
+
+  /**
+   * @return mixed
+   */
+  public function getDescripcion()
+  {
+    return $this->_descripcion;
+  }
+
+  /**
+   * @param mixed $descripcion
+   */
+  public function setDescripcion($descripcion)
+  {
+    $this->_descripcion = $descripcion;
   }
 
 }

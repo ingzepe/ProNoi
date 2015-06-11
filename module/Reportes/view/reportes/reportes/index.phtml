@@ -1,192 +1,229 @@
-<?php $session = new \Zend\Session\Container('user'); $user = $session->user; ?>
+<?php
+  $session = new \Zend\Session\Container('user');
+  $user = $session->user;
+  $reader = new Zend\Config\Reader\Ini();
+  $roles = $reader->fromFile('config/autoload/roles.ini');
+?>
 
 <script type="text/javascript" charset="utf-8">
-    $(document).ready(function() {
+  $(document).ready(function () {
 
-        var table;
-        var id_plantilla = $("#id_plantilla").val();
-        var id_tipo_empleado = $("#id_tipo_empleado").val();
-        var id_usuario = $("#id_usuario").val();
+    var table;
+    var id_plantilla = $("#id_plantilla").val();
+    var id_tipo_empleado = $("#id_tipo_empleado").val();
+    var id_usuario = $("#id_usuario").val();
 
-        var drawReportesTB = function(data){
-            var html = "";
-            var no = 1;
-            data.forEach(function(reporte) {
-                html += "<tr id='tr_"+reporte.id+"'>"
-                  + "<td>"+no+++"</td>"
-                  + "<td>"+reporte.id+"</td>"
-                  + "<td>"+reporte.nombre+"</td>"
-                  + "<td>"+reporte.descripcion+"</td>"
-                  + "<td>"+reporte.periodo+"</td>"
-                  + "<td class='text-center'>"
-                  + "<a href='/reporte?id="+reporte.id+"&id_plantilla="+reporte.id_plantilla+"'>"
-                  + "<i class='icon-md icon_search_alt'></i>"
-                  + "</a>"
-                  + "</td>"
-                  + "<td class='text-center'>"
-                  + "<a href='#eliminarModal' data-toggle='modal' data-id='"+reporte.id+"'>"
-                  + "<i class='icon-md icon_trash'></i>"
-                  + "</a>"
-                  + "</td>"
-                  + "</tr>\n";
-            });
-            $("#mainTableBody").html(html);
-            var lastIdx = null;
-            table = $('#mainTable').DataTable({
-                "columns": [
-                    { "width": "5%" },
-                    { "width": "5%" },
-                    { "width": "25%" },
-                    { "width": "40%" },
-                    { "width": "15%" },
-                    { "width": "5%" },
-                    { "width": "5%" }
-                ],
-                "language": {
-                    "url": "/app/lang/Spanish.json"
-                },
-                "order": [[ 1, "asc" ]],
-                "aoColumnDefs": [
-                    { 'bSortable': false, 'aTargets': [0]}
-                ]
-            });
-            $("#mainTable tbody tr").hover( function( e ) {
-                if ( $(this).hasClass('row_selected') ) {
-                    $(this).removeClass('row_selected');
-                }
-                else {
-                    table.$('tr.row_selected').removeClass('row_selected');
-                    $(this).addClass('row_selected');
-                }
-            });
-        };
-
-        var refreshTable = function(){
-            if(id_plantilla != 0){
-                $.executeFetch({
-                    action: "/reporte/fetchAllByIdPlantilla",
-                    method: "POST",
-                    dataType:"json",
-                    data: {id_plantilla: id_plantilla},
-                    success: function(data){
-                        drawReportesTB(data);
-                    },
-                    errorMsg: "Ocurrió un error al obtener las reportes."
-                });
-                $.executeFetch({
-                    action: "/plantilla/fetch",
-                    data: {id_plantilla: $("#id_plantilla").val()},
-                    method: "POST",
-                    dataType:"json",
-                    success: function(data){
-                        $("#plantillaBC").html(data.nombre);
-                        $("#plantillaBC").attr("href","/plantilla?id="+data.id);
-                        $("#reportesBC").attr("href","/reportes?id="+data.id);
-                        $("#backBT").attr("href","/plantilla?id="+data.id);
-                    },
-                    errorMsg: "Ocurrió un error al obtener la plantilla."
-                });
-            }else{
-                $.executeFetch({
-                    action: "/reporte/fetchAllByIdTipoEmpleado",
-                    method: "POST",
-                    dataType:"json",
-                    data: {id_usuario: id_usuario},
-                    success: function(data){
-                        drawReportesTB(data);
-                    },
-                    errorMsg: "Ocurrió un error al obtener los reportes."
-                });
-                $(".breadcrumb").children().each(function( index ) {
-                    if(index == 1 || index == 2){
-                        $(this).remove();
-                    }
-                });
-            }
+    var drawReportesTB = function (data) {
+      var html = "";
+      var no = 1;
+      data.forEach(function (reporte) {
+        html += "<tr id='tr_" + reporte.id + "'>";
+        html += "<td>" + no++ + "</td>";
+        html += "<td>" + reporte.id + "</td>";
+        html += "<td>" + reporte.nombre + "</td>";
+        html += "<td>" + reporte.descripcion + "</td>";
+        html += "<td>" + reporte.periodo + "</td>";
+        html += "<td class='text-center'>";
+        html += "<a href='/reporte?id=" + reporte.id + "&id_plantilla=" + reporte.id_plantilla + "'>";
+        html += "<i class='icon-md icon_search_alt'></i>";
+        html += "</a>";
+        html += "</td>";
+        if($("#id_rol_usuario").val() == ROL_ADMINISTRADOR
+          || $("#id_rol_usuario").val() == ROL_ADMINISTRADOR_PLANTILLAS
+          || ($("#id_rol_usuario").val() == ROL_ADMINISTRADOR_REPORTES
+          && $("#control_reporte").val() == ROL_CONTROL_REPORTE_GENERAR)) {
+          html += "<td class='text-center'>";
+          html += "<a href='#eliminarModal' data-toggle='modal' data-id='" + reporte.id + "'>";
+          html += "<i class='icon-md icon_trash'></i>";
+          html += "</a>";
+          html += "</td>";
         }
+        html += "</tr>\n";
+      });
+      $("#mainTableBody").html(html);
+      var lastIdx = null;
+      var colWidths;
+      if($("#id_rol_usuario").val() == ROL_ADMINISTRADOR
+        || $("#id_rol_usuario").val() == ROL_ADMINISTRADOR_PLANTILLAS
+        || ($("#id_rol_usuario").val() == ROL_ADMINISTRADOR_REPORTES
+        && $("#control_reporte").val() == ROL_CONTROL_REPORTE_GENERAR)) {
+        colWidths = [
+          {"width": "5%"},
+          {"width": "5%"},
+          {"width": "25%"},
+          {"width": "40%"},
+          {"width": "15%"},
+          {"width": "5%"},
+          {"width": "5%"}
+        ];
+      }else{
+        colWidths = [
+          {"width": "5%"},
+          {"width": "5%"},
+          {"width": "30%"},
+          {"width": "40%"},
+          {"width": "15%"},
+          {"width": "5%"}
+        ];
+      }
+      table = $('#mainTable').DataTable({
+        "columns": colWidths,
+        "language": {
+          "url": "/app/lang/Spanish.json"
+        },
+        "order": [[1, "asc"]],
+        "aoColumnDefs": [
+          {'bSortable': false, 'aTargets': [0]}
+        ]
+      });
+      $("#mainTable tbody tr").hover(function (e) {
+        if ($(this).hasClass('row_selected')) {
+          $(this).removeClass('row_selected');
+        }
+        else {
+          table.$('tr.row_selected').removeClass('row_selected');
+          $(this).addClass('row_selected');
+        }
+      });
+    };
 
-        refreshTable();
-
-        $("#eliminarBT").click( function( e ){
-            $.executePost({
-                action: "/reporte/remove",
-                method: "POST",
-                data: {id_reporte: $("#id_reporte").val()},
-                dataType:"json",
-                success: function(data){
-                    table.row('#tr_'+$("#id_reporte").val()).remove().draw( false );
-                },
-                successMsg: "Reporte eliminada.",
-                errorMsg: "Ocurrió un error al eliminar el reporte."
-            });
+    var refreshTable = function () {
+      if (id_plantilla != 0) {
+        $.executeFetch({
+          action: "/reporte/fetchAllByIdPlantilla",
+          method: "POST",
+          dataType: "json",
+          data: {id_plantilla: id_plantilla},
+          success: function (data) {
+            drawReportesTB(data);
+          },
+          errorMsg: "Ocurrió un error al obtener las reportes."
         });
-
-        $('#eliminarModal').on('show.bs.modal', function(e) {
-            var id_reporte = $(e.relatedTarget).data('id');
-            $("#id_reporte").val(id_reporte);
+        $.executeFetch({
+          action: "/plantilla/fetch",
+          data: {id_plantilla: $("#id_plantilla").val()},
+          method: "POST",
+          dataType: "json",
+          success: function (data) {
+            $("#plantillaBC").html(data.nombre);
+            $("#plantillaBC").attr("href", "/plantilla?id=" + data.id);
+            $("#reportesBC").attr("href", "/reportes?id=" + data.id);
+            $("#backBT").attr("href", "/plantilla?id=" + data.id);
+          },
+          errorMsg: "Ocurrió un error al obtener la plantilla."
         });
+      } else {
+        $.executeFetch({
+          action: "/reporte/fetchAllPermisosByIdUsuarioAndTipoEmpleado",
+          method: "POST",
+          dataType: "json",
+          success: function (data) {
+            drawReportesTB(data);
+          },
+          errorMsg: "Ocurrió un error al obtener los reportes."
+        });
+        $(".breadcrumb").children().each(function (index) {
+          if (index == 1 || index == 2) {
+            $(this).remove();
+          }
+        });
+      }
+    }
 
+    refreshTable();
+
+    $("#eliminarBT").click(function (e) {
+      $.executePost({
+        action: "/reporte/remove",
+        method: "POST",
+        data: {id_reporte: $("#id_reporte").val()},
+        dataType: "json",
+        success: function (data) {
+          table.row('#tr_' + $("#id_reporte").val()).remove().draw(false);
+        },
+        successMsg: "Reporte eliminada.",
+        errorMsg: "Ocurrió un error al eliminar el reporte."
+      });
     });
+
+    $('#eliminarModal').on('show.bs.modal', function (e) {
+      var id_reporte = $(e.relatedTarget).data('id');
+      $("#id_reporte").val(id_reporte);
+    });
+
+  });
 </script>
 
 <input type="hidden" id="id_plantilla" name="id_plantilla" value="<?php echo isset($id) ? $id : 0; ?>"/>
-<input type="hidden" id="id_usuario" name="id_usuario" value="<?php echo $user['id']; ?>"/>
-<input type="hidden" id="id_tipo_empleado" name="id_tipo_empleado" value="<?php echo $user['id_tipo_empleado']; ?>"/>
+<input type="hidden" id="control_reporte" name="control_reporte" value="<?php echo $control_reporte; ?>"/>
 
 <div class="row">
-    <div class="col-lg-12">
-        <section class="panel">
-            <header class="panel-heading">
-                Reportes Disponibles
-                <a href="/reporte?id_plantilla=<?php echo $id; ?>" class="btn  btn-primary pull-right">
-                    Agregar
-                </a>
-            </header>
-            <div class="panel-body">
-                <table id="mainTable" class="table table-bordered" cellspacing="0" width="100%">
-                    <thead>
-                    <tr>
-                        <th>No.</th>
-                        <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Descripción</th>
-                        <th>Período</th>
-                        <th>Consultar</th>
-                        <th>Eliminar</th>
-                    </tr>
-                    </thead>
-                    <tbody id="mainTableBody"></tbody>
-                </table>
-            </div>
-        </section>
-    </div>
+  <div class="col-lg-12">
+    <section class="panel">
+      <header class="panel-heading">
+        Reportes Disponibles
+        <?php if ($user['id_rol_usuario'] == $roles['ADMINISTRADOR']
+          || $user['id_rol_usuario'] == $roles['ADMINISTRADOR_PLANTILLAS']
+          || ($user['id_rol_usuario'] == $roles['ADMINISTRADOR_REPORTES']) &&
+          $control_reporte == $roles['CONTROL_REPORTE_GENERAR']) { ?>
+          <a href="/reporte?id_plantilla=<?php echo $id; ?>" class="btn  btn-primary pull-right">
+            Agregar
+          </a>
+        <?php } ?>
+      </header>
+      <div class="panel-body">
+        <table id="mainTable" class="table table-bordered" cellspacing="0" width="100%">
+          <thead>
+          <tr>
+            <th>No.</th>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Período</th>
+            <th>Consultar</th>
+            <?php if ($user['id_rol_usuario'] == $roles['ADMINISTRADOR']
+            || $user['id_rol_usuario'] == $roles['ADMINISTRADOR_PLANTILLAS']
+            || ($user['id_rol_usuario'] == $roles['ADMINISTRADOR_REPORTES'] &&
+            $control_reporte == $roles['CONTROL_REPORTE_GENERAR'])) { ?>
+              <th>Eliminar</th>
+            <?php } ?>
+          </tr>
+          </thead>
+          <tbody id="mainTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
 </div>
 
-<div aria-hidden="true" aria-labelledby="eliminarModal" role="dialog" tabindex="-1" id="eliminarModal" class="modal fade">
-    <div class="modal-dialog modal-msg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button aria-hidden="true" data-dismiss="modal" class="close" type="button">x</button>
-                <h4 class="modal-title">Eliminar</h4>
+<div aria-hidden="true" aria-labelledby="eliminarModal" role="dialog" tabindex="-1" id="eliminarModal"
+     class="modal fade">
+  <div class="modal-dialog modal-msg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button aria-hidden="true" data-dismiss="modal" class="close" type="button">x</button>
+        <h4 class="modal-title">Eliminar</h4>
+      </div>
+      <div class="modal-body">
+        <form class="form-horizontal" role="form">
+          <input type="hidden" id="id_reporte" name="id_reporte"/>
+
+          <div class="form-group modal-msg-label">
+            <div class="col-lg-offset-1 col-lg-10">
+              <span>¿Está seguro que desea eliminar la reporte?</span>
+
+              <div class="spacer-sm"></div>
             </div>
-            <div class="modal-body">
-                <form class="form-horizontal" role="form">
-                    <input type="hidden" id="id_reporte" name="id_reporte"/>
-                    <div class="form-group modal-msg-label">
-                        <div class="col-lg-offset-1 col-lg-10">
-                            <span>¿Está seguro que desea eliminar la reporte?</span>
-                            <div class="spacer-sm"></div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <div class="col-lg-offset-1 col-lg-12">
-                            <button type="button" id="eliminarBT" class="btn btn-primary" data-dismiss="modal">Eliminar</button>
-                            <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
-                        </div>
-                    </div>
-                </form>
+          </div>
+          <div class="form-group">
+            <div class="col-lg-offset-1 col-lg-12">
+              <button type="button" id="eliminarBT" class="btn btn-primary" data-dismiss="modal">Eliminar</button>
+              <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
             </div>
-        </div>
+          </div>
+        </form>
+      </div>
     </div>
+  </div>
 </div>
 

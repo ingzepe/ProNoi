@@ -45,14 +45,14 @@ class Module implements AutoloaderProviderInterface
           $authService->setStorage($sm->get('SanAuth\Model\MyAuthStorage'));
           return $authService;
         },
-        'SanAuth\Model\UsuarioTable' => function($sm) {
+        'Usuarios\Model\UsuarioTable' => function($sm) {
           $dbAdapter = $sm->get('Zend\Db\Adapter\Adapter');
-          $table = new Model\UsuarioTable($dbAdapter);
+          $table = new \Usuarios\Model\UsuarioTable($dbAdapter);
           return $table;
         },
-        'SanAuth\Model\ControlTipoEmpleadoTable' => function($sm) {
+        'SanAuth\Model\ControlReporteTable' => function($sm) {
           $dbAdapter = $sm->get('Zend\Db\Adapter\Adapter');
-          $table = new Model\ControlTipoEmpleadoTable($dbAdapter);
+          $table = new Model\ControlReporteTable($dbAdapter);
           return $table;
         },
       ),

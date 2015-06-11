@@ -1,6 +1,6 @@
 <?php
 
-namespace SanAuth\Model;
+namespace Usuarios\Model;
 
 use Zend\Db\Adapter\Adapter;
 use Zend\Db\TableGateway\AbstractTableGateway;
@@ -88,22 +88,6 @@ class UsuarioTable extends AbstractTableGateway {
         }
 
     }
-
-//    public function fetchByName($nombre) {
-//        $row = $this->select(array('nombre' => $nombre))->current();
-//        if (!$row){
-//            $entity = new Entity\Usuario(array(
-//                'id' => 0,
-//            ));
-//        }else{
-//            $entity = new Entity\Usuario(array(
-//              'id' => $row["id"],
-//              'id_rol_usuario' => $row["id_rol_usuario"],
-//              'nombre' => $row["nombre"],
-//            ));
-//        }
-//        return $entity->toArray();
-//    }
 
     public function fetchByName($nombre) {
 
