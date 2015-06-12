@@ -1,8 +1,7 @@
 <?php
+  use Application\Model\Application;
   $session = new \Zend\Session\Container('user');
   $user = $session->user;
-  $reader = new Zend\Config\Reader\Ini();
-  $roles = $reader->fromFile('config/autoload/roles.ini');
 ?>
 
 <link rel="stylesheet" href="/css/daterangepicker.css"/>
@@ -118,15 +117,6 @@
       });
     });
 
-//    $('#periodo').on('input', function () {
-//      var val = $(this).val();
-//      if (val) {
-//        $("#festivosDiv").show(500);
-//      } else {
-//        $("#festivosDiv").hide(500);
-//      }
-//    });
-
     //Festivos
     var festivosElements = new Array();
     festivosElements[index++] = "festivo_0";
@@ -175,8 +165,7 @@
         method: "POST",
         dataType: "json",
         success: function (data) {
-          $(".headerSectionTitle").html(data.nombre);
-          $(".headerSectionId").html(data.id);
+          $(".headerSectionTitle").html(data.nombre + ", ID:" + data.id);
           $("#reporteBC").html(data.nombre);
           $("#reporteBC").attr("href", "/reportes?id=" + data.id);
           $("#nombre").val(data.nombre);
@@ -195,8 +184,7 @@
         dataType: "json",
         success: function (data) {
           $("#id_reporte").val(data.id);
-          $(".headerSectionTitle").html(data.nombre);
-          $(".headerSectionId").html(data.id);
+          $(".headerSectionTitle").html(data.nombre + ", ID:" + data.id);
           $("#reporteBC").html(data.nombre);
           $("#reporteBC").attr("href", "/reporte?id=" + data.id);
           //refreshTable
@@ -1415,8 +1403,7 @@
 
     <section class="panel no-display" id="reporteInfoSection">
       <header class="panel-heading">
-        <span class="headerSectionTitle"></span>,
-        ID: <span class="headerSectionId"></span>
+        <span class="headerSectionTitle">Nuevo Reporte</span>
       </header>
       <div class="panel-body">
         <div class="form">
@@ -1538,12 +1525,11 @@
 
     <section class="panel no-display" id="contenidoReporteSection">
       <header class="panel-heading">
-        <span class="headerSectionTitle"></span>,
-        ID: <span class="headerSectionId"></span>
-        <?php if ($user['id_rol_usuario'] == $roles['ADMINISTRADOR']
-          || $user['id_rol_usuario'] == $roles['ADMINISTRADOR_PLANTILLAS']
-          || ($user['id_rol_usuario'] == $roles['ADMINISTRADOR_REPORTES'] &&
-            $control_reporte == $roles['CONTROL_REPORTE_GENERAR'])) { ?>
+        <span class="headerSectionTitle"></span>
+        <?php if ($user['id_rol_usuario'] == Application::ROL_ADMINISTRADOR
+          || $user['id_rol_usuario'] == Application::ROL_ADMINISTRADOR_PLANTILLAS
+          || ($user['id_rol_usuario'] == Application::ROL_ADMINISTRADOR_REPORTES &&
+            $control_reporte == Application::CONTROL_REPORTE_GENERAR)) { ?>
         <a href="javascript:void(0)" id="recalcularBT" class="btn  btn-primary pull-right">
           <i class='icon-sm icon_cog'></i>Recalcular Reporte
         </a>

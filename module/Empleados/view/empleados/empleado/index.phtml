@@ -143,20 +143,37 @@
         method: "POST",
         dataType: "json",
         success: function (data) {
-          console.log(data);
-          $("#headerSection").html(data.nombre);
-          $("#empleadoBC").html(data.nombre);
-          $("#empleadoBC").attr("href", "/empleado?id=" + data.id);
-          $("#unidad_negocio").val(data.id_unidad);
-          $("#tipo_empleado").val(data.id_tipo_empleado);
-          $("#nombre").val(data.nombre);
-          $("#id_mitrol").val(data.id_mitrol);
-          $("#id_rh").val(data.id_rh);
-          $("#fecha_ingreso").val(data.fecha_ingreso.substring(0, 10));
-          $("#horario_1").val(data.horario.substring(0, 5));
-          $("#horario_2").val(data.horario.substring(6, 11));
-          $("#campana").val(data.campana);
-          $("#agregarBT").attr("href", "/campo?id_empleado=" + data.id);
+
+          $.executeFetch({
+            action: "/empleado/fetchAllTipoEmpleadoByIdUnidad",
+            method: "POST",
+            dataType: "json",
+            data: { id_unidad:  data.id_unidad},
+            success: function (tipoEmpleadoData) {
+
+              var html = "<option value=''>Seleccionar</option>";
+              tipoEmpleadoData.forEach(function (tipo) {
+                html += "<option value='"+tipo.id+"'>"+tipo.tipo+"</option>";
+              });
+              $("#tipo_empleado").html(html);
+
+              $("#headerSection").html(data.nombre);
+              $("#empleadoBC").html(data.nombre);
+              $("#empleadoBC").attr("href", "/empleado?id=" + data.id);
+              $("#unidad_negocio").val(data.id_unidad);
+              $("#tipo_empleado").val(data.id_tipo_empleado);
+              $("#nombre").val(data.nombre);
+              $("#id_mitrol").val(data.id_mitrol);
+              $("#id_rh").val(data.id_rh);
+              $("#fecha_ingreso").val(data.fecha_ingreso.substring(0, 10));
+              $("#horario_1").val(data.horario.substring(0, 5));
+              $("#horario_2").val(data.horario.substring(6, 11));
+              $("#campana").val(data.campana);
+              $("#agregarBT").attr("href", "/campo?id_empleado=" + data.id);
+
+            },
+            errorMsg: "Ocurrió un error al obtener la lista de tipo empleado."
+          });
         },
         errorMsg: "Ocurrió un error al obtener la empleado."
       });
@@ -165,6 +182,25 @@
     if (parseInt($("#id_empleado").val()) !== 0) {
       fetch();
     }
+
+    $("#unidad_negocio").change(function (e) {
+      var id_unidad = $(this).val();
+      $("#tipo_empleado").val("");
+      $.executeFetch({
+        action: "/empleado/fetchAllTipoEmpleadoByIdUnidad",
+        method: "POST",
+        dataType: "json",
+        data: { id_unidad: id_unidad },
+        success: function (tipoEmpleadoData) {
+          var html = "<option value=''>Seleccionar</option>";
+          tipoEmpleadoData.forEach(function (tipo) {
+            html += "<option value='"+tipo.id+"'>"+tipo.tipo+"</option>";
+          });
+          $("#tipo_empleado").html(html);
+        },
+        errorMsg: "Ocurrió un error al obtener la plantilla."
+      });
+    });
 
     $("#addEmpleadoBT").click(function (e) {
       $("#horario").val($("#horario_1").val() + "-" + $("#horario_2").val());
@@ -217,10 +253,6 @@
 
               <div class="col-lg-5">
                 <select class="form-control m-bot15" id="tipo_empleado" name="tipo_empleado" required>
-                  <option value="">Seleccionar</option>
-                  <option value="1">Operador Telefónico</option>
-                  <option value="2">Supervisor</option>
-                  <option value="3">Gerente</option>
                 </select>
               </div>
             </div>

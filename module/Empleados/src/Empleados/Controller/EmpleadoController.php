@@ -204,6 +204,7 @@ class EmpleadoController extends AbstractActionController
     $response = $this->getResponse();
     $post_data = $request->getPost();
     $id_tipo_empleado = $post_data['id_tipo_empleado'];
+
     if (!$empleado = $this->getEmpleadoTable()->fetchFirst($id_tipo_empleado)) {
       $response->setContent(\Zend\Json\Json::encode(array('status' => false)));
     } else {
@@ -216,10 +217,28 @@ class EmpleadoController extends AbstractActionController
   public function fetchAllTipoEmpleadoAction()
   {
     $this->layout('layout/json');
+    $response = $this->getResponse();
+
+    $tipos = $this->getTipoEmpleadoTable()->fetchAll();
+    $count = count($tipos);
+    if ($count < 0) {
+      $response->setContent(\Zend\Json\Json::encode(array('status' => false)));
+    } else {
+      $tipos = \Zend\Json\Json::encode($tipos);
+      $response->setContent(\Zend\Json\Json::encode(array('status' => true, 'data' => $tipos)));
+    }
+    return $response;
+  }
+
+  public function fetchAllTipoEmpleadoByIdUnidadAction()
+  {
+    $this->layout('layout/json');
     $request = $this->getRequest();
     $response = $this->getResponse();
     $post_data = $request->getPost();
-    $tipos = $this->getTipoEmpleadoTable()->fetchAll();
+    $id_unidad = $post_data['id_unidad'];
+
+    $tipos = $this->getTipoEmpleadoTable()->fetchAllByIdUnidad($id_unidad);
     $count = count($tipos);
     if ($count < 0) {
       $response->setContent(\Zend\Json\Json::encode(array('status' => false)));

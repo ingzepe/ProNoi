@@ -2,10 +2,10 @@
 
 namespace Reportes\Controller;
 
+use Application\Model\Application;
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
 use Zend\Session\Container;
-use Zend\Config\Reader\Ini;
 
 class ReporteController extends AbstractActionController
 {
@@ -19,11 +19,6 @@ class ReporteController extends AbstractActionController
   public function getCurrentUser(){
     $session = new Container('user');
     return $session->user;
-  }
-
-  public function getCurrentRoles(){
-    $reader = new Ini();
-    return $reader->fromFile('config/autoload/roles.ini');
   }
 
   public function getReporteTable()
@@ -198,21 +193,29 @@ class ReporteController extends AbstractActionController
     $this->getContenidoReporteTable()->removeAll($id_reporte);
     for ($i = 0; $i < count($content); $i++) {
       for ($j = 0; $j < count($content[$i]); $j++) {
-        $reporte = new \Reportes\Model\Entity\ContenidoReporte();
-        $reporte->setIdReporte($id_reporte);
-        $reporte->setIdEmpleado($content[$i][1]);
-        $reporte->setOrden($j);
-        $reporte->setValor(trim($content[$i][$j]));
+        $contenido = new \Reportes\Model\Entity\ContenidoReporte();
+        $contenido->setIdReporte($id_reporte);
+        $contenido->setIdEmpleado($content[$i][1]);
+        $contenido->setOrden($j);
+        $contenido->setValor(trim($content[$i][$j]));
         if ($i != 0) {
-          if (!$last_inserted = $this->getContenidoReporteTable()->saveCampo($reporte)) {
+          if (!$last_inserted = $this->getContenidoReporteTable()->saveCampo($contenido)) {
             $status = false;
             break;
           }
         } else {
-          if (!$last_inserted = $this->getContenidoReporteTable()->saveHeader($reporte)) {
+          if (!$last_inserted = $this->getContenidoReporteTable()->saveHeader($contenido)) {
             $status = false;
             break;
           }
+        }
+        $reporte = new \Reportes\Model\Entity\Reporte();
+        $reporte->setId($id_reporte);
+        $reporte->setIdEstado(Application::REPORTE_ESTADO_COMPLETADO);
+        if (!$this->getReporteTable()->updateEstado($reporte))
+          $response->setContent(\Zend\Json\Json::encode(array('status' => false)));
+        else {
+          $response->setContent(\Zend\Json\Json::encode(array('status' => true)));
         }
       }
       if (!$status) {
@@ -309,9 +312,8 @@ class ReporteController extends AbstractActionController
   public function fetchAllPermisosByIdPlantillaAndIdUsuarioOrTipoEmpleado($id_plantilla)
   {
     $user = $this->getCurrentUser();
-    $roles = $this->getCurrentRoles();
 
-    $response = $roles['CONTROL_REPORTE_CONSULTAR'];
+    $response = Application::CONTROL_REPORTE_CONSULTAR;
 
     $id_usuario_responsable = $user['id'];
     $id_tipo_empleado_responsable = $user['id_tipo_empleado'];

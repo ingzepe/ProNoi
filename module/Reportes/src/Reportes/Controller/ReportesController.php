@@ -2,10 +2,10 @@
 
 namespace Reportes\Controller;
 
+use Application\Model\Application;
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
 use Zend\Session\Container;
-use Zend\Config\Reader\Ini;
 
 class ReportesController extends AbstractActionController
 {
@@ -16,12 +16,6 @@ class ReportesController extends AbstractActionController
   {
     $session = new Container('user');
     return $session->user;
-  }
-
-  public function getCurrentRoles()
-  {
-    $reader = new Ini();
-    return $reader->fromFile('config/autoload/roles.ini');
   }
 
   public function getControlReporteTable()
@@ -50,9 +44,8 @@ class ReportesController extends AbstractActionController
   public function fetchAllPermisosByIdPlantillaAndIdUsuarioOrTipoEmpleado($id_plantilla)
   {
     $user = $this->getCurrentUser();
-    $roles = $this->getCurrentRoles();
 
-    $response = $roles['CONTROL_REPORTE_CONSULTAR'];
+    $response = Application::CONTROL_REPORTE_CONSULTAR;
 
     $id_usuario_responsable = $user['id'];
     $id_tipo_empleado_responsable = $user['id_tipo_empleado'];

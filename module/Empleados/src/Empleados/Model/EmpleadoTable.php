@@ -62,6 +62,9 @@ class EmpleadoTable extends AbstractTableGateway
     $where->equalTo('tab_empleado.id_tipo_empleado', $id_tipo_empleado);
     $select->where($where);
     $where = new Where();
+    $where->equalTo('tab_empleado.activo', 'True');
+    $select->where($where);
+    $where = new Where();
     $where->in('tab_empleado.id_mitrol', [144, 153, 161, 162, 235, 236, 242, 245, 246, 247, 250, 266, 272, 281, 291, 292, 293]);
     $select->where($where);
 
@@ -101,6 +104,10 @@ class EmpleadoTable extends AbstractTableGateway
       ->join('tab_unidad_negocio', 'tab_unidad_negocio.id = tab_tipo_empleado.id_unidad',
         array('unidad_negocio' => 'nombre'));
 
+    $where = new Where();
+    $where->equalTo('tab_empleado.activo', 'True');
+    $select->where($where);
+
     $statement = $sql->prepareStatementForSqlObject($select);
     $resultSet = $statement->execute();
 
@@ -137,6 +144,9 @@ class EmpleadoTable extends AbstractTableGateway
       ->join('tab_unidad_negocio', 'tab_unidad_negocio.id = tab_tipo_empleado.id_unidad',
         array('unidad_negocio' => 'nombre'));
 
+    $where = new Where();
+    $where->equalTo('tab_empleado.activo', 'True');
+    $select->where($where);
     $where = new  Where();
     $where->equalTo('tab_empleado.id', $id);
     $select->where($where);
@@ -173,7 +183,7 @@ class EmpleadoTable extends AbstractTableGateway
 
   public function fetchByName($nombre)
   {
-    $row = $this->select(array('nombre' => $nombre))->current();
+    $row = $this->select(array('nombre' => $nombre,'activo' => 'True'))->current();
     if (!$row) {
       $entity = new Entity\Empleado(array(
         'id' => 0,
@@ -194,7 +204,7 @@ class EmpleadoTable extends AbstractTableGateway
 
   public function fetchByIdMitrol($id_mitrol)
   {
-    $row = $this->select(array('id_mitrol' => $id_mitrol))->current();
+    $row = $this->select(array('id_mitrol' => $id_mitrol,'activo' => 'True'))->current();
     if (!$row) {
       $entity = new Entity\Empleado(array(
         'id' => 0,
@@ -215,7 +225,7 @@ class EmpleadoTable extends AbstractTableGateway
 
   public function fetchByIdRH($id_rh)
   {
-    $row = $this->select(array('id_rh' => $id_rh))->current();
+    $row = $this->select(array('id_rh' => $id_rh,'activo' => 'True'))->current();
     if (!$row) {
       $entity = new Entity\Empleado(array(
         'id' => 0,
@@ -234,9 +244,21 @@ class EmpleadoTable extends AbstractTableGateway
     return $entity->toArray();
   }
 
+//  public function removeEmpleado($id)
+//  {
+//    return $this->delete(array('id' => (int)$id));
+//  }
+
   public function removeEmpleado($id)
   {
-    return $this->delete(array('id' => (int)$id));
+    $data = array(
+      'activo' => 'False',
+    );
+    if (!$this->update($data, array('id' => $id))) {
+      return false;
+    } else {
+      return $id;
+    }
   }
 
 }

@@ -91,6 +91,25 @@
       }
     });
 
+    $("#unidad_negocio").change(function (e) {
+      var id_unidad = $(this).val();
+      $("#tipo_empleado").val("");
+      $.executeFetch({
+        action: "/empleado/fetchAllTipoEmpleadoByIdUnidad",
+        method: "POST",
+        dataType: "json",
+        data: { id_unidad: id_unidad },
+        success: function (tipoEmpleadoData) {
+          var html = "<option value=''>Seleccionar</option>";
+          tipoEmpleadoData.forEach(function (tipo) {
+            html += "<option value='"+tipo.id+"'>"+tipo.tipo+"</option>";
+          });
+          $("#tipo_empleado").html(html);
+        },
+        errorMsg: "Ocurrió un error al obtener la plantilla."
+      });
+    });
+
     var fetch = function () {
       $.executeFetch({
         action: "/plantilla/fetch",
@@ -98,21 +117,39 @@
         method: "POST",
         dataType: "json",
         success: function (data) {
-          $("#headerSection").html(data.nombre);
-          $("#plantillaBC").html(data.nombre);
-          $("#plantillaBC").attr("href", "/plantilla?id=" + data.id);
-          $("#unidad_negocio").val(data.id_unidad_negocio);
-          $("#tipo_empleado").val(data.id_tipo_empleado);
-          $("#nombre").val(data.nombre);
-          $("#descripcion").val(data.descripcion);
-          $("#agregarBT").attr("href", "/campo?id_plantilla=" + data.id);
-          $("#prmisosSection").show();
-          $("#camposSection").show();
-          $("#previewSection").show();
-          $("#reglasSection").show();
-          $("#reglasSection").attr("href", "/reglas?id=" + data.id);
-          $("#reportesSection").show();
-          $("#reportesSection").attr("href", "/reportes?id=" + data.id);
+
+          $.executeFetch({
+            action: "/empleado/fetchAllTipoEmpleadoByIdUnidad",
+            method: "POST",
+            dataType: "json",
+            data: { id_unidad:  data.id_unidad_negocio},
+            success: function (tipoEmpleadoData) {
+
+              var html = "<option value=''>Seleccionar</option>";
+              tipoEmpleadoData.forEach(function (tipo) {
+                html += "<option value='"+tipo.id+"'>"+tipo.tipo+"</option>";
+              });
+              $("#tipo_empleado").html(html);
+
+              $("#headerSection").html(data.nombre);
+              $("#plantillaBC").html(data.nombre);
+              $("#plantillaBC").attr("href", "/plantilla?id=" + data.id);
+              $("#unidad_negocio").val(data.id_unidad_negocio);
+              $("#tipo_empleado").val(data.id_tipo_empleado);
+              $("#nombre").val(data.nombre);
+              $("#descripcion").val(data.descripcion);
+              $("#agregarBT").attr("href", "/campo?id_plantilla=" + data.id);
+              $("#prmisosSection").show();
+              $("#camposSection").show();
+              $("#previewSection").show();
+              $("#reglasSection").show();
+              $("#reglasSection").attr("href", "/reglas?id=" + data.id);
+              $("#reportesSection").show();
+              $("#reportesSection").attr("href", "/reportes?id=" + data.id);
+
+            },
+            errorMsg: "Ocurrió un error al obtener la plantilla."
+          });
         },
         errorMsg: "Ocurrió un error al obtener la plantilla."
       });
@@ -236,7 +273,6 @@
 
         $.executeFetch({
           action: "/empleado/fetchAllTipoEmpleado",
-          data: {},
           method: "POST",
           dataType: "json",
           success: function (data) {
@@ -486,6 +522,7 @@
                 <select class="form-control" id="unidad_negocio" name="unidad_negocio" required>
                   <option value="">Seleccionar</option>
                   <option value="1">Club de Asistencia</option>
+                  <option value="2">Proventel</option>
                 </select>
               </div>
             </div>
@@ -494,8 +531,6 @@
 
               <div class="col-lg-5">
                 <select class="form-control m-bot15" id="tipo_empleado" name="tipo_empleado" required>
-                  <option value="">Seleccionar</option>
-                  <option value="1">call center</option>
                 </select>
               </div>
             </div>

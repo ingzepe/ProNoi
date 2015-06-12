@@ -42,7 +42,6 @@ class PlantillaTable extends AbstractTableGateway
 
   public function fetchAll()
   {
-
     $sql = new Sql($this->adapter);
     $select = $sql->select();
     $select->from($this->table)
@@ -73,7 +72,6 @@ class PlantillaTable extends AbstractTableGateway
 
   public function fetchAllByIds($ids)
   {
-
     $sql = new Sql($this->adapter);
     $select = $sql->select();
     $select->from($this->table)

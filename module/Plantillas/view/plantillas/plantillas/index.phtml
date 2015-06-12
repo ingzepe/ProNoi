@@ -1,8 +1,7 @@
 <?php
+  use Application\Model\Application;
   $session = new \Zend\Session\Container('user');
   $user = $session->user;
-  $reader = new Zend\Config\Reader\Ini();
-  $roles = $reader->fromFile('config/autoload/roles.ini');
 ?>
 
 <script type="text/javascript" charset="utf-8">
@@ -121,8 +120,8 @@
     <section class="panel">
       <header class="panel-heading">
         Plantillas Disponibles
-        <?php if ($user['id_rol_usuario'] == $roles['ADMINISTRADOR']
-          || $user['id_rol_usuario'] == $roles['ADMINISTRADOR_PLANTILLAS']) { ?>
+        <?php if ($user['id_rol_usuario'] == Application::ROL_ADMINISTRADOR
+          || $user['id_rol_usuario'] == Application::ROL_ADMINISTRADOR_PLANTILLAS) { ?>
           <a href="/plantilla" class="btn  btn-primary pull-right">
             Agregar
           </a>
@@ -138,8 +137,8 @@
             <th>Unidad de Negocio</th>
             <th>Tipo Empleado</th>
             <th>Consultar</th>
-            <?php if ($user['id_rol_usuario'] == $roles['ADMINISTRADOR']
-            || $user['id_rol_usuario'] == $roles['ADMINISTRADOR_PLANTILLAS']) { ?>
+            <?php if ($user['id_rol_usuario'] == Application::ROL_ADMINISTRADOR
+              || $user['id_rol_usuario'] == Application::ROL_ADMINISTRADOR_PLANTILLAS) { ?>
             <th>Eliminar</th>
             <?php } ?>
           </tr>

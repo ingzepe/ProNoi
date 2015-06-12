@@ -2,10 +2,10 @@
 
 namespace Plantillas\Controller;
 
+use Application\Model\Application;
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
 use Zend\Session\Container;
-use Zend\Config\Reader\Ini;
 
 class PlantillaController extends AbstractActionController
 {
@@ -16,11 +16,6 @@ class PlantillaController extends AbstractActionController
   public function getCurrentUser(){
     $session = new Container('user');
     return $session->user;
-  }
-
-  public function getCurrentRoles(){
-    $reader = new Ini();
-    return $reader->fromFile('config/autoload/roles.ini');
   }
 
   public function getPlantillaTable()
@@ -57,6 +52,7 @@ class PlantillaController extends AbstractActionController
   {
     $this->layout('layout/json');
     $response = $this->getResponse();
+
     $plantillas = $this->getPlantillaTable()->fetchAll();
     $count = count($plantillas);
     if ($count < 0) {
@@ -71,8 +67,7 @@ class PlantillaController extends AbstractActionController
   public function fetchAllAction()
   {
     $user = $this->getCurrentUser();
-    $roles = $this->getCurrentRoles();
-    if($user['id_rol_usuario'] == $roles['ADMINISTRADOR'] || $user['id_rol_usuario'] == $roles['ADMINISTRADOR_PLANTILLAS']){
+    if($user['id_rol_usuario'] == Application::ROL_ADMINISTRADOR || $user['id_rol_usuario'] == Application::ROL_ADMINISTRADOR_PLANTILLAS){
       return $this->fetchAll();
     }else{
       $id_usuario_responsable = $user['id'];

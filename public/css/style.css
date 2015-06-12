@@ -4160,6 +4160,11 @@ table.dataTable td, table.dataTable th {
   cursor: pointer;
 }
 
+.icon-disabled {
+  color: gray !important;
+  cursor: default !important;;
+}
+
 .progress-xs {
   height: 8px;
 }

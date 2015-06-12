@@ -42,10 +42,35 @@ class TipoEmpleadoTable extends AbstractTableGateway
 
   public function fetchAll()
   {
-
     $sql = new Sql($this->adapter);
     $select = $sql->select();
     $select->from($this->table);
+
+    $statement = $sql->prepareStatementForSqlObject($select);
+    $resultSet = $statement->execute();
+
+    $entities = array();
+    foreach ($resultSet as $row) {
+      $entity = new Entity\Empleado(array(
+        'id' => $row["id"],
+        'id_unidad' => $row["id_unidad"],
+        'tipo' => $row["tipo"],
+        'descripcion' => $row["descripcion"],
+      ));
+      $entities[] = $entity->toArray();
+    }
+    return $entities;
+  }
+
+  public function fetchAllByIdUnidad($id_unidad)
+  {
+    $sql = new Sql($this->adapter);
+    $select = $sql->select();
+    $select->from($this->table);
+
+    $where = new  Where();
+    $where->equalTo('tab_tipo_empleado.id_unidad', $id_unidad);
+    $select->where($where);
 
     $statement = $sql->prepareStatementForSqlObject($select);
     $resultSet = $statement->execute();
