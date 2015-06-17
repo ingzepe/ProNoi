@@ -65,7 +65,10 @@ class EmpleadoTable extends AbstractTableGateway
     $where->equalTo('tab_empleado.activo', 'True');
     $select->where($where);
     $where = new Where();
-    $where->in('tab_empleado.id_mitrol', [144, 153, 161, 162, 235, 236, 242, 245, 246, 247, 250, 266, 272, 281, 291, 292, 293]);
+    $where->isNotNull('tab_empleado.id_rh');
+    $select->where($where);
+    $where = new Where();
+    $where->isNotNull('tab_empleado.id_mitrol');
     $select->where($where);
 
     $statement = $sql->prepareStatementForSqlObject($select);

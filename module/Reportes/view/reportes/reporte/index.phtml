@@ -444,7 +444,7 @@
           $("#paramsAllForm").html("");
           campos.forEach(function (campo) {
 
-            console.log(campo);
+//            console.log(campo);
 
             allCampos[campo.id] = campo;
             var regla = allReglas[campo.id_regla_negocio];
@@ -678,10 +678,10 @@
             success: function (empleados) {
               var trs = "";
               var totalEmpleados = empleados.length;
-//              empleados.forEach(function (empleado) {
-              for(var i=0; i<2; i++){
+              empleados.forEach(function (empleado) {
+//              for(var i=0; i<2; i++){
+//                var empleado = empleados[i];
 
-                var empleado = empleados[i];
                 //static
                 trs += "<tr>";
                 trs += "<td><i class='icon-sm glyphicon glyphicon-ok-sign icon-pending ok_"+empleado.id+"'></i>&nbsp;" + empleado.nombre + "</td>";
@@ -740,8 +740,8 @@
                   var dateCalculated = false;
                   $(".festivosInpts").each(function() {
                     var festivo = $(this).val();
-                    console.log("dateIndexAux" + dateIndexAux);
-                    console.log("festivo" + festivo);
+//                    console.log("dateIndexAux" + dateIndexAux);
+//                    console.log("festivo" + festivo);
                     if(festivo && festivo == dateIndexAux){
                       selectLayout = "<select class='form-control periodo' id='periodo_"+periodo.id + "_empleado_" + empleado.id + "' value='F'>";
                       selectLayout += "<option value='S'>Festivo</option>";
@@ -779,8 +779,8 @@
 
                 allEmpleados[empleado.id] = empleado;
 
-//              });
-              }
+              });
+//              }
 
               if (campos.length > 0 && empleados.length > 0) {
                 if (table2)
@@ -841,19 +841,18 @@
 
                   reglas.sort(sortBy("orden"));
 
-                  console.log(calcsLeft + "show!");
+//                  console.log(calcsLeft + "show!");
                   $.showSpinner();
                   var nextRegla = true;
                   setTimeout(function() {
                     reglas.forEach(function (regla) {
-                      console.log(regla);
+//                      console.log(regla);
                       if(nextRegla){
                         nextRegla = calcularRegla(regla.id_campo, regla.id_regla, regla.id_empleado);
                       }
                     });
                     if(calcsLeft == 0){
-//                      alert(calcsLeft + "hide!");
-                      console.log(calcsLeft + "hide!");
+//                      console.log(calcsLeft + "hide!");
                       $.hideSpinner();
                     }
                     if(nextRegla){
@@ -1053,7 +1052,7 @@
                           }
                         });
                         try {
-                          console.log("Operación: " + operacion);
+//                          console.log("Operación: " + operacion);
                           result = Parser.evaluate(operacion);
                           $.showMsg("success", allCampos[selectedCampo].nombre + " - Resultado: " + result);
                           $("#campo_" + selectedCampo + "_empleado_" + selectedEmpleado.id).val(result);
@@ -1147,7 +1146,7 @@
       $.hideSpinner();
 
       if (calculate) {
-        console.log("Operación: " + operacion);
+//        console.log("Operación: " + operacion);
         try {
           result = Parser.evaluate(operacion);
           $('#paramsModal').modal('hide');
