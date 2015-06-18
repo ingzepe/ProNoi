@@ -271,6 +271,31 @@ class ReporteController extends AbstractActionController
     return $response;
   }
 
+  public function cambiarEstadoReporteAction()
+  {
+    $this->layout('layout/json');
+    $request = $this->getRequest();
+    $response = $this->getResponse();
+    $post_data = $request->getPost();
+
+    $id_reporte = $post_data['id_reporte'];
+    $id_estado = $post_data['id_estado'];
+    $comentarios = $post_data['comentarios'];
+
+    $reporte = new \Reportes\Model\Entity\Reporte();
+    $reporte->setId($id_reporte);
+    $reporte->setIdEstado($id_estado);
+    $reporte->setComentarios($comentarios);
+
+    if (!$this->getReporteTable()->updateEstado($reporte))
+      $response->setContent(\Zend\Json\Json::encode(array('status' => false)));
+    else {
+      $response->setContent(\Zend\Json\Json::encode(array('status' => true)));
+    }
+
+    return $response;
+  }
+
   /************************************************** By Roles ****************************************************************/
 
   public function fetchAllPermisosByIdUsuarioAndTipoEmpleadoAction()

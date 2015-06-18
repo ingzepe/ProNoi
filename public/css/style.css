@@ -5523,3 +5523,19 @@ span.customSelect.changed {
 .headerSectionId {
   font-weight: bolder;
 }
+
+.margin-right-sm{
+  margin-right: 10px;
+}
+
+.margin-left-sm{
+  margin-left: 10px;
+}
+
+.margin-bottom-sm{
+  margin-bottom: 10px;
+}
+
+.reporteComments{
+  font-size: 14px;
+}

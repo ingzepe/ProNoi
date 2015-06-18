@@ -12,7 +12,7 @@ class Reporte
   protected $_periodo;
   protected $_id_estado;
   protected $_estado;
-
+  protected $_comentarios;
 
   public function __construct(array $options = null)
   {
@@ -153,6 +153,22 @@ class Reporte
   public function setEstado($estado)
   {
     $this->_estado = $estado;
+  }
+
+  /**
+   * @return mixed
+   */
+  public function getComentarios()
+  {
+    return $this->_comentarios;
+  }
+
+  /**
+   * @param mixed $comentarios
+   */
+  public function setComentarios($comentarios)
+  {
+    $this->_comentarios = $comentarios;
   }
 
 }

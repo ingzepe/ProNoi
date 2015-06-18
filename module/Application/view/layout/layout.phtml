@@ -50,36 +50,44 @@
 
   <script type="text/javascript" charset="utf-8">
     // Roles JS
-    var ROL_ADMINISTRADOR             = <?php echo Application::ROL_ADMINISTRADOR ?>;
-    var ROL_ADMINISTRADOR_PLANTILLAS  = <?php echo Application::ROL_ADMINISTRADOR_PLANTILLAS ?>;
-    var ROL_ADMINISTRADOR_REPORTES    = <?php echo Application::ROL_ADMINISTRADOR_REPORTES ?>;
-    var ROL_PERSONAL_NOMINA           = <?php echo Application::ROL_PERSONAL_NOMINA ?>;
-    var ROL_PERSONAL_RH               = <?php echo Application::ROL_PERSONAL_RH ?>;
-    var CONTROL_REPORTE_GENERAR       = <?php echo Application::CONTROL_REPORTE_GENERAR ?>;
-    var CONTROL_REPORTE_CONSULTAR     = <?php echo Application::CONTROL_REPORTE_CONSULTAR ?>;
+    var ROL_ADMINISTRADOR                       = <?php echo Application::ROL_ADMINISTRADOR ?>;
+    var ROL_ADMINISTRADOR_PLANTILLAS            = <?php echo Application::ROL_ADMINISTRADOR_PLANTILLAS ?>;
+    var ROL_ADMINISTRADOR_REPORTES              = <?php echo Application::ROL_ADMINISTRADOR_REPORTES ?>;
+    var ROL_PERSONAL_NOMINA                     = <?php echo Application::ROL_PERSONAL_NOMINA ?>;
+    var ROL_PERSONAL_RH                         = <?php echo Application::ROL_PERSONAL_RH ?>;
+
+    //Permisos Control Reporte
+    var CONTROL_REPORTE_GENERAR                 = <?php echo Application::CONTROL_REPORTE_GENERAR ?>;
+    var CONTROL_REPORTE_CONSULTAR               = <?php echo Application::CONTROL_REPORTE_CONSULTAR ?>;
+    var CONTROL_REPORTE_AUTORIZAR_A_DIRECCION   = <?php echo Application::CONTROL_REPORTE_AUTORIZAR_A_DIRECCION ?>;
+    var CONTROL_REPORTE_AUTORIZAR_A_NOMINA      = <?php echo Application::CONTROL_REPORTE_AUTORIZAR_A_NOMINA ?>;
 
     //Estados
-    var REPORTE_ESTADO_CALCULANDO     = <?php echo Application::REPORTE_ESTADO_CALCULANDO ?>;
-    var REPORTE_ESTADO_COMPLETADO     = <?php echo Application::REPORTE_ESTADO_COMPLETADO ?>;
+    var REPORTE_ESTADO_CALCULANDO               = <?php echo Application::REPORTE_ESTADO_CALCULANDO ?>;
+    var REPORTE_ESTADO_COMPLETADO               = <?php echo Application::REPORTE_ESTADO_COMPLETADO ?>;
+    var REPORTE_ESTADO_AUTORIZADO_POR_GERENCIA  = <?php echo Application::REPORTE_ESTADO_AUTORIZADO_POR_GERENCIA ?>;
+    var REPORTE_ESTADO_RECHAZADO_POR_GERENCIA   = <?php echo Application::REPORTE_ESTADO_RECHAZADO_POR_GERENCIA ?>;
+    var REPORTE_ESTADO_AUTORIZADO_POR_DIRECCION = <?php echo Application::REPORTE_ESTADO_AUTORIZADO_POR_DIRECCION ?>;
+    var REPORTE_ESTADO_RECHAZADO_POR_DIRECCION  = <?php echo Application::REPORTE_ESTADO_RECHAZADO_POR_DIRECCION ?>;
 
     // Constants
-    var TIPO_REGLA_SQL                = <?php echo Application::TIPO_REGLA_SQL ?>;
-    var TIPO_FREGLA_RECURSIVA         = <?php echo Application::TIPO_FREGLA_RECURSIVA ?>;
-    var TIPO_REPETIR_CAMPO_FECHA      = <?php echo Application::TIPO_REPETIR_CAMPO_FECHA ?>;
-    var TIPO_REPETIR_CAMPO_VECES      = <?php echo Application::TIPO_REPETIR_CAMPO_VECES ?>;
-    var CAMPO_ACTIVO                  = <?php echo Application::CAMPO_ACTIVO ?>;
-    var TIPO_CAMPO_CATALOGO           = <?php echo Application::TIPO_CAMPO_CATALOGO ?>;
-    var TIPO_CAMPO_REGLA              = <?php echo Application::TIPO_CAMPO_REGLA ?>;
-    var TIPO_CAMPO_VALOR              = <?php echo Application::TIPO_CAMPO_VALOR ?>;
-    var TIPO_CAMPO_DINAMICO           = <?php echo Application::TIPO_CAMPO_DINAMICO ?>;
-    var TIPO_EXP_CAMPO                = <?php echo Application::TIPO_EXP_CAMPO ?>;
-    var TIPO_EXP_REGLA                = <?php echo Application::TIPO_EXP_REGLA ?>;
-    var TIPO_EXP_NUMERO               = <?php echo Application::TIPO_EXP_NUMERO ?>;
-    var TIPO_EXP_OPERADOR             = <?php echo Application::TIPO_EXP_OPERADOR ?>;
-    var TIPO_EXP_PUNTO                = <?php echo Application::TIPO_EXP_PUNTO ?>;
-    var TIPO_EXP_PARENT_IZQ           = <?php echo Application::TIPO_EXP_PARENT_IZQ ?>;
-    var TIPO_EXP_PARENT_DER           = <?php echo Application::TIPO_EXP_PARENT_DER ?>;
-    var TIPO_EXP_EMPLEADO             = <?php echo Application::TIPO_EXP_EMPLEADO ?>;
+    var TIPO_REGLA_SQL                          = <?php echo Application::TIPO_REGLA_SQL ?>;
+    var TIPO_FREGLA_RECURSIVA                   = <?php echo Application::TIPO_FREGLA_RECURSIVA ?>;
+    var TIPO_REPETIR_CAMPO_FECHA                = <?php echo Application::TIPO_REPETIR_CAMPO_FECHA ?>;
+    var TIPO_REPETIR_CAMPO_VECES                = <?php echo Application::TIPO_REPETIR_CAMPO_VECES ?>;
+    var CAMPO_ACTIVO                            = <?php echo Application::CAMPO_ACTIVO ?>;
+    var TIPO_CAMPO_CATALOGO                     = <?php echo Application::TIPO_CAMPO_CATALOGO ?>;
+    var TIPO_CAMPO_REGLA                        = <?php echo Application::TIPO_CAMPO_REGLA ?>;
+    var TIPO_CAMPO_VALOR                        = <?php echo Application::TIPO_CAMPO_VALOR ?>;
+    var TIPO_CAMPO_DINAMICO                     = <?php echo Application::TIPO_CAMPO_DINAMICO ?>;
+    var TIPO_EXP_CAMPO                          = <?php echo Application::TIPO_EXP_CAMPO ?>;
+    var TIPO_EXP_REGLA                          = <?php echo Application::TIPO_EXP_REGLA ?>;
+    var TIPO_EXP_NUMERO                         = <?php echo Application::TIPO_EXP_NUMERO ?>;
+    var TIPO_EXP_OPERADOR                       = <?php echo Application::TIPO_EXP_OPERADOR ?>;
+    var TIPO_EXP_PUNTO                          = <?php echo Application::TIPO_EXP_PUNTO ?>;
+    var TIPO_EXP_PARENT_IZQ                     = <?php echo Application::TIPO_EXP_PARENT_IZQ ?>;
+    var TIPO_EXP_PARENT_DER                     = <?php echo Application::TIPO_EXP_PARENT_DER ?>;
+    var TIPO_EXP_EMPLEADO                       = <?php echo Application::TIPO_EXP_EMPLEADO ?>;
   </script>
 
 </head>

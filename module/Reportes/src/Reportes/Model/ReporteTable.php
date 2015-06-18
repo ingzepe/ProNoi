@@ -98,6 +98,7 @@ class ReporteTable extends AbstractTableGateway
         'periodo' => $row["periodo"],
         'id_estado' => $row["id_estado"],
         'estado' => $row["estado"],
+        'comentarios' => $row["comentarios"],
       ));
       $entity = $entity->toArray();
     }
@@ -141,6 +142,7 @@ class ReporteTable extends AbstractTableGateway
   {
     $data = array(
       'id_estado' => $reporte->getIdEstado(),
+      'comentarios' => $reporte->getComentarios(),
     );
     $id = (int)$reporte->getId();
     if (!$this->update($data, array('id' => $id))) {

@@ -25,13 +25,25 @@ use Application\Model\Application;
         html += "<td>" + reporte.periodo + "</td>";
         html += "<td>" + reporte.estado + "</td>";
 
-        if($("#id_rol_usuario").val() == ROL_ADMINISTRADOR
+        console.log($("#id_rol_usuario").val());
+        console.log($("#control_reporte").val());
+
+        if(
+          //Administradores
+          $("#id_rol_usuario").val() == ROL_ADMINISTRADOR
           || $("#id_rol_usuario").val() == ROL_ADMINISTRADOR_PLANTILLAS
+          //Generar reportes
           || ($("#id_rol_usuario").val() == ROL_ADMINISTRADOR_REPORTES
           && $("#control_reporte").val() == CONTROL_REPORTE_GENERAR)
+          //Consultar reportes
           || ($("#id_rol_usuario").val() == ROL_ADMINISTRADOR_REPORTES
           && $("#control_reporte").val() == CONTROL_REPORTE_CONSULTAR
-          && reporte.id_estado == REPORTE_ESTADO_COMPLETADO)) {
+          && reporte.id_estado == REPORTE_ESTADO_AUTORIZADO_POR_DIRECCION)
+          //Generar reportes
+          || ($("#id_rol_usuario").val() == ROL_ADMINISTRADOR_REPORTES
+          && ($("#control_reporte").val() == CONTROL_REPORTE_AUTORIZAR_A_DIRECCION
+          || $("#control_reporte").val() == CONTROL_REPORTE_AUTORIZAR_A_NOMINA))
+        ){
           html += "<td class='text-center'>";
           html += "<a href='/reporte?id=" + reporte.id + "&id_plantilla=" + reporte.id_plantilla + "'>";
           html += "<i class='icon-md icon_search_alt'></i>";
