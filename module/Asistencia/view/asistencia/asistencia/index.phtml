@@ -1,0 +1,740 @@
+
+<link rel="stylesheet" href="/css/daterangepicker.css"/>
+<link rel="stylesheet" href="/assets/color-picker/css/bootstrap-colorpicker.css"/>
+<link rel="stylesheet" href="/css/dataTables.tableTools.css"/>
+
+<script src="/js/parser-eval.js"></script>
+<script type="text/javascript" src="/js/jquery.validate.min.js"></script>
+<script src="/js/moment.js"></script>
+<script src="/js/daterangepicker.js"></script>
+<script src="/js/jquery.number.js"></script>
+<script src="/assets/color-picker/js/bootstrap-colorpicker.js"></script>
+
+<script src="/js/jquery.dataTables.js"></script>
+<script src="/js/dataTables.fixedColumns.js"></script>
+<script src="/js/dataTables.tableTools.js"></script>
+
+<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+
+<script type="text/javascript" charset="utf-8">
+  $(document).ready(function () {
+
+    $("#permisos_form").validate({
+      rules: {
+        unidad_negocio: {
+          required: true
+        },
+        tipo_empleado: {
+          required: true
+        },
+        permisos: {
+          required: true
+        },
+        id_usuario_responsable: {
+          required: true
+        }
+      },
+      messages: {
+        asignar_a: {
+          required: "Elija una unidad de negocio."
+        },
+        tipo_empleado: {
+          required: "Elija un tipo de empleado."
+        },
+        permisos: {
+          required: "Elija el tipo de asistencia."
+        },
+        id_usuario_responsable: {
+          required: "Elija un usuario responsable."
+        }
+      },
+      invalidHandler: function (form, validator) {
+        var errors = validator.numberOfInvalids();
+        if (errors) {
+          validator.errorList[0].element.focus();
+        }
+      }
+    });
+
+    $("#unidad_negocio").change(function (e) {
+      var id_unidad = $(this).val();
+      $("#tipo_empleado").val("");
+      $.executeFetch({
+        action: "/empleado/fetchAllTipoEmpleadoByIdUnidad",
+        method: "POST",
+        dataType: "json",
+        data: {
+          id_unidad: id_unidad
+        },
+        success: function (tipoEmpleadoData) {
+          var html = "<option value=''>Seleccionar</option>";
+          tipoEmpleadoData.forEach(function (tipo) {
+            html += "<option value='" + tipo.id + "'>" + tipo.tipo + "</option>";
+          });
+          $("#tipo_empleado").html(html);
+        },
+        errorMsg: "Ocurrió un error al obtener la asistencia."
+      });
+    });
+
+    var refreshUsuarios = function(){
+      $.executeFetch({
+        action: "/usuario/fetchAllByIdRolUsuario",
+        method: "POST",
+        dataType: "json",
+        data: {id_rol_usuario: ROL_ADMINISTRADOR_ASISTENCIA},
+        success: function (usuarios) {
+          var html = "<option value=''>Seleccionar</option>";
+          usuarios.forEach(function (usuario) {
+            html += "<option value='" + usuario.id + "'>" + usuario.nombre + "</option>";
+          });
+          $("#id_usuario_responsable").html(html);
+        },
+        errorMsg: "Ocurrió un error al obtener los usuarios."
+      });
+    };
+    refreshUsuarios();
+
+    var permisosTable;
+    var fetchAllPermisos = function (id_tipo_empleado) {
+      if (permisosTable)
+        permisosTable.destroy();
+      $.executeFetch({
+        action: "/asistencia/fetchAllControlAsistenciaByIdTipoEmpleado",
+        data: {
+          id_tipo_empleado: id_tipo_empleado
+        },
+        method: "POST",
+        dataType: "json",
+        success: function (data) {
+          var html = "";
+          data.forEach(function (permiso) {
+            html += "<tr><td>" + permiso.usuario + "</td>";
+            html += "<td>" + permiso.permisos + "</td>";
+            html += "<td class='text-center'>";
+            html += "<i class='icon-md icon_trash eliminarPermisos' id_control='" + permiso.id + "'></i>";
+            html += "</td></tr>";
+          });
+          $("#permisosTableBody").html(html);
+
+          permisosTable = $('#permisosTable').DataTable({
+            "columns": [
+              {"width": "50%"},
+              {"width": "30%"},
+              {"width": "20%"}
+            ],
+            "language": {
+              "url": "/app/lang/Spanish.json"
+            },
+            "order": [[1, "asc"]],
+            "aoColumnDefs": [
+              {'bSortable': false, 'aTargets': [0]}
+            ]
+          });
+
+          $(".eliminarPermisos").unbind();
+          $(".eliminarPermisos").click(function (e) {
+            var id = $(this).attr("id_control");
+            $.executePost({
+              action: "/asistencia/removeControlAsistencia",
+              method: "POST",
+              data: {id: id},
+              dataType: "json",
+              success: function (data) {
+                fetchAllPermisos();
+              },
+              successMsg: "Permisos eliminados.",
+              errorMsg: "Ocurrió un error al eliminar lso permisos."
+            });
+          });
+        },
+        errorMsg: "Ocurrió un error al obtener los permisos."
+      });
+    };
+
+    $("#tipo_empleado").change(function (e) {
+      var id_tipo_empleado = $(this).val();
+      fetchAllPermisos(id_tipo_empleado);
+    });
+
+    $("#saveResponsablesBT").click(function (e) {
+      $.executePostValid({
+        form: $("#permisos_form"),
+        action: "/asistencia/saveControlAsistencia",
+        method: "POST",
+        dataType: "json",
+        success: function (data) {
+          fetchAllPermisos($("#tipo_empleado").val());
+        },
+        successMsg: "Permisos Guardados.",
+        errorMsg: "Ocurrió un error al guardar los permisos."
+      });
+    });
+
+    /******************************************* Período ***************************************************/
+
+    var REGISTRO_GUARDADO_PREVIO = 0;
+    var REGISTRO_AUTOMATICO = 1;
+    var REGISTRO_MANUAL = 2;
+    var BASE_MITROL = 1;
+
+    var tipoEmpleadoPermitidos = new Array();
+    $.executeFetch({
+      action: "/asistencia/fetchAllControlAsistenciaByByIdUsuario",
+      method: "POST",
+      dataType: "json",
+      success: function (tipoEmpleadoData) {
+        console.log(tipoEmpleadoData);
+        var html = "<option value=''>Seleccionar</option>";
+        tipoEmpleadoData.forEach(function (tipo) {
+          tipoEmpleadoPermitidos[tipo.id] = tipo;
+          html += "<option value='" + tipo.id + "'>" + tipo.tipo_empleado + "</option>";
+        });
+        $("#asistencia_tipo_empleado").html(html);
+      },
+      errorMsg: "Ocurrió un error al obtener la asistencia."
+    });
+
+    $("#asistencia_tipo_empleado").change(function (e) {
+      var index = $(this).val();
+//      console.log(index);
+      console.log(tipoEmpleadoPermitidos);
+      var tipoEmpleadoSelected = tipoEmpleadoPermitidos[index];
+      if(tipoEmpleadoSelected.id_cat_control_asistencia = REGISTRO_AUTOMATICO){
+        $("#registro_automatico").show(500);
+        $("#registro_manual").hide(500);
+      }else{
+        $("#registro_automatico").hide(500);
+        $("#registro_manual").show(500);
+      }
+    });
+
+    var index = 0;
+    $('#periodo').dateRangePicker({
+      format: 'DD/MM/YYYY',
+      separator: ' - ',
+      setValue: function (dates) {
+        this.value = dates;
+        index = 1;
+        $("#festivosDiv").hide(500);
+        $("#festivosInpts").children().each(function (index) {
+          if(index == 0){
+            $("#festivo_0").val("");
+          }else{
+            $(this).remove();
+          }
+        });
+      }
+    });
+
+    var periodoDate;
+    $("#addFestivosBT").click(function (e) {
+      if($("#periodo").val()){
+        periodoDate = $.inputToDates($("#periodo").val());
+        $("#festivosDiv").show(500);
+        $("#deleteFestivosBT").show(500);
+        $("#festivo_0").dateRangePicker({
+          format: 'DD/MM/YYYY',
+          separator: ' - ',
+          singleDate: true,
+          startDate: periodoDate.inicio,
+          endDate: periodoDate.fin
+        });
+      }else{
+        $.showMsg("error", "Seleccione un período.");
+      }
+    });
+
+    $("#deleteFestivosBT").click(function (e) {
+      index = 1;
+      $("#deleteFestivosBT").hide(500);
+      $("#festivosDiv").hide(500);
+      $("#festivosInpts").children().each(function (index) {
+        if(index == 0){
+          $("#festivo_0").val("");
+        }else{
+          $(this).remove();
+        }
+      });
+    });
+
+    //Festivos
+    var festivosElements = new Array();
+    festivosElements[index++] = "festivo_0";
+    $(".icon_plus_alt").click(function (ev) {
+      var id = "festivo_" + index;
+      var html = $("#calendarLayout").html().replaceAll("?idFestivo", id);
+      festivosElements[index++] = id;
+      $("#festivosInpts").append(html);
+      $("#" + id).dateRangePicker({
+        format: 'DD/MM/YYYY',
+        separator: ' - ',
+        singleDate: true,
+        startDate: periodoDate.inicio,
+        endDate: periodoDate.fin
+      });
+      $("#removeFestivo_" + id).click(function (ev) {
+        $(this).parent().parent().remove();
+        var removeId = $(this).attr("id");
+        var position = parseInt(removeId.substring(22));
+        festivosElements.splice(position, 1);
+      });
+    });
+
+    $("#registro").change(function (e) {
+      var type = $(this).val();
+      if(type == 1){
+        $("#registro_base_div").show(500);
+      }else{
+        $("#registro_base_div").hide(500);
+      }
+    });
+
+    /******************************************* Asistencia ***************************************************/
+
+    var allEmpleados = new Array();
+    var table2;
+
+    $("#asistencia_form").validate({
+      rules: {
+        asistencia_tipo_empleado: {
+          required: true
+        },
+        periodo: {
+          required: true
+        },
+        registro: {
+          required: true
+        },
+        registro_base: {
+          required: true
+        }
+      },
+      messages: {
+        asistencia_tipo_empleado: {
+          required: "Elija un tipo de empleado."
+        },
+        periodo: {
+          required: "Elija un período."
+        },
+        registro: {
+          required: "Elija un tipo de registro."
+        },
+        registro_base: {
+          required: "Elija en base a qué desea calcular la asistencia."
+        }
+      },
+      invalidHandler: function (form, validator) {
+        var errors = validator.numberOfInvalids();
+        if (errors) {
+          validator.errorList[0].element.focus();
+        }
+      }
+    });
+
+    $("#consultarAsistenciaBT").click(function (e) {
+      if($("#asistencia_form").valid()){
+
+        var type = $("#registro").val();
+        if(type == REGISTRO_AUTOMATICO){
+          var db = $("#registro_base").val();
+          if(db == BASE_MITROL){
+
+            $.showSpinner();
+
+            setTimeout(function() {
+
+              $("#previewSection").show(500);
+
+              var ths = "";
+              var contenido = "";
+
+              //static
+              ths += "<th>Nombre</th>";
+              ths += "<th>Id Empleado Pronoi</th>";
+              ths += "<th>Id Empleado RH</th>";
+//            ths += "<th>Id Empleado Mitrol</th>";
+//            ths += "<th>Fecha Ingreso</th>";
+              ths += "<th>Horario</th>";
+//            ths += "<th>Unidad de Negocio</th>";
+//            ths += "<th>Puesto</th>";
+//            ths += "<th>Campaña</th>";
+//            ths += "<th>Jefe Inmediato</th>";
+//            ths += "<th>Sueldo Diario</th>";
+
+              //periodo
+              var periodos = new Array();
+              var periodoDate = $.inputToDates($("#periodo").val());
+
+              while (periodoDate.inicio <= periodoDate.fin) {
+                var label = periodoDate.inicio.toLocaleString().split(" ");
+                var periodo = {
+                  id: label[0].replaceAll("/", "_"),
+                  label: $.fixCeroDate(label[0], "/"),
+                  value: new Date(periodoDate.inicio)
+                };
+                periodos.push(periodo);
+                ths += "<th>" + periodo.label + "</td>";
+                var newDate = periodoDate.inicio.setDate(periodoDate.inicio.getDate() + 1);
+                periodoDate.inicio = new Date(newDate);
+              }
+
+              var tableWidth = (11 + periodos.length) * 200;
+              $("#previewTable").attr("width", tableWidth + "px");
+
+              $.executeSyncFetch({
+                action: "/empleado/fetchAllByIdTipoEmpleado",
+                method: "POST",
+                dataType: "json",
+                data: {id_tipo_empleado: $("#asistencia_tipo_empleado").val()},
+                success: function (empleados) {
+                  var trs = "";
+                  var totalEmpleados = empleados.length;
+//                  empleados.forEach(function (empleado) {
+                for(var i=0; i<10; i++){
+                  var empleado = empleados[i];
+
+                    //static
+                    trs += "<tr>";
+                    trs += "<td>" + empleado.nombre + "</td>";
+                    trs += "<td>" + empleado.id + "</td>";
+                    trs += "<td>" + empleado.id_rh + "</td>";
+//                  trs += "<td>" + empleado.id_mitrol + "</td>";
+//                  trs += "<td>" + empleado.fecha_ingreso + "</td>";
+                    trs += "<td>" + empleado.horario + "</td>";
+//                  trs += "<td>" + empleado.unidad_negocio + "</td>";
+//                  trs += "<td>" + empleado.tipo_empleado + "</td>";
+//                  trs += "<td>" + empleado.campana + "</td>";
+//                  trs += "<td>" + empleado.jefe + "</td>";
+//                  trs += "<td>$ " + $.number(empleado.sueldo_diario, 2) + "</td>";
+
+                    console.log("Empleado: " + empleado.id);
+
+                    $.executeSyncFetch({
+                      action: "/regla/empleadoAsistencia",
+                      method: "POST",
+                      dataType: "json",
+                      data: {
+                        id_empleado: empleado.id_mitrol,
+                        inicio: periodoDate.periodoJSON.inicio.anio + "-" + periodoDate.periodoJSON.inicio.mes + "-" + periodoDate.periodoJSON.inicio.dia,
+                        fin: periodoDate.periodoJSON.fin.anio + "-" + periodoDate.periodoJSON.fin.mes + "-" + periodoDate.periodoJSON.fin.dia
+                      },
+                      success: function (data) {
+                        empleado.asistencias = new Array();
+//                    empleado.retardos = new Array();
+                        empleado.retardos = 0;
+                        data.asistencias.forEach(function (asistencia) {
+                          empleado.asistencias[asistencia[0]+"-"+asistencia[1]+"-"+asistencia[2]] = asistencia;
+                          var entrada = empleado.horario.split("-")[0] + ":00";
+                          entrada = entrada.split(":");
+                          var entradaDate = new Date(asistencia[3]);
+                          entradaDate.setHours(entrada[0]);
+                          entradaDate.setMinutes(entrada[1]+TOLERANCIA);
+                          entradaDate.setSeconds(entrada[2]);
+                          var firstEventDate = new Date(asistencia[3]);
+                          if(firstEventDate < entradaDate){
+//                        empleado.retardos.push(asistencia[3]);
+                            empleado.retardos++;
+                          }
+                        });
+                      },
+                      errorMsg: "Ocurrió un error al obtener la asistencia de " + empleado.nombre
+                    });
+
+                    //periodo
+                    var selectLayout;
+                    periodos.forEach(function (periodo) {
+
+                      var dateIndex = periodo.value.getFullYear() + "-" + (periodo.value.getMonth()+1) + "-" + periodo.value.getDate();
+                      var dateIndexAux = periodo.value.getDate() + "/" + (periodo.value.getMonth()+1) + "/" + periodo.value.getFullYear();
+                      dateIndexAux = $.fixCeroDate(dateIndexAux, "/");
+                      var sqlDate = (periodo.value.getMonth()+1) + "/" + periodo.value.getDate() + "/" + periodo.value.getFullYear();
+                      sqlDate = $.fixCeroDate(sqlDate, "/");
+
+                      var dateCalculated = false;
+                      $(".festivosInpts").each(function() {
+                        var festivo = $(this).val();
+                        if(festivo && festivo == dateIndexAux){
+                          selectLayout = "<select class='form-control periodo' fecha='" + sqlDate + "'"+" empleado='" + empleado.id + "'>";
+                          selectLayout += "<option value='" + ASISTENCIA_FESTIVO + "'>Festivo</option>";
+                          dateCalculated = true;
+                        }
+                      });
+
+                      if(!dateCalculated){
+                        if(empleado.asistencias[dateIndex]){
+                          selectLayout = "<select class='form-control periodo' fecha='" + sqlDate + "'"+" empleado='" + empleado.id + "'>";
+                          selectLayout += "<option value='" + ASISTENCIA_ASISTENCIA + "'>Asistencia</option>";
+                        }else{
+                          selectLayout = "<select class='form-control periodo' fecha='" + sqlDate + "'"+" empleado='" + empleado.id + "'>";
+                          selectLayout += "<option value='" + ASISTENCIA_FALTA + "'>Falta</option>";
+                          selectLayout += "<option value='" + ASISTENCIA_DESCANSO + "'>Descanso</option>";
+                          selectLayout += "<option value='" + ASISTENCIA_INCAPACIDAD + "'>Incapacidad</option>";
+                          selectLayout += "<option value='" + ASISTENCIA_VACACIONES + "'>Vacaciones</option>";
+                        }
+                      }
+
+                      selectLayout += "</select>";
+
+                      trs += "<td>" + selectLayout + "</td>";
+                    });
+
+                    trs += "</tr>";
+
+                    allEmpleados[empleado.id] = empleado;
+
+//                  });
+                }
+
+                  if (empleados.length > 0) {
+                    if (table2)
+                      table2.destroy();
+
+                    //Preview table
+                    $("#previewTableHR").html(ths);
+                    $("#previewTableBody").html(trs);
+                    table2 = $('#previewTable').DataTable({
+                      "scrollY": 400,
+                      "scrollX": true,
+                      "bPaginate": false,
+                      "language": {
+                        "url": "/app/lang/Spanish.json"
+                      }
+                    });
+                    new $.fn.dataTable.FixedColumns( table2, {
+                      leftColumns: 1
+                    } );
+                    $(".calcAllEmpConfirmBT").show();
+                  }
+
+                },
+                errorMsg: "Ocurrió un error al obtener los campos."
+              });
+
+              $.hideSpinner();
+
+            }, 1000);
+
+          }
+        }
+
+      }
+    });
+
+    //Guardar Asistencia
+    $("#guardarAsistenciaBT").click(function (e) {
+
+      var asistencias = new Array();
+      $(".periodo").each(function(index) {
+        var asistencia = {
+          id_empleado: $(this).attr("empleado"),
+          fecha: $(this).attr("fecha"),
+          asistencia: $(this).val()
+        };
+        asistencias[index] = asistencia;
+      });
+
+      console.log(asistencias);
+
+      $.executePost({
+        action: "/asistencia/save",
+        data: {asistencias: asistencias},
+        method: "POST",
+        dataType: "json",
+        success: function (data) {
+        },
+        successMsg: "Asistencia guardada.",
+        errorMsg: "Ocurrió un error al guardar la asistencia."
+      });
+
+    });
+
+  });
+</script>
+
+<div class="row">
+  <div class="col-lg-12">
+
+    <section class="panel" id="prmisosSection">
+      <header class="panel-heading">
+        Asignar Permisos
+      </header>
+      <div class="panel-body">
+
+        <div class="form">
+          <form class="form-validate form-horizontal" id="permisos_form">
+
+            <div class="form-group">
+              <label class="control-label col-lg-2">Unidad de Negocio <span
+                  class="required">*</span></label>
+              <div class="col-lg-5">
+                <select class="form-control" id="unidad_negocio" name="unidad_negocio" required>
+                  <option value="">Seleccionar</option>
+                  <option value="1">Club de Asistencia</option>
+                  <option value="2">Proventel</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="control-label col-lg-2">Tipo Empleado <span class="required">*</span></label>
+              <div class="col-lg-5">
+                <select class="form-control m-bot15" id="tipo_empleado" name="tipo_empleado" required>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="control-label col-lg-2">Permisos: <span class="required">*</span></label>
+              <div class="col-lg-2">
+                <select class="form-control m-bot15" id="permisos" name="permisos" required>
+                  <option value="">Seleccionar</option>
+                  <option value="1">Automático</option>
+                  <option value="2">Manual</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="control-label col-lg-2">Responsable: <span class="required">*</span></label>
+              <div class="col-lg-2">
+                <select class="form-control" id="id_usuario_responsable" name="id_usuario_responsable"
+                        required>
+                </select>
+              </div>
+              <div class="col-lg-2">
+                <button class="btn btn-primary" id="saveResponsablesBT" type="button">Asignar</button>
+              </div>
+            </div>
+
+          </form>
+        </div>
+
+        <div class="spacer-md"></div>
+
+        <div class="row">
+          <div class="col-lg-2"></div>
+          <div class="col-lg-8">
+            <table id="permisosTable" class="table table-bordered" cellspacing="0">
+              <thead>
+              <tr>
+                <th>Responsable</th>
+                <th>Permisos</th>
+                <th>Eliminar</th>
+              </tr>
+              </thead>
+              <tbody id="permisosTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="panel">
+      <header class="panel-heading" id="headerSection">
+        Registrar Asistencia
+      </header>
+      <div class="panel-body">
+        <div class="form">
+          <form class="form-validate form-horizontal" id="asistencia_form">
+            <div class="form-group">
+              <label class="control-label col-lg-2">Tipo Empleado <span class="required">*</span></label>
+              <div class="col-lg-5">
+                <select class="form-control m-bot15" id="asistencia_tipo_empleado" name="asistencia_tipo_empleado" required>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-lg-2">Período</label>
+              <div class="col-lg-3">
+                <div class='input-group date'>
+                  <input type='text' class="form-control" id="periodo" name="periodo"/>
+                                    <span class="input-group-addon">
+                                        <span class="glyphicon glyphicon-calendar"></span>
+                                    </span>
+                </div>
+              </div>
+              <div class="col-lg-4">
+                <button class="btn btn-primary" type="button" id="addFestivosBT">Agregar días festivos</button>
+                <button class="btn btn-primary no-display" type="button" id="deleteFestivosBT">Eliminar días festivos</button>
+              </div>
+            </div>
+            <div class="form-group no-display" id="festivosDiv">
+              <label class="control-label col-lg-2">Días Festivos:</label>
+
+              <div class="col-lg-3">
+                <div class='input-group date' id="festivosInpts">
+                  <div class="input-group dynamic-inpt">
+                    <input type='text' class="form-control festivosInpts" id="festivo_0"/>
+                                        <span class="input-group-addon">
+                                            <span class="glyphicon glyphicon-calendar"></span>
+                                        </span>
+                                        <span class="input-group-addon">
+                                            <i class="icon-sm icon_plus_alt"></i>
+                                        </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-lg-2">Registro <span class="required">*</span></label>
+              <div class="col-lg-3">
+                <select class="form-control m-bot15" id="registro" name="registro" required>
+                  <option value="">Seleccionar</option>
+                  <option value="0">Guardado Previo</option>
+                  <option id="registro_automatico" value="1">Automático</option>
+                  <option id="registro_manual" value="2">Manual</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group no-display" id="registro_base_div">
+              <label class="control-label col-lg-2">En base a <span class="required">*</span></label>
+              <div class="col-lg-3">
+                <select class="form-control m-bot15" id="registro_base" name="registro_base" required>
+                  <option value="">Seleccionar</option>
+                  <option value="1">Mitrol</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="col-lg-offset-2 col-lg-10">
+                <button class="btn btn-primary" type="button" id="consultarAsistenciaBT">Consultar</button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div class="spacer-md"></div>
+
+        <div id="previewSection" class="no-display">
+          <table id="previewTable" class="table table-bordered" cellspacing="0">
+            <thead id="previewTableHead">
+            <tr id="previewTableHR"></tr>
+            </thead>
+            <tbody id="previewTableBody"></tbody>
+          </table>
+          <div class="spacer-md"></div>
+          <button id="guardarAsistenciaBT" class="btn btn-primary center-block" type="button">
+            Guardar Asistencia
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<div id="calendarLayout" class="hidden">
+  <div class="input-group dynamic-inpt">
+    <input type='text' class="form-control festivosInpts" id="?idFestivo"/>
+        <span class="input-group-addon">
+            <span class="glyphicon glyphicon-calendar"></span>
+        </span>
+        <span class="input-group-addon">
+            <i class="icon-sm icon_minus_alt" id="removeFestivo_?idFestivo"></i>
+        </span>
+  </div>
+</div>
+

@@ -67,6 +67,7 @@ class ReporteTable extends AbstractTableGateway
         'periodo' => $row["periodo"],
         'id_estado' => $row["id_estado"],
         'estado' => $row["estado"],
+        'comentarios' => $row["comentarios"],
       ));
       $entities[] = $entity->toArray();
     }
@@ -128,6 +129,7 @@ class ReporteTable extends AbstractTableGateway
         'periodo' => $row["periodo"],
         'id_estado' => $row["id_estado"],
         'estado' => $row["estado"],
+        'comentarios' => $row["comentarios"],
       ));
     }
     return $entity->toArray();
@@ -180,6 +182,7 @@ class ReporteTable extends AbstractTableGateway
         'periodo' => $row["periodo"],
         'id_estado' => $row["id_estado"],
         'estado' => $row["estado"],
+        'comentarios' => $row["comentarios"],
       ));
       $entities[] = $entity->toArray();
     }
@@ -208,6 +211,7 @@ class ReporteTable extends AbstractTableGateway
         'periodo' => $row["periodo"],
         'id_estado' => $row["id_estado"],
         'estado' => $row["estado"],
+        'comentarios' => $row["comentarios"],
       ));
       $entities[] = $entity->toArray();
     }

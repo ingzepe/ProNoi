@@ -125,4 +125,29 @@ class UsuarioTable extends AbstractTableGateway {
         return $this->delete(array('id' => (int) $id));
     }
 
+    public function fetchAllByIdRolesUsuario($ids) {
+
+        $sql = new Sql($this->adapter);
+        $select = $sql->select();
+        $select->from($this->table);
+
+        $where = new  Where();
+        $where->in('tab_usuario.id_rol_usuario', $ids);
+        $select->where($where);
+
+        $statement = $sql->prepareStatementForSqlObject($select);
+        $resultSet = $statement->execute();
+
+        $entities = array();
+        foreach ($resultSet as $row) {
+            $entity = new Entity\Usuario(array(
+              'id' => $row["id"],
+              'id_rol_usuario' => $row["id_rol_usuario"],
+              'nombre' => $row["nombre"],
+            ));
+            $entities[] = $entity->toArray();
+        }
+        return $entities;
+    }
+
 }

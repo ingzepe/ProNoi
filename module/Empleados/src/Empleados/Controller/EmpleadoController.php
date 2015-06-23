@@ -2,6 +2,7 @@
 
 namespace Empleados\Controller;
 
+use Application\Model\Application;
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
 
@@ -231,22 +232,22 @@ class EmpleadoController extends AbstractActionController
   }
 
   public function fetchAllTipoEmpleadoByIdUnidadAction()
-  {
-    $this->layout('layout/json');
-    $request = $this->getRequest();
-    $response = $this->getResponse();
-    $post_data = $request->getPost();
-    $id_unidad = $post_data['id_unidad'];
+{
+  $this->layout('layout/json');
+  $request = $this->getRequest();
+  $response = $this->getResponse();
+  $post_data = $request->getPost();
+  $id_unidad = $post_data['id_unidad'];
 
-    $tipos = $this->getTipoEmpleadoTable()->fetchAllByIdUnidad($id_unidad);
-    $count = count($tipos);
-    if ($count < 0) {
-      $response->setContent(\Zend\Json\Json::encode(array('status' => false)));
-    } else {
-      $tipos = \Zend\Json\Json::encode($tipos);
-      $response->setContent(\Zend\Json\Json::encode(array('status' => true, 'data' => $tipos)));
-    }
-    return $response;
+  $tipos = $this->getTipoEmpleadoTable()->fetchAllByIdUnidad($id_unidad);
+  $count = count($tipos);
+  if ($count < 0) {
+    $response->setContent(\Zend\Json\Json::encode(array('status' => false)));
+  } else {
+    $tipos = \Zend\Json\Json::encode($tipos);
+    $response->setContent(\Zend\Json\Json::encode(array('status' => true, 'data' => $tipos)));
   }
+  return $response;
+}
 
 }

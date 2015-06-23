@@ -129,6 +129,81 @@ function initializeJS() {
     });
   }
 
+  //UTILS
+
+  $.inputToDates = function(inputVal){
+    var fechas = inputVal.split(" - ");
+    var inicio = fechas[0];
+    var fin = fechas[1];
+    inicio = inicio.split("/");
+    fin = fin.split("/");
+
+    var periodoJSON = {
+      inicio: {
+        dia: inicio[0],
+        mes: inicio[1],
+        anio: inicio[2]
+      },
+      fin: {
+        dia: fin[0],
+        mes: fin[1],
+        anio: fin[2]
+      }
+    };
+
+    inicio = new Date(periodoJSON.inicio.anio, parseInt(periodoJSON.inicio.mes) - 1, periodoJSON.inicio.dia);
+    fin = new Date(periodoJSON.fin.anio, parseInt(periodoJSON.fin.mes) - 1, periodoJSON.fin.dia);
+
+    var periodoDate = {
+      periodoJSON : periodoJSON,
+      inicio: inicio,
+      fin: fin
+    };
+
+    return periodoDate;
+
+  };
+
+  $.fixCeroDate = function(date, separator){
+    var dateFixed = "";
+    var dates = date.split(separator);
+    for(var i=0; i<dates.length; i++){
+      if(dates[i].length < 2){
+        dateFixed += "0"+dates[i];
+      }else{
+        dateFixed += dates[i];
+      }
+      if(i<dates.length-1){
+        dateFixed += "/";
+      }
+    }
+    return dateFixed;
+  };
+
+  $.reverse = function(s) {
+    return s.split("").reverse().join("");
+  };
+
+  $.parseInteger = function(integer) {
+    try {
+      return parseInt(integer);
+    } catch (e) {
+      return false;
+    }
+  };
+
+  $.sortBy = function(property){
+    var sortOrder = 1;
+    if(property[0] === "-") {
+      sortOrder = -1;
+      property = property.substr(1);
+    }
+    return function (a,b) {
+      var result = (a[property] < b[property]) ? -1 : (a[property] > b[property]) ? 1 : 0;
+      return result * sortOrder;
+    }
+  };
+
 }
 
 jQuery(document).ready(function () {

@@ -17,13 +17,37 @@ use Application\Model\Application;
       var no = 1;
       data.forEach(function (reporte) {
 
+        var estado;
+        switch (parseInt(reporte.id_estado)){
+          case REPORTE_ESTADO_CALCULANDO: {
+            estado = "<span class='label label-warning reporteComments'>" + reporte.estado + "</span>";
+            break;
+          }
+          case REPORTE_ESTADO_COMPLETADO: case REPORTE_ESTADO_AUTORIZADO_POR_GERENCIA:{
+          estado = "<span class='label label-primary reporteComments'>" + reporte.estado + "</span>";
+          break;
+        }
+          case REPORTE_ESTADO_AUTORIZADO_POR_DIRECCION:{
+            estado = "<span class='label label-success reporteComments'>" + reporte.estado + "</span>";
+            break;
+          }
+          case REPORTE_ESTADO_RECHAZADO_POR_GERENCIA: case REPORTE_ESTADO_RECHAZADO_POR_DIRECCION: {
+          estado = "<span class='label label-danger reporteComments'>" + reporte.estado + "</span>";
+          break;
+        }
+          default:{
+            estado = "<span class='label label-primary reporteComments'>" + reporte.estado + "</span>";
+            break;
+          }
+        }
+
         html += "<tr id='tr_" + reporte.id + "'>";
         html += "<td>" + no++ + "</td>";
         html += "<td>" + reporte.id + "</td>";
         html += "<td>" + reporte.nombre + "</td>";
         html += "<td>" + reporte.descripcion + "</td>";
         html += "<td>" + reporte.periodo + "</td>";
-        html += "<td>" + reporte.estado + "</td>";
+        html += "<td>" + estado + "</td>";
 
         console.log($("#id_rol_usuario").val());
         console.log($("#control_reporte").val());

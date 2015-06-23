@@ -2,6 +2,7 @@
 
 namespace Usuarios\Controller;
 
+use Application\Model\Application;
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
 
@@ -45,13 +46,14 @@ class UsuarioController extends AbstractActionController {
         return $response;
     }
 
-    public function fetchAllByIdTipoUsuarioAction() {
+    public function fetchAllByIdRolUsuarioAction() {
         $this->layout( 'layout/json' );
         $request = $this->getRequest();
         $response = $this->getResponse();
         $post_data = $request->getPost();
-        $id_tipo_usuario = $post_data['id_tipo_usuario'];
-        $usuarios = $this->getUsuarioTable()->fetchAllByIdTipoUsuario($id_tipo_usuario);
+        $id_rol_usuario = $post_data['id_rol_usuario'];
+        $ids = array(Application::ROL_ADMINISTRADOR, $id_rol_usuario);
+        $usuarios = $this->getUsuarioTable()->fetchAllByIdRolesUsuario($ids);
         $count = count($usuarios);
         if ($count < 0) {
             $response->setContent(\Zend\Json\Json::encode(array('status' => false)));

@@ -55,6 +55,7 @@
     var ROL_ADMINISTRADOR_REPORTES              = <?php echo Application::ROL_ADMINISTRADOR_REPORTES ?>;
     var ROL_PERSONAL_NOMINA                     = <?php echo Application::ROL_PERSONAL_NOMINA ?>;
     var ROL_PERSONAL_RH                         = <?php echo Application::ROL_PERSONAL_RH ?>;
+    var ROL_ADMINISTRADOR_ASISTENCIA            = <?php echo Application::ROL_ADMINISTRADOR_ASISTENCIA ?>;
 
     //Permisos Control Reporte
     var CONTROL_REPORTE_GENERAR                 = <?php echo Application::CONTROL_REPORTE_GENERAR ?>;
@@ -88,6 +89,15 @@
     var TIPO_EXP_PARENT_IZQ                     = <?php echo Application::TIPO_EXP_PARENT_IZQ ?>;
     var TIPO_EXP_PARENT_DER                     = <?php echo Application::TIPO_EXP_PARENT_DER ?>;
     var TIPO_EXP_EMPLEADO                       = <?php echo Application::TIPO_EXP_EMPLEADO ?>;
+
+    // Asistencia
+    var ASISTENCIA_ASISTENCIA                   = <?php echo Application::ASISTENCIA_ASISTENCIA ?>;
+    var ASISTENCIA_FALTA                        = <?php echo Application::ASISTENCIA_FALTA ?>;
+    var ASISTENCIA_DESCANSO                     = <?php echo Application::ASISTENCIA_DESCANSO ?>;
+    var ASISTENCIA_INCAPACIDAD                  = <?php echo Application::ASISTENCIA_INCAPACIDAD ?>;
+    var ASISTENCIA_VACACIONES                   = <?php echo Application::ASISTENCIA_VACACIONES ?>;
+    var ASISTENCIA_FESTIVO                      = <?php echo Application::ASISTENCIA_FESTIVO ?>;
+
   </script>
 
 </head>
@@ -179,6 +189,16 @@
               <a href="/plantillas">
                 <i class="icon_table"></i>
                 <span>Plantillas</span>
+              </a>
+            </li>
+          <?php } ?>
+          <?php if ($user['id_rol_usuario'] ==  Application::ROL_ADMINISTRADOR
+            || $user['id_rol_usuario'] ==  Application::ROL_ADMINISTRADOR_PLANTILLAS
+            || $user['id_rol_usuario'] ==  Application::ROL_ADMINISTRADOR_REPORTES) { ?>
+            <li>
+              <a href="/asistencia">
+                <i class="icon_calendar"></i>
+                <span>Asistencia</span>
               </a>
             </li>
           <?php } ?>

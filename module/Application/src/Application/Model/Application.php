@@ -18,6 +18,7 @@ class Application {
   const ROL_ADMINISTRADOR_REPORTES              = 3;
   const ROL_PERSONAL_NOMINA                     = 4;
   const ROL_PERSONAL_RH                         = 5;
+  const ROL_ADMINISTRADOR_ASISTENCIA            = 6;
 
   const CONTROL_REPORTE_GENERAR                 = 1;
   const CONTROL_REPORTE_CONSULTAR               = 2;
@@ -48,5 +49,12 @@ class Application {
   const TIPO_EXP_PARENT_IZQ                     = 6;
   const TIPO_EXP_PARENT_DER                     = 7;
   const TIPO_EXP_EMPLEADO                       = 8;
+
+  const ASISTENCIA_ASISTENCIA                   = 1;
+  const ASISTENCIA_FALTA                        = 2;
+  const ASISTENCIA_DESCANSO                     = 3;
+  const ASISTENCIA_INCAPACIDAD                  = 4;
+  const ASISTENCIA_VACACIONES                   = 5;
+  const ASISTENCIA_FESTIVO                      = 6;
 
 }

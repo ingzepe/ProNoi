@@ -89,7 +89,7 @@
     var periodoDate;
     $("#addFestivosBT").click(function (e) {
       if($("#periodo").val()){
-        periodoDate = inputToDates($("#periodo").val());
+        periodoDate = $.inputToDates($("#periodo").val());
         $("#festivosDiv").show(500);
         $("#deleteFestivosBT").show(500);
         $("#festivo_0").dateRangePicker({
@@ -733,7 +733,7 @@
 
           //periodo
           var periodos = new Array();
-          var periodoDate = inputToDates($("#periodo").val());
+          var periodoDate = $.inputToDates($("#periodo").val());
 
           while (periodoDate.inicio <= periodoDate.fin) {
             var label = periodoDate.inicio.toLocaleString().split(" ");
@@ -796,9 +796,9 @@
             success: function (empleados) {
               var trs = "";
               var totalEmpleados = empleados.length;
-              empleados.forEach(function (empleado) {
-//              for(var i=0; i<2; i++){
-//                var empleado = empleados[i];
+//              empleados.forEach(function (empleado) {
+              for(var i=0; i<2; i++){
+                var empleado = empleados[i];
 
                 //static
                 trs += "<tr>";
@@ -853,7 +853,7 @@
 
                   var dateIndex = periodo.value.getFullYear() + "-" + (periodo.value.getMonth()+1) + "-" + periodo.value.getDate();
                   var dateIndexAux = periodo.value.getDate() + "/" + (periodo.value.getMonth()+1) + "/" + periodo.value.getFullYear();
-                  dateIndexAux = fixCeroDate(dateIndexAux, "/");
+                  dateIndexAux = $.fixCeroDate(dateIndexAux, "/");
 
                   var dateCalculated = false;
                   $(".festivosInpts").each(function() {
@@ -897,8 +897,8 @@
 
                 allEmpleados[empleado.id] = empleado;
 
-              });
-//              }
+//              });
+              }
 
               if (campos.length > 0 && empleados.length > 0) {
                 if (table2)
@@ -957,7 +957,7 @@
                     }
                   });
 
-                  reglas.sort(sortBy("orden"));
+                  reglas.sort($.sortBy("orden"));
 
 //                  console.log(calcsLeft + "show!");
                   $.showSpinner();
@@ -1440,85 +1440,15 @@
 
   });
 
-  function inputToDates(inputVal){
-    var fechas = inputVal.split(" - ");
-    var inicio = fechas[0];
-    var fin = fechas[1];
-    inicio = inicio.split("/");
-    fin = fin.split("/");
 
-    var periodoJSON = {
-      inicio: {
-        dia: inicio[0],
-        mes: inicio[1],
-        anio: inicio[2]
-      },
-      fin: {
-        dia: fin[0],
-        mes: fin[1],
-        anio: fin[2]
-      }
-    };
-
-    inicio = new Date(periodoJSON.inicio.anio, parseInt(periodoJSON.inicio.mes) - 1, periodoJSON.inicio.dia);
-    fin = new Date(periodoJSON.fin.anio, parseInt(periodoJSON.fin.mes) - 1, periodoJSON.fin.dia);
-
-    var periodoDate = {
-      periodoJSON : periodoJSON,
-      inicio: inicio,
-      fin: fin
-    };
-
-    return periodoDate;
-
-  }
-
-  function fixCeroDate(date, separator){
-    var dateFixed = "";
-    var dates = date.split(separator);
-    for(var i=0; i<dates.length; i++){
-      if(dates[i].length < 2){
-        dateFixed += "0"+dates[i];
-      }else{
-        dateFixed += dates[i];
-      }
-      if(i<dates.length-1){
-        dateFixed += "/";
-      }
-    }
-    return dateFixed;
-  }
-
-  function reverse(s) {
-    return s.split("").reverse().join("");
-  }
-
-  function parseInteger(integer) {
-    try {
-      return parseInt(integer);
-    } catch (e) {
-      return false;
-    }
-  }
-
-  function sortBy(property){
-    var sortOrder = 1;
-    if(property[0] === "-") {
-      sortOrder = -1;
-      property = property.substr(1);
-    }
-    return function (a,b) {
-      var result = (a[property] < b[property]) ? -1 : (a[property] > b[property]) ? 1 : 0;
-      return result * sortOrder;
-    }
-  }
 
 </script>
 
 <div class="row">
   <div class="col-lg-12">
 
-    <div id="estadoReporte" class="margin-bottom-sm"></div>
+    <div id="estadoReporte"></div>
+    <div class="spacer-md"></div>
 
     <section class="panel no-display" id="reporteInfoSection">
       <header class="panel-heading">

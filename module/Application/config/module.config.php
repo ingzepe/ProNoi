@@ -138,6 +138,12 @@ return array(
               ),
             ),
           ),
+          array(
+            'label' => 'Asistencia',
+            'route' => 'asistencia',
+            'class' => 'icon_calendar',
+            'id' => 'asistenciaBC'
+          ),
         ),
       ),
     ),
