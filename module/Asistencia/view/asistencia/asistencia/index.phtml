@@ -594,14 +594,14 @@ $user = $session->user;
                     $(".festivosInpts").each(function() {
                       var festivo = $(this).val();
                       if(festivo && festivo == dateIndexAux){
-                        selectLayout = "<select class='form-control periodo' fecha='" + sqlDate + "'"+" empleado='" + empleado.id + "'>";
+                        selectLayout = "<select class='form-control periodo' fecha='" + dateIndex + "'"+" empleado='" + empleado.id + "'>";
                         selectLayout += "<option value='" + ASISTENCIA_FESTIVO + "'>Festivo</option>";
                         dateCalculated = true;
                       }
                     });
 
                     if(!dateCalculated){
-                      selectLayout = "<select class='form-control periodo' fecha='" + sqlDate + "'"+" empleado='" + empleado.id + "'>";
+                      selectLayout = "<select class='form-control periodo' fecha='" + dateIndex + "'"+" empleado='" + empleado.id + "'>";
                       selectLayout += "<option value='" + ASISTENCIA_ASISTENCIA + "'>Asistencia</option>";
                       selectLayout += "<option value='" + ASISTENCIA_RETARDO + "'>Retardo</option>";
                       selectLayout += "<option value='" + ASISTENCIA_FALTA + "'>Falta</option>";
