@@ -21,7 +21,7 @@ class AsistenciaTable extends AbstractTableGateway
   {
     $data = array(
       'id_empleado' => $asistencia->getIdEmpleado(),
-      'id_cat_asistencia' => $asistencia->getIdCatAsistencia(),
+      'id_cat_asistencia' => (int)$asistencia->getIdCatAsistencia(),
       'fecha' => $asistencia->getFecha(),
     );
     if (!$this->insert($data)) {
@@ -98,6 +98,42 @@ class AsistenciaTable extends AbstractTableGateway
       'id_empleado' => (int)$asistencia->getIdEmpleado(),
       'fecha' => $asistencia->getFecha()
     ));
+  }
+
+  public function fetchAllByIdEmpleadoAndPeriodo($id_empleado, $inicio, $fin)
+  {
+    $sql = new Sql($this->adapter);
+    $select = $sql->select();
+    $select->from($this->table)
+      ->join('cat_asistencia', 'cat_asistencia.id = tab_asistencia.id_cat_asistencia',
+        array('asistencia' => 'nombre'));
+
+    $where1 = new Where();
+    $where1->between('tab_asistencia.fecha', $inicio, $fin);
+    $select->where($where1);
+
+    $where2 = new Where();
+    $where2->equalTo('tab_asistencia.id_empleado', $id_empleado);
+    $select->where(array($where2));
+
+    $select->order(array('fecha'));
+
+//        echo $select->getSqlString();
+    $statement = $sql->prepareStatementForSqlObject($select);
+    $resultSet = $statement->execute();
+
+    $entities = array();
+    foreach ($resultSet as $row) {
+      $entity = new Entity\Asistencia(array(
+        'id' => $row["id"],
+        'id_empleado' => $row["id_empleado"],
+        'id_cat_asistencia' => $row["id_cat_asistencia"],
+        'fecha' => $row["fecha"],
+        'asistencia' => $row["asistencia"],
+      ));
+      $entities[] = $entity->toArray();
+    }
+    return $entities;
   }
 
 }

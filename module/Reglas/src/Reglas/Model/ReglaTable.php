@@ -199,7 +199,7 @@ class ReglaTable extends AbstractTableGateway
     }
   }
 
-  public function empleadoAsistencia($id_empleado, $inicio, $fin){
+  public function empleadoAsistenciaMitrol($id_empleado, $inicio, $fin){
 
     error_reporting(0);
 

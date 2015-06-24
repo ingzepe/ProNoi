@@ -130,7 +130,6 @@
                 html += "<option value='"+tipo.id+"'>"+tipo.tipo+"</option>";
               });
               $("#tipo_empleado").html(html);
-
               $("#headerSection").html(data.nombre);
               $("#plantillaBC").html(data.nombre);
               $("#plantillaBC").attr("href", "/plantilla?id=" + data.id);
@@ -138,6 +137,13 @@
               $("#tipo_empleado").val(data.id_tipo_empleado);
               $("#nombre").val(data.nombre);
               $("#descripcion").val(data.descripcion);
+              if(data.periodo == 1){
+                $("#periodo").val("True");
+                $("#periodoCB").prop('checked', true);
+              }else{
+                $("#periodo").val("False");
+                $("#periodoCB").prop('checked', false);
+              }
               $("#agregarBT").attr("href", "/campo?id_plantilla=" + data.id);
               $("#prmisosSection").show();
               $("#camposSection").show();
@@ -158,6 +164,14 @@
     if (parseInt($("#id_plantilla").val()) !== 0) {
       fetch();
     }
+
+    $("#periodoCB").change(function() {
+      if($(this).is(":checked")) {
+        $("#periodo").val("True");
+      }else{
+        $("#periodo").val("False");
+      }
+    });
 
     $("#addPlantillaBT").click(function (e) {
       $.executePostValid({
@@ -515,9 +529,8 @@
             } ?>"/>
 
             <div class="form-group">
-              <label for="cname" class="control-label col-lg-2">Unidad de Negocio <span
+              <label class="control-label col-lg-2">Unidad de Negocio <span
                   class="required">*</span></label>
-
               <div class="col-lg-5">
                 <select class="form-control" id="unidad_negocio" name="unidad_negocio" required>
                   <option value="">Seleccionar</option>
@@ -527,23 +540,27 @@
               </div>
             </div>
             <div class="form-group">
-              <label for="cname" class="control-label col-lg-2">Tipo Empleado <span class="required">*</span></label>
-
+              <label class="control-label col-lg-2">Tipo Empleado <span class="required">*</span></label>
               <div class="col-lg-5">
                 <select class="form-control m-bot15" id="tipo_empleado" name="tipo_empleado" required>
                 </select>
               </div>
             </div>
             <div class="form-group">
-              <label for="cname" class="control-label col-lg-2">Nombre <span class="required">*</span></label>
-
+              <label class="control-label col-lg-2">Nombre <span class="required">*</span></label>
               <div class="col-lg-5">
                 <input class="form-control" id="nombre" name="nombre" minlength="5" type="text" required/>
               </div>
             </div>
             <div class="form-group">
-              <label for="cname" class="control-label col-lg-2">Descripción</label>
-
+              <label class="control-label col-lg-2">En base a período <span class="required">*</span></label>
+              <div class="col-lg-5">
+                <input type="hidden" id="periodo" name="periodo" value="False">
+                <input type="checkbox" id="periodoCB" name="periodoCB">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-lg-2">Descripción</label>
               <div class="col-lg-5">
                 <textarea class="form-control" id="descripcion" name="descripcion" rows="6"></textarea>
               </div>

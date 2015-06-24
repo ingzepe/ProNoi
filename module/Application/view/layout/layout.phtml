@@ -92,11 +92,15 @@
 
     // Asistencia
     var ASISTENCIA_ASISTENCIA                   = <?php echo Application::ASISTENCIA_ASISTENCIA ?>;
+    var ASISTENCIA_RETARDO                      = <?php echo Application::ASISTENCIA_RETARDO ?>;
     var ASISTENCIA_FALTA                        = <?php echo Application::ASISTENCIA_FALTA ?>;
     var ASISTENCIA_DESCANSO                     = <?php echo Application::ASISTENCIA_DESCANSO ?>;
     var ASISTENCIA_INCAPACIDAD                  = <?php echo Application::ASISTENCIA_INCAPACIDAD ?>;
     var ASISTENCIA_VACACIONES                   = <?php echo Application::ASISTENCIA_VACACIONES ?>;
     var ASISTENCIA_FESTIVO                      = <?php echo Application::ASISTENCIA_FESTIVO ?>;
+
+    // Tolerancia
+    var TOLERANCIA                              = <?php echo Application::TOLERANCIA ?>;
 
   </script>
 
@@ -193,8 +197,7 @@
             </li>
           <?php } ?>
           <?php if ($user['id_rol_usuario'] ==  Application::ROL_ADMINISTRADOR
-            || $user['id_rol_usuario'] ==  Application::ROL_ADMINISTRADOR_PLANTILLAS
-            || $user['id_rol_usuario'] ==  Application::ROL_ADMINISTRADOR_REPORTES) { ?>
+            || $user['id_rol_usuario'] ==  Application::ROL_ADMINISTRADOR_ASISTENCIA) { ?>
             <li>
               <a href="/asistencia">
                 <i class="icon_calendar"></i>

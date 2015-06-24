@@ -23,6 +23,7 @@ class PlantillaTable extends AbstractTableGateway
       'id_tipo_empleado' => $plantilla->getIdTipoEmpleado(),
       'nombre' => $plantilla->getNombre(),
       'descripcion' => $plantilla->getDescripcion(),
+      'periodo' => $plantilla->getPeriodo(),
     );
     $id = (int)$plantilla->getId();
     if ($id == 0) {
@@ -62,6 +63,7 @@ class PlantillaTable extends AbstractTableGateway
         'tipo_empleado' => $row["tipo_empleado"],
         'nombre' => $row["nombre"],
         'descripcion' => $row["descripcion"],
+        'periodo' => $row["periodo"],
         'id_unidad_negocio' => $row["id_unidad_negocio"],
         'unidad_negocio' => $row["unidad_negocio"],
       ));
@@ -95,6 +97,7 @@ class PlantillaTable extends AbstractTableGateway
         'tipo_empleado' => $row["tipo_empleado"],
         'nombre' => $row["nombre"],
         'descripcion' => $row["descripcion"],
+        'periodo' => $row["periodo"],
         'id_unidad_negocio' => $row["id_unidad_negocio"],
         'unidad_negocio' => $row["unidad_negocio"],
       ));
@@ -128,6 +131,7 @@ class PlantillaTable extends AbstractTableGateway
         'tipo_empleado' => $row["tipo_empleado"],
         'nombre' => $row["nombre"],
         'descripcion' => $row["descripcion"],
+        'periodo' => $row["periodo"],
         'id_unidad_negocio' => $row["id_unidad_negocio"],
         'unidad_negocio' => $row["unidad_negocio"],
       ));
@@ -155,6 +159,7 @@ class PlantillaTable extends AbstractTableGateway
         'id_tipo_empleado' => $row["id_tipo_empleado"],
         'nombre' => $row["nombre"],
         'descripcion' => $row["descripcion"],
+        'periodo' => $row["periodo"],
       ));
     }
     return $entity->toArray();
@@ -191,6 +196,7 @@ class PlantillaTable extends AbstractTableGateway
         'tipo_empleado' => $row["tipo_empleado"],
         'nombre' => $row["nombre"],
         'descripcion' => $row["descripcion"],
+        'periodo' => $row["periodo"],
         'id_unidad_negocio' => $row["id_unidad_negocio"],
         'unidad_negocio' => $row["unidad_negocio"],
       ));

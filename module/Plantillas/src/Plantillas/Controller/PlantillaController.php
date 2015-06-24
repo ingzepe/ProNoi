@@ -123,6 +123,7 @@ class PlantillaController extends AbstractActionController
     $plantilla->setIdTipoEmpleado($post_data['tipo_empleado']);
     $plantilla->setNombre($post_data['nombre']);
     $plantilla->setDescripcion($post_data['descripcion']);
+    $plantilla->setPeriodo($post_data['periodo']);
 
     if (!$plantilla_id = $this->getPlantillaTable()->save($plantilla))
       $response->setContent(\Zend\Json\Json::encode(array('status' => false)));

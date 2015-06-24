@@ -11,6 +11,7 @@ class Plantilla {
     protected $_unidad_negocio;
     protected $_nombre;
     protected $_descripcion;
+    protected $_periodo;
 
     public function __construct(array $options = null) {
         if (is_array($options)) {
@@ -175,6 +176,22 @@ class Plantilla {
     public function setUnidadNegocio($unidad_negocio)
     {
         $this->_unidad_negocio = $unidad_negocio;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getPeriodo()
+    {
+        return $this->_periodo;
+    }
+
+    /**
+     * @param mixed $periodo
+     */
+    public function setPeriodo($periodo)
+    {
+        $this->_periodo = $periodo;
     }
 
 }

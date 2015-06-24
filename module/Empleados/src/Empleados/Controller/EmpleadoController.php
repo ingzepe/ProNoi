@@ -11,6 +11,7 @@ class EmpleadoController extends AbstractActionController
 
   protected $_empleadoTable;
   protected $_tipoEmpleadoTable;
+  protected $_asistenciaTable;
 
   public function getEmpleadoTable()
   {
@@ -28,6 +29,15 @@ class EmpleadoController extends AbstractActionController
       $this->_tipoEmpleadoTable = $sm->get('Empleados\Model\TipoEmpleadoTable');
     }
     return $this->_tipoEmpleadoTable;
+  }
+
+  public function getAsistenciaTable()
+  {
+    if (!$this->_asistenciaTable) {
+      $sm = $this->getServiceLocator();
+      $this->_asistenciaTable = $sm->get('Asistencia\Model\AsistenciaTable');
+    }
+    return $this->_asistenciaTable;
   }
 
   public function indexAction()
@@ -66,13 +76,56 @@ class EmpleadoController extends AbstractActionController
     $response = $this->getResponse();
     $post_data = $request->getPost();
     $id_tipo_empleado = $post_data['id_tipo_empleado'];
+
     $empleados = $this->getEmpleadoTable()->fetchAllByIdTipoEmpleado($id_tipo_empleado);
     $count = count($empleados);
+
     if ($count < 0) {
       $response->setContent(\Zend\Json\Json::encode(array('status' => false)));
     } else {
       $empleados = \Zend\Json\Json::encode($empleados);
       $response->setContent(\Zend\Json\Json::encode(array('status' => true, 'data' => $empleados)));
+    }
+    return $response;
+  }
+
+  public function fetchAllByIdTipoEmpleadoAndPeriodoAction()
+  {
+    $this->layout('layout/json');
+    $request = $this->getRequest();
+    $response = $this->getResponse();
+    $post_data = $request->getPost();
+    $id_tipo_empleado = $post_data['id_tipo_empleado'];
+    $inicio = $post_data['inicio'];
+    $fin = $post_data['fin'];
+    $dias = (int)$post_data['dias'];
+
+    $empleados = $this->getEmpleadoTable()->fetchAllByIdTipoEmpleado($id_tipo_empleado);
+    $count = count($empleados);
+
+    $error = false;
+
+    if ($count < 0) {
+      $error = true;
+    } else {
+      for($i=0; $i<$count; $i++){
+        $asistencias = $this->getAsistenciaTable()->fetchAllByIdEmpleadoAndPeriodo($empleados[$i]["id"], $inicio, $fin);
+        $count = count($asistencias);
+//        if ($count < $dias) {
+        if ($count < 0) {
+          $error = true;
+          break;
+        }else{
+          $empleados[$i]["asistencias"] = $asistencias;
+        }
+      }
+
+      if($error){
+        $response->setContent(\Zend\Json\Json::encode(array('status' => false)));
+      }else{
+        $empleados = \Zend\Json\Json::encode($empleados);
+        $response->setContent(\Zend\Json\Json::encode(array('status' => true, 'data' => $empleados)));
+      }
     }
     return $response;
   }

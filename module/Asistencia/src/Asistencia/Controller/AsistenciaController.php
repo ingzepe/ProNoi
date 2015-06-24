@@ -137,19 +137,17 @@ class AsistenciaController extends AbstractActionController
       $asistencia->setIdCatAsistencia($asistencias[$i]['asistencia']);
       $asistencia->setIdEmpleado($asistencias[$i]['id_empleado']);
       $asistencia->setFecha($asistencias[$i]['fecha']);
-      if (!$control_id = $this->getAsistenciaTable()->removeAsistencia($asistencia)){
+
+      $this->getAsistenciaTable()->removeAsistencia($asistencia);
+      if (!$id = $this->getAsistenciaTable()->save($asistencia)){
         $status = false;
-      }else{
-        if (!$control_id = $this->getAsistenciaTable()->save($asistencia)){
-          $status = false;
-        }
       }
     }
 
     if ($status)
       $response->setContent(\Zend\Json\Json::encode(array('status' => $status)));
     else {
-      $response->setContent(\Zend\Json\Json::encode(array('status' => $status, 'data' => $control_id)));
+      $response->setContent(\Zend\Json\Json::encode(array('status' => $status, 'data' => $id)));
     }
 
     return $response;

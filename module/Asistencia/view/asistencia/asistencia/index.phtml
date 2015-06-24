@@ -1,3 +1,8 @@
+<?php
+use Application\Model\Application;
+$session = new \Zend\Session\Container('user');
+$user = $session->user;
+?>
 
 <link rel="stylesheet" href="/css/daterangepicker.css"/>
 <link rel="stylesheet" href="/assets/color-picker/css/bootstrap-colorpicker.css"/>
@@ -178,13 +183,12 @@
     var REGISTRO_MANUAL = 2;
     var BASE_MITROL = 1;
 
-    var tipoEmpleadoPermitidos = new Array();
+    var tipoEmpleadoPermitidos = {};
     $.executeFetch({
       action: "/asistencia/fetchAllControlAsistenciaByByIdUsuario",
       method: "POST",
       dataType: "json",
       success: function (tipoEmpleadoData) {
-        console.log(tipoEmpleadoData);
         var html = "<option value=''>Seleccionar</option>";
         tipoEmpleadoData.forEach(function (tipo) {
           tipoEmpleadoPermitidos[tipo.id] = tipo;
@@ -197,10 +201,8 @@
 
     $("#asistencia_tipo_empleado").change(function (e) {
       var index = $(this).val();
-//      console.log(index);
-      console.log(tipoEmpleadoPermitidos);
       var tipoEmpleadoSelected = tipoEmpleadoPermitidos[index];
-      if(tipoEmpleadoSelected.id_cat_control_asistencia = REGISTRO_AUTOMATICO){
+      if(tipoEmpleadoSelected.id_cat_control_asistencia == REGISTRO_AUTOMATICO){
         $("#registro_automatico").show(500);
         $("#registro_manual").hide(500);
       }else{
@@ -336,6 +338,9 @@
       if($("#asistencia_form").valid()){
 
         var type = $("#registro").val();
+//        if(type == REGISTRO_GUARDADO_PREVIO){
+//
+//        }else
         if(type == REGISTRO_AUTOMATICO){
           var db = $("#registro_base").val();
           if(db == BASE_MITROL){
@@ -391,8 +396,8 @@
                   var trs = "";
                   var totalEmpleados = empleados.length;
 //                  empleados.forEach(function (empleado) {
-                for(var i=0; i<10; i++){
-                  var empleado = empleados[i];
+                  for(var i=0; i<10; i++){
+                    var empleado = empleados[i];
 
                     //static
                     trs += "<tr>";
@@ -411,7 +416,7 @@
                     console.log("Empleado: " + empleado.id);
 
                     $.executeSyncFetch({
-                      action: "/regla/empleadoAsistencia",
+                      action: "/regla/empleadoAsistenciaMitrol",
                       method: "POST",
                       dataType: "json",
                       data: {
@@ -421,8 +426,8 @@
                       },
                       success: function (data) {
                         empleado.asistencias = new Array();
-//                    empleado.retardos = new Array();
-                        empleado.retardos = 0;
+                        empleado.retardos = new Array();
+//                        empleado.retardos = 0;
                         data.asistencias.forEach(function (asistencia) {
                           empleado.asistencias[asistencia[0]+"-"+asistencia[1]+"-"+asistencia[2]] = asistencia;
                           var entrada = empleado.horario.split("-")[0] + ":00";
@@ -433,8 +438,8 @@
                           entradaDate.setSeconds(entrada[2]);
                           var firstEventDate = new Date(asistencia[3]);
                           if(firstEventDate < entradaDate){
-//                        empleado.retardos.push(asistencia[3]);
-                            empleado.retardos++;
+                            empleado.retardos[asistencia[0]+"-"+asistencia[1]+"-"+asistencia[2]] = asistencia;
+//                            empleado.retardos++;
                           }
                         });
                       },
@@ -462,11 +467,12 @@
                       });
 
                       if(!dateCalculated){
-                        if(empleado.asistencias[dateIndex]){
-                          selectLayout = "<select class='form-control periodo' fecha='" + sqlDate + "'"+" empleado='" + empleado.id + "'>";
+                        selectLayout = "<select class='form-control periodo' fecha='" + sqlDate + "'"+" empleado='" + empleado.id + "'>";
+                        if(empleado.retardos[dateIndex]){
+                          selectLayout += "<option value='" + ASISTENCIA_RETARDO + "'>Retardo</option>";
+                        }else if(empleado.asistencias[dateIndex]){
                           selectLayout += "<option value='" + ASISTENCIA_ASISTENCIA + "'>Asistencia</option>";
                         }else{
-                          selectLayout = "<select class='form-control periodo' fecha='" + sqlDate + "'"+" empleado='" + empleado.id + "'>";
                           selectLayout += "<option value='" + ASISTENCIA_FALTA + "'>Falta</option>";
                           selectLayout += "<option value='" + ASISTENCIA_DESCANSO + "'>Descanso</option>";
                           selectLayout += "<option value='" + ASISTENCIA_INCAPACIDAD + "'>Incapacidad</option>";
@@ -484,7 +490,7 @@
                     allEmpleados[empleado.id] = empleado;
 
 //                  });
-                }
+                  }
 
                   if (empleados.length > 0) {
                     if (table2)
@@ -516,6 +522,135 @@
             }, 1000);
 
           }
+        }else if(type == REGISTRO_MANUAL){
+
+          $.showSpinner();
+
+          setTimeout(function() {
+
+            $("#previewSection").show(500);
+
+            var ths = "";
+            var contenido = "";
+
+            //static
+            ths += "<th>Nombre</th>";
+            ths += "<th>Id Empleado Pronoi</th>";
+            ths += "<th>Id Empleado RH</th>";
+            ths += "<th>Horario</th>";
+
+            //periodo
+            var periodos = new Array();
+            var periodoDate = $.inputToDates($("#periodo").val());
+
+            while (periodoDate.inicio <= periodoDate.fin) {
+              var label = periodoDate.inicio.toLocaleString().split(" ");
+              var periodo = {
+                id: label[0].replaceAll("/", "_"),
+                label: $.fixCeroDate(label[0], "/"),
+                value: new Date(periodoDate.inicio)
+              };
+              periodos.push(periodo);
+              ths += "<th>" + periodo.label + "</td>";
+              var newDate = periodoDate.inicio.setDate(periodoDate.inicio.getDate() + 1);
+              periodoDate.inicio = new Date(newDate);
+            }
+
+            var tableWidth = (11 + periodos.length) * 200;
+            $("#previewTable").attr("width", tableWidth + "px");
+
+            $.executeSyncFetch({
+              action: "/empleado/fetchAllByIdTipoEmpleado",
+              method: "POST",
+              dataType: "json",
+              data: {id_tipo_empleado: $("#asistencia_tipo_empleado").val()},
+              success: function (empleados) {
+                var trs = "";
+                var totalEmpleados = empleados.length;
+//                  empleados.forEach(function (empleado) {
+                for(var i=0; i<10; i++){
+                  var empleado = empleados[i];
+
+                  //static
+                  trs += "<tr>";
+                  trs += "<td>" + empleado.nombre + "</td>";
+                  trs += "<td>" + empleado.id + "</td>";
+                  trs += "<td>" + empleado.id_rh + "</td>";
+                  trs += "<td>" + empleado.horario + "</td>";
+
+                  console.log("Empleado: " + empleado.id);
+
+                  //periodo
+                  var selectLayout;
+                  periodos.forEach(function (periodo) {
+
+                    var dateIndex = periodo.value.getFullYear() + "-" + (periodo.value.getMonth()+1) + "-" + periodo.value.getDate();
+                    var dateIndexAux = periodo.value.getDate() + "/" + (periodo.value.getMonth()+1) + "/" + periodo.value.getFullYear();
+                    dateIndexAux = $.fixCeroDate(dateIndexAux, "/");
+                    var sqlDate = (periodo.value.getMonth()+1) + "/" + periodo.value.getDate() + "/" + periodo.value.getFullYear();
+                    sqlDate = $.fixCeroDate(sqlDate, "/");
+
+                    var dateCalculated = false;
+                    $(".festivosInpts").each(function() {
+                      var festivo = $(this).val();
+                      if(festivo && festivo == dateIndexAux){
+                        selectLayout = "<select class='form-control periodo' fecha='" + sqlDate + "'"+" empleado='" + empleado.id + "'>";
+                        selectLayout += "<option value='" + ASISTENCIA_FESTIVO + "'>Festivo</option>";
+                        dateCalculated = true;
+                      }
+                    });
+
+                    if(!dateCalculated){
+                      selectLayout = "<select class='form-control periodo' fecha='" + sqlDate + "'"+" empleado='" + empleado.id + "'>";
+                      selectLayout += "<option value='" + ASISTENCIA_ASISTENCIA + "'>Asistencia</option>";
+                      selectLayout += "<option value='" + ASISTENCIA_RETARDO + "'>Retardo</option>";
+                      selectLayout += "<option value='" + ASISTENCIA_FALTA + "'>Falta</option>";
+                      selectLayout += "<option value='" + ASISTENCIA_DESCANSO + "'>Descanso</option>";
+                      selectLayout += "<option value='" + ASISTENCIA_INCAPACIDAD + "'>Incapacidad</option>";
+                      selectLayout += "<option value='" + ASISTENCIA_VACACIONES + "'>Vacaciones</option>";
+                    }
+
+                    selectLayout += "</select>";
+
+                    trs += "<td>" + selectLayout + "</td>";
+                  });
+
+                  trs += "</tr>";
+
+                  allEmpleados[empleado.id] = empleado;
+
+//                  });
+                }
+
+                if (empleados.length > 0) {
+                  if (table2)
+                    table2.destroy();
+
+                  //Preview table
+                  $("#previewTableHR").html(ths);
+                  $("#previewTableBody").html(trs);
+                  table2 = $('#previewTable').DataTable({
+                    "scrollY": 400,
+                    "scrollX": true,
+                    "bPaginate": false,
+                    "language": {
+                      "url": "/app/lang/Spanish.json"
+                    }
+                  });
+                  new $.fn.dataTable.FixedColumns( table2, {
+                    leftColumns: 1
+                  } );
+                  $(".calcAllEmpConfirmBT").show();
+                }
+
+              },
+              errorMsg: "Ocurrió un error al obtener los campos."
+            });
+
+            $.hideSpinner();
+
+          }, 1000);
+
         }
 
       }
@@ -534,7 +669,7 @@
         asistencias[index] = asistencia;
       });
 
-      console.log(asistencias);
+//      console.log(asistencias);
 
       $.executePost({
         action: "/asistencia/save",
@@ -554,6 +689,8 @@
 
 <div class="row">
   <div class="col-lg-12">
+
+    <?php if ($user['id_rol_usuario'] ==  Application::ROL_ADMINISTRADOR) { ?>
 
     <section class="panel" id="prmisosSection">
       <header class="panel-heading">
@@ -631,6 +768,8 @@
       </div>
     </section>
 
+    <?php } ?>
+
     <section class="panel">
       <header class="panel-heading" id="headerSection">
         Registrar Asistencia
@@ -682,7 +821,7 @@
               <div class="col-lg-3">
                 <select class="form-control m-bot15" id="registro" name="registro" required>
                   <option value="">Seleccionar</option>
-                  <option value="0">Guardado Previo</option>
+<!--                  <option value="0">Guardado Previo</option>-->
                   <option id="registro_automatico" value="1">Automático</option>
                   <option id="registro_manual" value="2">Manual</option>
                 </select>

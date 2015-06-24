@@ -24,6 +24,8 @@
 <script type="text/javascript" charset="utf-8">
   $(document).ready(function () {
 
+    var calcularPeriodo;
+
     $("#reporte_form").validate({
       rules: {
         nombre: {
@@ -68,13 +70,11 @@
       }
     });
 
-    var index = 0;
     $('#periodo').dateRangePicker({
       format: 'DD/MM/YYYY',
       separator: ' - ',
       setValue: function (dates) {
         this.value = dates;
-        index = 1;
         $("#festivosDiv").hide(500);
         $("#festivosInpts").children().each(function (index) {
           if(index == 0){
@@ -86,60 +86,6 @@
       }
     });
 
-    var periodoDate;
-    $("#addFestivosBT").click(function (e) {
-      if($("#periodo").val()){
-        periodoDate = $.inputToDates($("#periodo").val());
-        $("#festivosDiv").show(500);
-        $("#deleteFestivosBT").show(500);
-        $("#festivo_0").dateRangePicker({
-          format: 'DD/MM/YYYY',
-          separator: ' - ',
-          singleDate: true,
-          startDate: periodoDate.inicio,
-          endDate: periodoDate.fin
-        });
-      }else{
-        $.showMsg("error", "Seleccione un período.");
-      }
-    });
-
-    $("#deleteFestivosBT").click(function (e) {
-      index = 1;
-      $("#deleteFestivosBT").hide(500);
-      $("#festivosDiv").hide(500);
-      $("#festivosInpts").children().each(function (index) {
-        if(index == 0){
-          $("#festivo_0").val("");
-        }else{
-          $(this).remove();
-        }
-      });
-    });
-
-    //Festivos
-    var festivosElements = new Array();
-    festivosElements[index++] = "festivo_0";
-    $(".icon_plus_alt").click(function (ev) {
-      var id = "festivo_" + index;
-      var html = $("#calendarLayout").html().replaceAll("?idFestivo", id);
-      festivosElements[index++] = id;
-      $("#festivosInpts").append(html);
-      $("#" + id).dateRangePicker({
-        format: 'DD/MM/YYYY',
-        separator: ' - ',
-        singleDate: true,
-        startDate: periodoDate.inicio,
-        endDate: periodoDate.fin
-      });
-      $("#removeFestivo_" + id).click(function (ev) {
-        $(this).parent().parent().remove();
-        var removeId = $(this).attr("id");
-        var position = parseInt(removeId.substring(22));
-        festivosElements.splice(position, 1);
-      });
-    });
-
     $.executeFetch({
       action: "/plantilla/fetch",
       data: {id_plantilla: $("#id_plantilla").val()},
@@ -147,6 +93,8 @@
       dataType: "json",
       success: function (data) {
         $("#plantillaBC").html(data.nombre);
+        calcularPeriodo = data.periodo == 1 ? true : false;
+        console.log(calcularPeriodo);
         $("#plantillaBC").attr("href", "/plantilla?id=" + data.id);
         $("#reportesBC").attr("href", "/reportes?id=" + data.id);
         if ($("#id_reporte").val() == "0") {
@@ -521,8 +469,6 @@
       $("#camposSection").show(500);
     });
 
-    var TOLERANCIA = 10;//10 mins de tolerancia
-
     var table2;
     var colsTmpl;
     var expressions;
@@ -656,11 +602,13 @@
                   htmlOpts += "<option type='8' value='id_rh'>Id Empleado RH</option>\n";
                   htmlOpts += "<option type='8' value='id_mitrol'>Id Empleado Mitrol</option>\n";
                   htmlOpts += "<option type='8' value='sueldo_diario'>Sueldo Diario</option>\n";
-                  htmlOpts += "<option type='8' value='asistencias'>Asistencias en el período</option>\n";
-                  htmlOpts += "<option type='8' value='descansos'>Descansos en el período</option>\n";
-                  htmlOpts += "<option type='8' value='festivos'>Festivos en el período</option>\n";
-                  htmlOpts += "<option type='8' value='faltas'>Faltas en el período</option>\n";
-                  htmlOpts += "<option type='8' value='retardos'>Retardos en el período</option>\n";
+                  if(calcularPeriodo){
+                    htmlOpts += "<option type='8' value='asistencias'>Asistencias en el período</option>\n";
+                    htmlOpts += "<option type='8' value='descansos'>Descansos en el período</option>\n";
+                    htmlOpts += "<option type='8' value='festivos'>Festivos en el período</option>\n";
+                    htmlOpts += "<option type='8' value='faltas'>Faltas en el período</option>\n";
+                    htmlOpts += "<option type='8' value='retardos'>Retardos en el período</option>\n";
+                  }
 
                   //Campos options
                   campos.forEach(function (campo) {
@@ -743,7 +691,9 @@
               value: new Date(periodoDate.inicio)
             };
             periodos.push(periodo);
-            ths += "<th>" + periodo.label + "</td>";
+            if(calcularPeriodo){
+              ths += "<th>" + periodo.label + "</td>";
+            }
             var newDate = periodoDate.inicio.setDate(periodoDate.inicio.getDate() + 1);
             periodoDate.inicio = new Date(newDate);
           }
@@ -788,21 +738,35 @@
           var tableWidth = (11 + periodos.length + colsTmpl.length) * 200;
           $("#previewTable").attr("width", tableWidth + "px");
 
+          var empleadosURL;
+          if(calcularPeriodo){
+            empleadosURL = "/empleado/fetchAllByIdTipoEmpleadoAndPeriodo";
+          }else{
+            empleadosURL = "/empleado/fetchAllByIdTipoEmpleado";
+          }
+
           $.executeSyncFetch({
-            action: "/empleado/fetchAllByIdTipoEmpleado",
+            action: empleadosURL,
             method: "POST",
             dataType: "json",
-            data: {id_tipo_empleado: $("#id_tipo_empleado").val()},
+            data: {
+              id_tipo_empleado: $("#id_tipo_empleado").val(),
+              inicio: periodoDate.periodoJSON.inicio.mes + "/" + periodoDate.periodoJSON.inicio.dia  + "/" + periodoDate.periodoJSON.inicio.anio,
+              fin: periodoDate.periodoJSON.fin.mes + "/" + periodoDate.periodoJSON.fin.dia + "/" + periodoDate.periodoJSON.fin.anio,
+              dias: periodos.length
+            },
             success: function (empleados) {
               var trs = "";
               var totalEmpleados = empleados.length;
 //              empleados.forEach(function (empleado) {
-              for(var i=0; i<2; i++){
+              for(var i=0; i<10; i++){
                 var empleado = empleados[i];
+
+                console.log("Empleado: " + empleado.id);
 
                 //static
                 trs += "<tr>";
-                trs += "<td><i class='icon-sm glyphicon glyphicon-ok-sign icon-pending ok_"+empleado.id+"'></i>&nbsp;" + empleado.nombre + "</td>";
+                trs += "<td><i class='icon-sm glyphicon glyphicon-ok-sign icon-pending ok_" + empleado.id + "'></i>&nbsp;" + empleado.nombre + "</td>";
                 trs += "<td>" + empleado.id + "</td>";
                 trs += "<td>" + empleado.id_rh + "</td>";
                 trs += "<td>" + empleado.id_mitrol + "</td>";
@@ -814,76 +778,65 @@
                 trs += "<td>" + empleado.jefe + "</td>";
                 trs += "<td>$ " + $.number(empleado.sueldo_diario, 2) + "</td>";
 
-                console.log("Empleado: " + empleado.id_mitrol);
+                if(calcularPeriodo) {
+                  // Asistencia
+                  var asistencias = 0;
+                  var retardos = 0;
+                  var faltas = 0;
+                  var descansos = 0;
+                  var incapacidades = 0;
+                  var vacaciones = 0;
+                  var festivos = 0;
 
-                $.executeSyncFetch({
-                  action: "/regla/empleadoAsistencia",
-                  method: "POST",
-                  dataType: "json",
-                  data: {
-                    id_empleado: empleado.id_mitrol,
-                    inicio: periodoDate.periodoJSON.inicio.anio + "-" + periodoDate.periodoJSON.inicio.mes + "-" + periodoDate.periodoJSON.inicio.dia,
-                    fin: periodoDate.periodoJSON.fin.anio + "-" + periodoDate.periodoJSON.fin.mes + "-" + periodoDate.periodoJSON.fin.dia
-                  },
-                  success: function (data) {
-                    empleado.asistencias = new Array();
-//                    empleado.retardos = new Array();
-                    empleado.retardos = 0;
-                    data.asistencias.forEach(function (asistencia) {
-                      empleado.asistencias[asistencia[0]+"-"+asistencia[1]+"-"+asistencia[2]] = asistencia;
-                      var entrada = empleado.horario.split("-")[0] + ":00";
-                      entrada = entrada.split(":");
-                      var entradaDate = new Date(asistencia[3]);
-                      entradaDate.setHours(entrada[0]);
-                      entradaDate.setMinutes(entrada[1]+TOLERANCIA);
-                      entradaDate.setSeconds(entrada[2]);
-                      var firstEventDate = new Date(asistencia[3]);
-                      if(firstEventDate < entradaDate){
-//                        empleado.retardos.push(asistencia[3]);
-                        empleado.retardos++;
+                  empleado.asistencias.forEach(function (asistencia) {
+                    trs += "<td>" + asistencia.asistencia + "</td>";
+                    switch (asistencia.id_cat_asistencia) {
+                      case ASISTENCIA_ASISTENCIA:
+                      {
+                        asistencias++;
+                        break;
                       }
-                    });
-                  },
-                  errorMsg: "Ocurrió un error al obtener la asistencia de " + empleado.nombre
-                });
-
-                //periodo
-                var selectLayout;
-                periodos.forEach(function (periodo) {
-
-                  var dateIndex = periodo.value.getFullYear() + "-" + (periodo.value.getMonth()+1) + "-" + periodo.value.getDate();
-                  var dateIndexAux = periodo.value.getDate() + "/" + (periodo.value.getMonth()+1) + "/" + periodo.value.getFullYear();
-                  dateIndexAux = $.fixCeroDate(dateIndexAux, "/");
-
-                  var dateCalculated = false;
-                  $(".festivosInpts").each(function() {
-                    var festivo = $(this).val();
-//                    console.log("dateIndexAux" + dateIndexAux);
-//                    console.log("festivo" + festivo);
-                    if(festivo && festivo == dateIndexAux){
-                      selectLayout = "<select class='form-control periodo' id='periodo_"+periodo.id + "_empleado_" + empleado.id + "' value='F'>";
-                      selectLayout += "<option value='S'>Festivo</option>";
-                      dateCalculated = true;
+                      case ASISTENCIA_RETARDO:
+                      {
+                        retardos++;
+                        break;
+                      }
+                      case ASISTENCIA_FALTA:
+                      {
+                        faltas++;
+                        break;
+                      }
+                      case ASISTENCIA_DESCANSO:
+                      {
+                        descansos++;
+                        break;
+                      }
+                      case ASISTENCIA_INCAPACIDAD:
+                      {
+                        incapacidades++;
+                        break;
+                      }
+                      case ASISTENCIA_VACACIONES:
+                      {
+                        vacaciones++;
+                        break;
+                      }
+                      case ASISTENCIA_FESTIVO:
+                      {
+                        festivos++;
+                        break;
+                      }
                     }
                   });
 
-                  if(!dateCalculated){
-                    if(empleado.asistencias[dateIndex]){
-                      selectLayout = "<select class='form-control periodo' id='periodo_"+periodo.id + "_empleado_" + empleado.id + "' value='A'>";
-                      selectLayout += "<option value='A'>Asistencia</option>";
-                    }else{
-                      selectLayout = "<select class='form-control periodo_" + empleado.id+"' id='periodo_"+periodo.id + "_empleado_" + empleado.id+"'>";
-                      selectLayout += "<option value='F'>Falta</option>";
-                      selectLayout += "<option value='D'>Descanso</option>";
-                      selectLayout += "<option value='I'>Incapacidad</option>";
-                      selectLayout += "<option value='V'>Vacaciones</option>";
-                    }
-                  }
-
-                  selectLayout += "</select>";
-
-                  trs += "<td>" + selectLayout + "</td>";
-                });
+                  empleado.asistencias = asistencias;
+                  empleado.retardos = retardos;
+                  empleado.faltas = faltas;
+                  empleado.descansos = descansos;
+                  empleado.incapacidades = descansos;
+                  empleado.vacaciones = descansos;
+                  empleado.festivos = festivos;
+                }
 
                 //cols
                 colsTmpl.forEach(function (col) {
@@ -903,6 +856,9 @@
               if (campos.length > 0 && empleados.length > 0) {
                 if (table2)
                   table2.destroy();
+
+                console.log(ths);
+                console.log(trs);
 
                 //Preview table
                 $("#previewTableHR").html(ths);
@@ -924,9 +880,13 @@
                 //******** Click on calcular ALL EMPLEADOS ALL REGLAS ************
                 $("#calcAllEmpBT").unbind();
                 $("#calcAllEmpBT").click(function (e) {
-                  $(".calcTodo").each(function() {
+                  $(".calcTodo").each(function(index) {
                     var id_empleado = $(this).attr("id_empleado");
-                    calcAllReglas(id_empleado);
+                    var lastEmpleado = false;
+                    if($(".calcTodo").length-1 == index){
+                      lastEmpleado = true;
+                    }
+                    calcAllReglas(id_empleado, lastEmpleado);
                   });
                 });
 
@@ -934,12 +894,12 @@
                 $("#calcTodo").unbind();
                 $(".calcTodo").click(function (e) {
                   var id_empleado = $(this).attr("id_empleado");
-                  calcAllReglas(id_empleado);
+                  calcAllReglas(id_empleado, true);
                 });
 
-                var calcAllReglas = function(id_empleado){
+                var calcAllReglas = function(id_empleado, lastEmpleado){
+
                   var reglas = new Array();
-                  calcsLeft = reglas.length;
 
                   $(".regla").each(function() {
                     var id_campo = $(this).attr("id_campo");
@@ -959,20 +919,22 @@
 
                   reglas.sort($.sortBy("orden"));
 
-//                  console.log(calcsLeft + "show!");
                   $.showSpinner();
                   var nextRegla = true;
                   setTimeout(function() {
-                    reglas.forEach(function (regla) {
+
+                    reglas.forEach(function (regla, index) {
 //                      console.log(regla);
                       if(nextRegla){
-                        nextRegla = calcularRegla(regla.id_campo, regla.id_regla, regla.id_empleado);
+                        var lastRegla = false;
+                        if(lastEmpleado){
+                          if(reglas.length-1 == index){
+                            lastRegla = true;
+                          }
+                        }
+                        nextRegla = calcularRegla(regla.id_campo, regla.id_regla, regla.id_empleado, lastRegla);
                       }
                     });
-                    if(calcsLeft == 0){
-//                      console.log(calcsLeft + "hide!");
-                      $.hideSpinner();
-                    }
                     if(nextRegla){
                       $(".ok_"+id_empleado).removeClass('icon-pending').addClass('icon-ready');
                       allEmpleados[id_empleado].ready = true;
@@ -999,13 +961,14 @@
                 //******** Click on calcular REGLA ************
                 $(".regla").unbind();
                 $(".regla").click(function (e) {
+                  $.showSpinner();
                   var id_campo = $(this).attr("id_campo");
                   var id_regla = $(this).attr("id_regla");
                   var id_empleado = $(this).attr("id_empleado");
-                  calcularRegla(id_campo, id_regla, id_empleado);
+                  calcularRegla(id_campo, id_regla, id_empleado, true);
                 });
 
-                var calcularRegla = function(id_campo, id_regla, id_empleado){
+                var calcularRegla = function(id_campo, id_regla, id_empleado, lastRegla){
 
                   var nextRegla = true;
                   selectedCampo = id_campo;
@@ -1033,50 +996,6 @@
                       var valid = true;
                       var missingValues = "";
                       var campoIndex = 0;
-
-                      //Calcular asistencias para cada empleado
-                      expressions.forEach(function (expression) {
-                         if (expression.type == TIPO_EXP_EMPLEADO) {
-
-                          var faltas = 0;
-                          var asistencias = 0;
-                          var descansos = 0;
-                          var festivos = 0;
-//                          var retardos = 0;
-                          $(".periodo_"+selectedEmpleado.id).each(function () {
-                            var val = $(this).val();
-                            switch (val){
-                              case "A":{
-                                asistencias++;
-                                break;
-                              }
-                              case "D":{
-                                descansos++;
-                                break;
-                              }
-                              case "I":{
-                                break;
-                              }
-                              case "V":{
-                                break;
-                              }
-                              case "S":{
-                                festivos++;
-                                break;
-                              }
-                              case "F": default:{
-                                faltas++;
-                                break;
-                              }
-                            }
-                          });
-                          selectedEmpleado.faltas = faltas;
-                          selectedEmpleado.asistencias = asistencias;
-                          selectedEmpleado.descansos = descansos;
-                          selectedEmpleado.festivos = festivos;
-//                          selectedEmpleado.retardos = retardos;
-                        }
-                      });
 
                       $("#reglasSectionModal").html("");
 
@@ -1127,11 +1046,14 @@
                                   if (data.cols.length == 1 && data.rows.length == 1) {
                                     expression.value = data.rows[0][0];
                                   } else if (data.cols.length == 1 && data.rows.length == 0) {
+                                    nextRegla = false;
                                     $.showMsg("error", "El sql no ha regresado resultados.");
                                   } else {
+                                    nextRegla = false;
                                     $.showMsg("error", "El sql debe regresar un solo resultado.");
                                   }
                                 } else {
+                                  nextRegla = false;
                                   $.showMsg("error", data.message);
                                 }
                               },
@@ -1159,8 +1081,8 @@
                       if (valid) {
                         var operacion = "";
                         expressions.forEach(function (expression) {
-//                            console.log(expression);
-//                            console.log(selectedEmpleado);
+                            console.log(expression);
+                            console.log(selectedEmpleado);
                           if (expression.type == TIPO_EXP_CAMPO || expression.type == TIPO_EXP_REGLA) {
                             operacion += expression.value;
                           } else if (expression.type == TIPO_EXP_EMPLEADO) {
@@ -1170,9 +1092,9 @@
                           }
                         });
                         try {
-//                          console.log("Operación: " + operacion);
+                          console.log("Operación: " + operacion);
                           result = Parser.evaluate(operacion);
-                          $.showMsg("success", allCampos[selectedCampo].nombre + " - Resultado: " + result);
+//                          $.showMsg("success", allCampos[selectedCampo].nombre + " - Resultado: " + result);
                           $("#campo_" + selectedCampo + "_empleado_" + selectedEmpleado.id).val(result);
                         } catch (ex) {
                           $.showMsg("error", "Error al evaluar la operación.<br/>" + ex);
@@ -1182,9 +1104,19 @@
                         $.showMsg("error", "Por favor ingrese los siguientes valores en los campos:" + missingValues);
                       }
 
+                      if(!nextRegla || lastRegla){
+                        $.hideSpinner();
+                      }
+
                     },
                     errorMsg: "Ocurrió un error al obtener la regla."
                   });
+
+                  if(!nextRegla){
+                    $(".ok_"+id_empleado).removeClass('icon-ready').addClass('icon-pending');
+                    allEmpleados[id_empleado].ready = false;
+                  }
+
                   return nextRegla;
                 };//Calcula Regla
 
@@ -1280,7 +1212,7 @@
 
     });
 
-    /******************************************** REPORTE PASO 3 ************************************************/
+    /******************************************** COMPLETAR REPORTE PASO 3 ************************************************/
 
     $(".generarReporteBT3").click(function (e) {
       var data = table2.rows().data();
@@ -1488,10 +1420,6 @@
                                     </span>
                 </div>
               </div>
-              <div class="col-lg-4">
-                <button class="btn btn-primary" type="button" id="addFestivosBT">Agregar días festivos</button>
-                <button class="btn btn-primary no-display" type="button" id="deleteFestivosBT">Eliminar días festivos</button>
-              </div>
             </div>
             <div class="form-group no-display" id="festivosDiv">
               <label class="control-label col-lg-2">Días Festivos:</label>
@@ -1617,22 +1545,6 @@
   </div>
 </div>
 
-<div id="expressionSelectLayout" class="hidden">
-  <div class="form-group">
-    <label class="control-label col-lg-4">?campoLabel</label>
-
-    <div class="col-lg-8" id="selectLayout">
-      <select class="form-control" id="?campoId">
-        <option value="A">Asistencia</option>
-        <option value="F">Falta</option>
-        <option value="D">Descanso</option>
-        <option value="I">Incapacidad</option>
-        <option value="V">Vacaciones</option>
-      </select>
-    </div>
-  </div>
-</div>
-
 <div id="colorPickerLayout" class="hidden">
   <div class="input-group colorPicker">
     <span id="colorPreview" class="input-group-addon"><i></i></span>
@@ -1720,16 +1632,6 @@
 
     <div class="col-lg-8">
       <input class="form-control " id="?campoId" name="?campoName" type="text" value="?campoValue" readonly/>
-    </div>
-  </div>
-</div>
-
-<div id="expressionSelectLayout" class="hidden">
-  <div class="form-group">
-    <label class="control-label col-lg-4">?campoLabel</label>
-
-    <div class="col-lg-8">
-      <select class="form-control" id="?campoId" name="?campoName">?options</select>
     </div>
   </div>
 </div>

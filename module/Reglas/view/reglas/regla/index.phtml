@@ -76,6 +76,9 @@
         } else {
           $("#reglaBC").attr("href", "/regla?id=" + $("#id_regla").val() + "&id_plantilla=" + data.id);
         }
+        if(data.periodo == 1){
+          $(".asistencias").show();
+        }
         $.executeFetch({
           action: "/empleado/fetchAll",
           data: {id_tipo_empleado: data.id_tipo_empleado},
@@ -228,32 +231,6 @@
                   }
                 }
               }
-//                            for(var i=0; i<sqlParts.length; i++){
-//                                var param = "";
-//                                var equalFounded = false;
-//                                var charFounded = false;
-//                                for(j=sqlParts[i].length; j>0; j--){
-//                                    var chhar = sqlParts[i].substring(j-1, j);
-//                                    if(equalFounded){
-//                                        if(chhar === " " && charFounded){
-//                                            break;
-//                                        }else if(chhar !== " "){
-//                                            param += chhar;
-//                                            charFounded = true;
-//                                        }
-//                                    }
-//                                    if(chhar === "="){
-//                                        equalFounded = true;
-//                                    }else{
-//                                        param = "?";
-//                                        break;
-//                                    }
-//                                }
-//                                if(param !== ""){
-//                                    params.push(reverse(param));
-//                                }
-//                            }
-
               var paramLayout = $("#paramsLayout").html();
               var paramAux;
               $("#paramsSection").html("");
@@ -480,7 +457,6 @@
 
     $("#recursive_empleado").change(function (e) {
       var expression = {
-//                id_regla: $(this).children(":selected").attr("id_regla"),
         type: 8,
         value: $(this).val(),
         label: "<span class='empleado-label'>" + $(this).find('option:selected').text() + "</span>"
@@ -561,28 +537,6 @@
           if (sql.indexOf("?") !== -1) {
             var params = new Array();
             sqlParts = sql.split("?");
-//                        for (var i = 0; i < sqlParts.length; i++) {
-//                            var param = "";
-//                            var equalFounded = false;
-//                            var charFounded = false;
-//                            for (j = sqlParts[i].length; j > 0; j--) {
-//                                var chhar = sqlParts[i].substring(j - 1, j);
-//                                if (equalFounded) {
-//                                    if (chhar === " " && charFounded) {
-//                                        break;
-//                                    } else if (chhar !== " ") {
-//                                        param += chhar;
-//                                        charFounded = true;
-//                                    }
-//                                }
-//                                if (chhar === "=") {
-//                                    equalFounded = true;
-//                                }
-//                            }
-//                            if (param !== "") {
-//                                params.push(reverse(param));
-//                            }
-//                        }
             for (var i = 1; i < sqlParts.length; i++) {
               var param = "";
               for (var j = 0; j < sqlParts[i].length; j++) {
@@ -873,11 +827,11 @@
                       <option value="id_rh">Id Empleado RH</option>
                       <option value="id_mitrol">Id Empleado Mitrol</option>
                       <option value="sueldo_diario">Sueldo Diario</option>
-                      <option value="asistencias">Asistencias en el período</option>
-                      <option value="descansos">Descansos en el período</option>
-                      <option value="festivos">Festivos en el período</option>
-                      <option value="faltas">Faltas en el período</option>
-                      <option value="retardos">Retardos en el período</option>
+                      <option class="no-display asistencias" value="asistencias">Asistencias en el período</option>
+                      <option class="no-display asistencias" value="retardos">Retardos en el período</option>
+                      <option class="no-display asistencias" value="descansos">Descansos en el período</option>
+                      <option class="no-display asistencias" value="festivos">Festivos en el período</option>
+                      <option class="no-display asistencias" value="faltas">Faltas en el período</option>
                     </select>
                   </div>
                 </div>

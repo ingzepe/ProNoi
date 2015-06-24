@@ -147,7 +147,7 @@ class ReglaController extends AbstractActionController {
         return $response;
     }
 
-    public function empleadoAsistenciaAction() {
+    public function empleadoAsistenciaMitrolAction() {
         $this->layout( 'layout/json' );
         $request = $this->getRequest();
         $response = $this->getResponse();
@@ -157,7 +157,7 @@ class ReglaController extends AbstractActionController {
         $fin = $post_data['fin'];
 //        $db = $this->params()->fromQuery('db');
 //        $query = $this->params()->fromQuery('sql');
-        if (!$result = $this->getReglaTable()->empleadoAsistencia($id_empleado, $inicio, $fin)) {
+        if (!$result = $this->getReglaTable()->empleadoAsistenciaMitrol($id_empleado, $inicio, $fin)) {
             $response->setContent(\Zend\Json\Json::encode(array('status' => false)));
         } else {
             $response->setContent(\Zend\Json\Json::encode(array('status' => true, 'data' => $result)));

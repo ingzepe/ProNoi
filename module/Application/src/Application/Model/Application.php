@@ -51,10 +51,14 @@ class Application {
   const TIPO_EXP_EMPLEADO                       = 8;
 
   const ASISTENCIA_ASISTENCIA                   = 1;
-  const ASISTENCIA_FALTA                        = 2;
-  const ASISTENCIA_DESCANSO                     = 3;
-  const ASISTENCIA_INCAPACIDAD                  = 4;
-  const ASISTENCIA_VACACIONES                   = 5;
-  const ASISTENCIA_FESTIVO                      = 6;
+  const ASISTENCIA_RETARDO                      = 2;
+  const ASISTENCIA_FALTA                        = 3;
+  const ASISTENCIA_DESCANSO                     = 4;
+  const ASISTENCIA_INCAPACIDAD                  = 5;
+  const ASISTENCIA_VACACIONES                   = 6;
+  const ASISTENCIA_FESTIVO                      = 7;
+
+  //10 mins de tolerancia
+  const TOLERANCIA                              = 10;
 
 }
