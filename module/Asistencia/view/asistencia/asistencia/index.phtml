@@ -395,9 +395,9 @@ $user = $session->user;
                 success: function (empleados) {
                   var trs = "";
                   var totalEmpleados = empleados.length;
-//                  empleados.forEach(function (empleado) {
-                  for(var i=0; i<10; i++){
-                    var empleado = empleados[i];
+                  empleados.forEach(function (empleado) {
+//                  for(var i=0; i<10; i++){
+//                    var empleado = empleados[i];
 
                     //static
                     trs += "<tr>";
@@ -619,8 +619,8 @@ $user = $session->user;
 
                   allEmpleados[empleado.id] = empleado;
 
-//                  });
-                }
+                  });
+//                }
 
                 if (empleados.length > 0) {
                   if (table2)

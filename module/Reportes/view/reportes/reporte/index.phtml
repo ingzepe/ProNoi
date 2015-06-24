@@ -758,9 +758,9 @@
             success: function (empleados) {
               var trs = "";
               var totalEmpleados = empleados.length;
-//              empleados.forEach(function (empleado) {
-              for(var i=0; i<10; i++){
-                var empleado = empleados[i];
+              empleados.forEach(function (empleado) {
+//              for(var i=0; i<10; i++){
+//                var empleado = empleados[i];
 
                 console.log("Empleado: " + empleado.id);
 
@@ -850,8 +850,8 @@
 
                 allEmpleados[empleado.id] = empleado;
 
-//              });
-              }
+              });
+//              }
 
               if (campos.length > 0 && empleados.length > 0) {
                 if (table2)
