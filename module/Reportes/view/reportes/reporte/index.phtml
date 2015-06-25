@@ -767,8 +767,8 @@
               id_tipo_empleado: $("#id_tipo_empleado").val(),
 //              inicio: periodoDate.periodoJSON.inicio.mes + "/" + periodoDate.periodoJSON.inicio.dia  + "/" + periodoDate.periodoJSON.inicio.anio,
 //              fin: periodoDate.periodoJSON.fin.mes + "/" + periodoDate.periodoJSON.fin.dia + "/" + periodoDate.periodoJSON.fin.anio,
-              inicio: periodoDate.periodoJSON.inicio.anio + "/" + periodoDate.periodoJSON.inicio.mes + "/" + periodoDate.periodoJSON.inicio.dia,
-              fin: periodoDate.periodoJSON.fin.anio + "/" + periodoDate.periodoJSON.fin.mes + "/" + periodoDate.periodoJSON.fin.dia,
+              inicio: periodoDate.periodoJSON.inicio.anio + "-" + periodoDate.periodoJSON.inicio.mes + "-" + periodoDate.periodoJSON.inicio.dia,
+              fin: periodoDate.periodoJSON.fin.anio + "-" + periodoDate.periodoJSON.fin.mes + "-" + periodoDate.periodoJSON.fin.dia,
               dias: periodos.length
             },
             success: function (empleados) {
@@ -784,6 +784,7 @@
                 var empleado = empleados[i];
 
                 console.log("Empleado: " + empleado.id);
+                console.log(empleado);
 
                 //static
                 trs += "<tr>";
