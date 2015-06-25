@@ -5,6 +5,8 @@ namespace Empleados\Controller;
 use Application\Model\Application;
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
+use Zend\Log\Logger;
+use Zend\Log\Writer\Stream;
 
 class EmpleadoController extends AbstractActionController
 {
@@ -12,6 +14,14 @@ class EmpleadoController extends AbstractActionController
   protected $_empleadoTable;
   protected $_tipoEmpleadoTable;
   protected $_asistenciaTable;
+
+  public function logInfo($message)
+  {
+    $log = new Logger();
+    $writer = new Stream('pronoi.log');
+    $log->addWriter($writer);
+    $log->log(Logger::INFO, $message);
+  }
 
   public function getEmpleadoTable()
   {
@@ -101,18 +111,21 @@ class EmpleadoController extends AbstractActionController
     $dias = (int)$post_data['dias'];
 
     $empleados = $this->getEmpleadoTable()->fetchAllByIdTipoEmpleado($id_tipo_empleado);
-    $count = count($empleados);
+    $empleadosNo = count($empleados);
 
     $error = false;
 
-    if ($count < 0) {
+    //$this->logInfo("empleadosNo: ".$empleadosNo);
+
+    if ($empleadosNo < 0) {
       $error = true;
     } else {
-      for($i=0; $i<$count; $i++){
+      for($i=0; $i<$empleadosNo; $i++){
         $asistencias = $this->getAsistenciaTable()->fetchAllByIdEmpleadoAndPeriodo($empleados[$i]["id"], $inicio, $fin);
-        $count = count($asistencias);
-//        if ($count < $dias) {
-        if ($count < 0) {
+        $asistenciasNo = count($asistencias);
+        //$this->logInfo("Empleado: ".$empleados[$i]["id"]." ".$asistenciasNo);
+//        if ($asistenciasNo < $dias) {
+        if ($asistenciasNo < 0) {
           $error = true;
           break;
         }else{
@@ -285,22 +298,22 @@ class EmpleadoController extends AbstractActionController
   }
 
   public function fetchAllTipoEmpleadoByIdUnidadAction()
-{
-  $this->layout('layout/json');
-  $request = $this->getRequest();
-  $response = $this->getResponse();
-  $post_data = $request->getPost();
-  $id_unidad = $post_data['id_unidad'];
+  {
+    $this->layout('layout/json');
+    $request = $this->getRequest();
+    $response = $this->getResponse();
+    $post_data = $request->getPost();
+    $id_unidad = $post_data['id_unidad'];
 
-  $tipos = $this->getTipoEmpleadoTable()->fetchAllByIdUnidad($id_unidad);
-  $count = count($tipos);
-  if ($count < 0) {
-    $response->setContent(\Zend\Json\Json::encode(array('status' => false)));
-  } else {
-    $tipos = \Zend\Json\Json::encode($tipos);
-    $response->setContent(\Zend\Json\Json::encode(array('status' => true, 'data' => $tipos)));
+    $tipos = $this->getTipoEmpleadoTable()->fetchAllByIdUnidad($id_unidad);
+    $count = count($tipos);
+    if ($count < 0) {
+      $response->setContent(\Zend\Json\Json::encode(array('status' => false)));
+    } else {
+      $tipos = \Zend\Json\Json::encode($tipos);
+      $response->setContent(\Zend\Json\Json::encode(array('status' => true, 'data' => $tipos)));
+    }
+    return $response;
   }
-  return $response;
-}
 
 }
