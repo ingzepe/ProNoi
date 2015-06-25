@@ -2,6 +2,10 @@
 use Application\Model\Application;
 $session = new \Zend\Session\Container('user');
 $user = $session->user;
+
+$reader = new Zend\Config\Reader\Ini();
+$config = $reader->fromFile('config/autoload/config.ini');
+$environment = $config['environment'];
 ?>
 
 <link rel="stylesheet" href="/css/daterangepicker.css"/>
@@ -23,6 +27,16 @@ $user = $session->user;
 
 <script type="text/javascript" charset="utf-8">
   $(document).ready(function () {
+
+    <?php
+
+      if($environment == 'dev'){
+        echo "var RESTRICT_EMPLEADOS = true;";
+      }else{
+        echo "var RESTRICT_EMPLEADOS = false;";
+      }
+
+    ?>
 
     $("#permisos_form").validate({
       rules: {
@@ -394,10 +408,15 @@ $user = $session->user;
                 data: {id_tipo_empleado: $("#asistencia_tipo_empleado").val()},
                 success: function (empleados) {
                   var trs = "";
-                  var totalEmpleados = empleados.length;
-                  empleados.forEach(function (empleado) {
-//                  for(var i=0; i<10; i++){
-//                    var empleado = empleados[i];
+                  var totalEmpleados;
+                  if(RESTRICT_EMPLEADOS){
+                    totalEmpleados = 10;
+                  }else{
+                    totalEmpleados = empleados.length;
+                  }
+//                  empleados.forEach(function (empleado) {
+                  for(var i=0; i<totalEmpleados; i++){
+                    var empleado = empleados[i];
 
                     //static
                     trs += "<tr>";
@@ -489,8 +508,8 @@ $user = $session->user;
 
                     allEmpleados[empleado.id] = empleado;
 
-                  });
-//                  }
+//                  });
+                  }
 
                   if (empleados.length > 0) {
                     if (table2)
@@ -567,9 +586,9 @@ $user = $session->user;
               success: function (empleados) {
                 var trs = "";
                 var totalEmpleados = empleados.length;
-                empleados.forEach(function (empleado) {
-//                for(var i=0; i<10; i++){
-//                  var empleado = empleados[i];
+//                empleados.forEach(function (empleado) {
+                for(var i=0; i<10; i++){
+                  var empleado = empleados[i];
 
                   //static
                   trs += "<tr>";
@@ -619,8 +638,8 @@ $user = $session->user;
 
                   allEmpleados[empleado.id] = empleado;
 
-                  });
-//                }
+//                  });
+                }
 
                 if (empleados.length > 0) {
                   if (table2)

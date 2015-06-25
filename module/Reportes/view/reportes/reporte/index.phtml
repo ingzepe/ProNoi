@@ -2,6 +2,10 @@
   use Application\Model\Application;
   $session = new \Zend\Session\Container('user');
   $user = $session->user;
+
+  $reader = new Zend\Config\Reader\Ini();
+  $config = $reader->fromFile('config/autoload/config.ini');
+  $environment = $config['environment'];
 ?>
 
 <link rel="stylesheet" href="/css/daterangepicker.css"/>
@@ -25,6 +29,16 @@
   $(document).ready(function () {
 
     var calcularPeriodo;
+
+    <?php
+
+      if($environment == 'dev'){
+        echo "var RESTRICT_EMPLEADOS = true;";
+      }else{
+        echo "var RESTRICT_EMPLEADOS = false;";
+      }
+
+    ?>
 
     $("#reporte_form").validate({
       rules: {
@@ -94,7 +108,7 @@
       success: function (data) {
         $("#plantillaBC").html(data.nombre);
         calcularPeriodo = data.periodo == 1 ? true : false;
-        console.log(calcularPeriodo);
+//        console.log(calcularPeriodo);
         $("#plantillaBC").attr("href", "/plantilla?id=" + data.id);
         $("#reportesBC").attr("href", "/reportes?id=" + data.id);
         if ($("#id_reporte").val() == "0") {
@@ -751,16 +765,23 @@
             dataType: "json",
             data: {
               id_tipo_empleado: $("#id_tipo_empleado").val(),
-              inicio: periodoDate.periodoJSON.inicio.mes + "/" + periodoDate.periodoJSON.inicio.dia  + "/" + periodoDate.periodoJSON.inicio.anio,
-              fin: periodoDate.periodoJSON.fin.mes + "/" + periodoDate.periodoJSON.fin.dia + "/" + periodoDate.periodoJSON.fin.anio,
+//              inicio: periodoDate.periodoJSON.inicio.mes + "/" + periodoDate.periodoJSON.inicio.dia  + "/" + periodoDate.periodoJSON.inicio.anio,
+//              fin: periodoDate.periodoJSON.fin.mes + "/" + periodoDate.periodoJSON.fin.dia + "/" + periodoDate.periodoJSON.fin.anio,
+              inicio: periodoDate.periodoJSON.inicio.anio + "/" + periodoDate.periodoJSON.inicio.mes + "/" + periodoDate.periodoJSON.inicio.dia,
+              fin: periodoDate.periodoJSON.fin.anio + "/" + periodoDate.periodoJSON.fin.mes + "/" + periodoDate.periodoJSON.fin.dia,
               dias: periodos.length
             },
             success: function (empleados) {
               var trs = "";
-              var totalEmpleados = empleados.length;
-              empleados.forEach(function (empleado) {
-//              for(var i=0; i<10; i++){
-//                var empleado = empleados[i];
+              var totalEmpleados;
+              if(RESTRICT_EMPLEADOS){
+                totalEmpleados = 10;
+              }else{
+                totalEmpleados = empleados.length;
+              }
+//              empleados.forEach(function (empleado) {
+              for(var i=0; i<totalEmpleados; i++){
+                var empleado = empleados[i];
 
                 console.log("Empleado: " + empleado.id);
 
@@ -850,15 +871,12 @@
 
                 allEmpleados[empleado.id] = empleado;
 
-              });
-//              }
+//              });
+              }
 
               if (campos.length > 0 && empleados.length > 0) {
                 if (table2)
                   table2.destroy();
-
-                console.log(ths);
-                console.log(trs);
 
                 //Preview table
                 $("#previewTableHR").html(ths);
@@ -1081,8 +1099,8 @@
                       if (valid) {
                         var operacion = "";
                         expressions.forEach(function (expression) {
-                            console.log(expression);
-                            console.log(selectedEmpleado);
+//                            console.log(expression);
+//                            console.log(selectedEmpleado);
                           if (expression.type == TIPO_EXP_CAMPO || expression.type == TIPO_EXP_REGLA) {
                             operacion += expression.value;
                           } else if (expression.type == TIPO_EXP_EMPLEADO) {
@@ -1092,7 +1110,7 @@
                           }
                         });
                         try {
-                          console.log("Operación: " + operacion);
+//                          console.log("Operación: " + operacion);
                           result = Parser.evaluate(operacion);
 //                          $.showMsg("success", allCampos[selectedCampo].nombre + " - Resultado: " + result);
                           $("#campo_" + selectedCampo + "_empleado_" + selectedEmpleado.id).val(result);
