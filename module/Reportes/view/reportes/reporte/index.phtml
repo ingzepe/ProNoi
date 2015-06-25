@@ -810,9 +810,9 @@
                   var vacaciones = 0;
                   var festivos = 0;
 
-                  empleado.asistencias.forEach(function (asistencia) {
-                    trs += "<td>" + asistencia.asistencia + "</td>";
-                    switch (asistencia.id_cat_asistencia) {
+                  empleado.registro.forEach(function (registro) {
+                    trs += "<td>" + registro.asistencia + "</td>";
+                    switch (registro.id_cat_asistencia) {
                       case ASISTENCIA_ASISTENCIA:
                       {
                         asistencias++;

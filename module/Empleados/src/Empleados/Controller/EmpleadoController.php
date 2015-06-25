@@ -116,7 +116,7 @@ class EmpleadoController extends AbstractActionController
           $error = true;
           break;
         }else{
-          $empleados[$i]["asistencias"] = $asistencias;
+          $empleados[$i]["registro"] = $asistencias;
         }
       }
 
