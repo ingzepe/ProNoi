@@ -23,7 +23,8 @@ class Application {
   const CONTROL_REPORTE_GENERAR                 = 1;
   const CONTROL_REPORTE_CONSULTAR               = 2;
   const CONTROL_REPORTE_AUTORIZAR_A_DIRECCION   = 3;
-  const CONTROL_REPORTE_AUTORIZAR_A_NOMINA      = 4;
+  const CONTROL_REPORTE_AUTORIZAR_A_RH          = 4;
+  const CONTROL_REPORTE_AUTORIZAR_A_NOMINA      = 5;
 
   const REPORTE_ESTADO_CALCULANDO               = 1;
   const REPORTE_ESTADO_COMPLETADO               = 2;
@@ -31,6 +32,8 @@ class Application {
   const REPORTE_ESTADO_RECHAZADO_POR_GERENCIA   = 4;
   const REPORTE_ESTADO_AUTORIZADO_POR_DIRECCION = 5;
   const REPORTE_ESTADO_RECHAZADO_POR_DIRECCION  = 6;
+  const REPORTE_ESTADO_AUTORIZADO_POR_RH        = 7;
+  const REPORTE_ESTADO_RECHAZADO_POR_RH         = 8;
 
   const TIPO_REGLA_SQL                          = 1;
   const TIPO_FREGLA_RECURSIVA                   = 2;
@@ -57,6 +60,7 @@ class Application {
   const ASISTENCIA_INCAPACIDAD                  = 5;
   const ASISTENCIA_VACACIONES                   = 6;
   const ASISTENCIA_FESTIVO                      = 7;
+  const ASISTENCIA_FALTA_JUSTIFICADA            = 8;
 
   //10 mins de tolerancia
   const TOLERANCIA                              = 10;

@@ -29,6 +29,11 @@ class Module {
                     $table = new Model\UsuarioTable($dbAdapter);
                     return $table;
                 },
+              'Usuarios\Model\RolUsuarioTable' => function($sm) {
+                  $dbAdapter = $sm->get('Zend\Db\Adapter\Adapter');
+                  $table = new Model\RolUsuarioTable($dbAdapter);
+                  return $table;
+              },
             ),
         );
     }

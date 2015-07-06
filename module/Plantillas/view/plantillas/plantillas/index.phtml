@@ -19,7 +19,6 @@
           var no = 1;
           data.forEach(function (plantilla) {
             html += "<tr id='tr_" + plantilla.id + "'>";
-            html += "<td class='text-center'><input type='checkbox'></td>";
             html += "<td>" + no++ + "</td>";
             html += "<td>" + plantilla.nombre + "</td>";
             html += "<td>" + plantilla.unidad_negocio + "</td>";
@@ -50,9 +49,8 @@
           if($("#id_rol_usuario").val() == ROL_ADMINISTRADOR || $("#id_rol_usuario").val() == ROL_ADMINISTRADOR_PLANTILLAS){
             colWidths = [
               {"width": "5%"},
-              {"width": "5%"},
               {"width": "30%"},
-              {"width": "20%"},
+              {"width": "25%"},
               {"width": "30%"},
               {"width": "5%"},
               {"width": "5%"}
@@ -60,9 +58,8 @@
           }else{
             colWidths = [
               {"width": "5%"},
-              {"width": "5%"},
               {"width": "35%"},
-              {"width": "20%"},
+              {"width": "25%"},
               {"width": "30%"},
               {"width": "5%"}
             ];
@@ -131,7 +128,6 @@
         <table id="mainTable" class="table table-bordered" cellspacing="0" width="100%">
           <thead>
           <tr>
-            <th>Seleccionar</th>
             <th>No.</th>
             <th>Nombre</th>
             <th>Unidad de Negocio</th>

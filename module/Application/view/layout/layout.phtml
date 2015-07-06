@@ -70,6 +70,8 @@
     var REPORTE_ESTADO_RECHAZADO_POR_GERENCIA   = <?php echo Application::REPORTE_ESTADO_RECHAZADO_POR_GERENCIA ?>;
     var REPORTE_ESTADO_AUTORIZADO_POR_DIRECCION = <?php echo Application::REPORTE_ESTADO_AUTORIZADO_POR_DIRECCION ?>;
     var REPORTE_ESTADO_RECHAZADO_POR_DIRECCION  = <?php echo Application::REPORTE_ESTADO_RECHAZADO_POR_DIRECCION ?>;
+    var REPORTE_ESTADO_AUTORIZADO_POR_RH        = <?php echo Application::REPORTE_ESTADO_AUTORIZADO_POR_RH ?>;
+    var REPORTE_ESTADO_RECHAZADO_POR_RH         = <?php echo Application::REPORTE_ESTADO_RECHAZADO_POR_RH ?>;
 
     // Constants
     var TIPO_REGLA_SQL                          = <?php echo Application::TIPO_REGLA_SQL ?>;
@@ -98,6 +100,7 @@
     var ASISTENCIA_INCAPACIDAD                  = <?php echo Application::ASISTENCIA_INCAPACIDAD ?>;
     var ASISTENCIA_VACACIONES                   = <?php echo Application::ASISTENCIA_VACACIONES ?>;
     var ASISTENCIA_FESTIVO                      = <?php echo Application::ASISTENCIA_FESTIVO ?>;
+    var ASISTENCIA_FALTA_JUSTIFICADA            = <?php echo Application::ASISTENCIA_FALTA_JUSTIFICADA ?>;
 
     // Tolerancia
     var TOLERANCIA                              = <?php echo Application::TOLERANCIA ?>;
@@ -168,17 +171,17 @@
           </li>
           <?php if ($user['id_rol_usuario'] == Application::ROL_ADMINISTRADOR || $user['id_rol_usuario'] == Application::ROL_PERSONAL_RH) { ?>
             <li>
-              <a href="javascript:;">
+              <a href="/usuarios">
                 <i class="icon_group"></i>
                 <span>Usuarios</span>
               </a>
             </li>
-            <li>
-              <a href="javascript:;">
-                <i class="icon_flowchart"></i>
-                <span>Unid. de Negocio</span>
-              </a>
-            </li>
+<!--            <li>-->
+<!--              <a href="javascript:;">-->
+<!--                <i class="icon_flowchart"></i>-->
+<!--                <span>Unid. de Negocio</span>-->
+<!--              </a>-->
+<!--            </li>-->
             <li>
               <a href="/empleados">
                 <i class="icon_id-2_alt"></i>

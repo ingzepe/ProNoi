@@ -23,18 +23,18 @@ use Application\Model\Application;
             estado = "<span class='label label-warning reporteComments'>" + reporte.estado + "</span>";
             break;
           }
-          case REPORTE_ESTADO_COMPLETADO: case REPORTE_ESTADO_AUTORIZADO_POR_GERENCIA:{
-          estado = "<span class='label label-primary reporteComments'>" + reporte.estado + "</span>";
-          break;
-        }
-          case REPORTE_ESTADO_AUTORIZADO_POR_DIRECCION:{
+          case REPORTE_ESTADO_COMPLETADO: case REPORTE_ESTADO_AUTORIZADO_POR_GERENCIA: case REPORTE_ESTADO_AUTORIZADO_POR_DIRECCION:{
+            estado = "<span class='label label-primary reporteComments'>" + reporte.estado + "</span>";
+            break;
+          }
+          case REPORTE_ESTADO_AUTORIZADO_POR_RH:{
             estado = "<span class='label label-success reporteComments'>" + reporte.estado + "</span>";
             break;
           }
-          case REPORTE_ESTADO_RECHAZADO_POR_GERENCIA: case REPORTE_ESTADO_RECHAZADO_POR_DIRECCION: {
-          estado = "<span class='label label-danger reporteComments'>" + reporte.estado + "</span>";
-          break;
-        }
+          case REPORTE_ESTADO_RECHAZADO_POR_GERENCIA: case REPORTE_ESTADO_RECHAZADO_POR_DIRECCION: case REPORTE_ESTADO_RECHAZADO_POR_RH:{
+            estado = "<span class='label label-danger reporteComments'>" + reporte.estado + "</span>";
+            break;
+          }
           default:{
             estado = "<span class='label label-primary reporteComments'>" + reporte.estado + "</span>";
             break;

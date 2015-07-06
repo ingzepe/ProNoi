@@ -9,6 +9,9 @@ class Usuario
   protected $_id_empleado;
   protected $_id_rol_usuario;
   protected $_nombre;
+  protected $_empleado;
+  protected $_rol;
+  protected $_password;
 
   protected $_id_tipo_empleado;
 
@@ -115,6 +118,54 @@ class Usuario
   public function setIdTipoEmpleado($id_tipo_empleado)
   {
     $this->_id_tipo_empleado = $id_tipo_empleado;
+  }
+
+  /**
+   * @return mixed
+   */
+  public function getEmpleado()
+  {
+    return $this->_empleado;
+  }
+
+  /**
+   * @param mixed $empleado
+   */
+  public function setEmpleado($empleado)
+  {
+    $this->_empleado = $empleado;
+  }
+
+  /**
+   * @return mixed
+   */
+  public function getRol()
+  {
+    return $this->_rol;
+  }
+
+  /**
+   * @param mixed $rol
+   */
+  public function setRol($rol)
+  {
+    $this->_rol = $rol;
+  }
+
+  /**
+   * @return mixed
+   */
+  public function getPassword()
+  {
+    return $this->_password;
+  }
+
+  /**
+   * @param mixed $password
+   */
+  public function setPassword($password)
+  {
+    $this->_password = $password;
   }
 
 }

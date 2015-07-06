@@ -134,15 +134,15 @@
               estado = "<span class='label label-warning reporteComments'>" + data.estado + comentarios + "</span>";
               break;
             }
-            case REPORTE_ESTADO_COMPLETADO: case REPORTE_ESTADO_AUTORIZADO_POR_GERENCIA:{
+            case REPORTE_ESTADO_COMPLETADO: case REPORTE_ESTADO_AUTORIZADO_POR_GERENCIA: case REPORTE_ESTADO_AUTORIZADO_POR_DIRECCION:{
               estado = "<span class='label label-primary reporteComments'>" + data.estado + comentarios + "</span>";
               break;
             }
-            case REPORTE_ESTADO_AUTORIZADO_POR_DIRECCION:{
+            case REPORTE_ESTADO_AUTORIZADO_POR_RH:{
               estado = "<span class='label label-success reporteComments'>" + data.estado + comentarios + "</span>";
               break;
             }
-            case REPORTE_ESTADO_RECHAZADO_POR_GERENCIA: case REPORTE_ESTADO_RECHAZADO_POR_DIRECCION: {
+            case REPORTE_ESTADO_RECHAZADO_POR_GERENCIA: case REPORTE_ESTADO_RECHAZADO_POR_DIRECCION: case REPORTE_ESTADO_RECHAZADO_POR_RH:{
               estado = "<span class='label label-danger reporteComments'>" + data.estado + comentarios + "</span>";
               break;
             }
@@ -158,16 +158,29 @@
             $("#rechazarBT").show();
             $("#autorizarBT2").hide();
             $("#rechazarBT2").hide();
+            $("#autorizarBT3").hide();
+            $("#rechazarBT3").hide();
           }else if(data.id_estado == REPORTE_ESTADO_AUTORIZADO_POR_GERENCIA){
             $("#autorizarBT").hide();
             $("#rechazarBT").hide();
             $("#autorizarBT2").show();
             $("#rechazarBT2").show();
+            $("#autorizarBT3").hide();
+            $("#rechazarBT3").hide();
+          }else if(data.id_estado == REPORTE_ESTADO_AUTORIZADO_POR_DIRECCION){
+            $("#autorizarBT").hide();
+            $("#rechazarBT").hide();
+            $("#autorizarBT2").hide();
+            $("#rechazarBT2").hide();
+            $("#autorizarBT3").show();
+            $("#rechazarBT3").show();
           }else{
             $("#autorizarBT").hide();
             $("#rechazarBT").hide();
             $("#autorizarBT2").hide();
             $("#rechazarBT2").hide();
+            $("#autorizarBT3").hide();
+            $("#rechazarBT3").hide();
           }
           $("#reporteBC").html(data.nombre);
           $("#reporteBC").attr("href", "/reportes?id=" + data.id);
@@ -194,18 +207,18 @@
               estado = "<span class='label label-warning reporteComments'>" + data.estado + comentarios + "</span>";
               break;
             }
-            case REPORTE_ESTADO_COMPLETADO: case REPORTE_ESTADO_AUTORIZADO_POR_GERENCIA:{
-            estado = "<span class='label label-primary reporteComments'>" + data.estado + comentarios + "</span>";
-            break;
-          }
-            case REPORTE_ESTADO_AUTORIZADO_POR_DIRECCION:{
+            case REPORTE_ESTADO_COMPLETADO: case REPORTE_ESTADO_AUTORIZADO_POR_GERENCIA: case REPORTE_ESTADO_AUTORIZADO_POR_DIRECCION:{
+              estado = "<span class='label label-primary reporteComments'>" + data.estado + comentarios + "</span>";
+              break;
+            }
+            case REPORTE_ESTADO_AUTORIZADO_POR_RH:{
               estado = "<span class='label label-success reporteComments'>" + data.estado + comentarios + "</span>";
               break;
             }
-            case REPORTE_ESTADO_RECHAZADO_POR_GERENCIA: case REPORTE_ESTADO_RECHAZADO_POR_DIRECCION: {
-            estado = "<span class='label label-danger reporteComments'>" + data.estado + comentarios + "</span>";
-            break;
-          }
+            case REPORTE_ESTADO_RECHAZADO_POR_GERENCIA: case REPORTE_ESTADO_RECHAZADO_POR_DIRECCION: case REPORTE_ESTADO_RECHAZADO_POR_RH:{
+              estado = "<span class='label label-danger reporteComments'>" + data.estado + comentarios + "</span>";
+              break;
+            }
             default:{
               estado = "<span class='label label-primary reporteComments'>" + data.estado + comentarios + "</span>";
               break;
@@ -218,16 +231,29 @@
             $("#rechazarBT").show();
             $("#autorizarBT2").hide();
             $("#rechazarBT2").hide();
+            $("#autorizarBT3").hide();
+            $("#rechazarBT3").hide();
           }else if(data.id_estado == REPORTE_ESTADO_AUTORIZADO_POR_GERENCIA){
             $("#autorizarBT").hide();
             $("#rechazarBT").hide();
             $("#autorizarBT2").show();
             $("#rechazarBT2").show();
+            $("#autorizarBT3").hide();
+            $("#rechazarBT3").hide();
+          }else if(data.id_estado == REPORTE_ESTADO_AUTORIZADO_POR_DIRECCION){
+            $("#autorizarBT").hide();
+            $("#rechazarBT").hide();
+            $("#autorizarBT2").hide();
+            $("#rechazarBT2").hide();
+            $("#autorizarBT3").show();
+            $("#rechazarBT3").show();
           }else{
             $("#autorizarBT").hide();
             $("#rechazarBT").hide();
             $("#autorizarBT2").hide();
             $("#rechazarBT2").hide();
+            $("#autorizarBT3").hide();
+            $("#rechazarBT3").hide();
           }
           $("#reporteBC").html(data.nombre);
           $("#reporteBC").attr("href", "/reporte?id=" + data.id);
@@ -265,6 +291,10 @@
       cambiarEstadoReporte(REPORTE_ESTADO_AUTORIZADO_POR_DIRECCION, '');
     });
 
+    $("#autorizarBT3").click(function (e) {
+      cambiarEstadoReporte(REPORTE_ESTADO_AUTORIZADO_POR_RH, '');
+    });
+
     $("#rechazarBT").click(function (e) {
       $("#rechazar_tipo").val(REPORTE_ESTADO_RECHAZADO_POR_GERENCIA);
     });
@@ -274,6 +304,10 @@
     });
 
     $("#rechazarBT3").click(function (e) {
+      $("#rechazar_tipo").val(REPORTE_ESTADO_RECHAZADO_POR_RH);
+    });
+
+    $("#rechazarBTConfirm").click(function (e) {
       cambiarEstadoReporte($("#rechazar_tipo").val(), $("#rechazarComentarios").val());
     });
 
@@ -621,6 +655,7 @@
                     htmlOpts += "<option type='8' value='descansos'>Descansos en el período</option>\n";
                     htmlOpts += "<option type='8' value='festivos'>Festivos en el período</option>\n";
                     htmlOpts += "<option type='8' value='faltas'>Faltas en el período</option>\n";
+                    htmlOpts += "<option type='8' value='faltasJustificadas'>Faltas Justificadas en el período</option>\n";
                     htmlOpts += "<option type='8' value='retardos'>Retardos en el período</option>\n";
                   }
 
@@ -805,6 +840,7 @@
                   var asistencias = 0;
                   var retardos = 0;
                   var faltas = 0;
+                  var faltasJustificadas = 0;
                   var descansos = 0;
                   var incapacidades = 0;
                   var vacaciones = 0;
@@ -826,6 +862,11 @@
                       case ASISTENCIA_FALTA:
                       {
                         faltas++;
+                        break;
+                      }
+                      case ASISTENCIA_FALTA_JUSTIFICADA:
+                      {
+                        faltasJustificadas++;
                         break;
                       }
                       case ASISTENCIA_DESCANSO:
@@ -854,6 +895,7 @@
                   empleado.asistencias = asistencias;
                   empleado.retardos = retardos;
                   empleado.faltas = faltas;
+                  empleado.faltasJustificadas = faltasJustificadas;
                   empleado.descansos = descansos;
                   empleado.incapacidades = descansos;
                   empleado.vacaciones = descansos;
@@ -1544,11 +1586,22 @@
         <?php if ($user['id_rol_usuario'] == Application::ROL_ADMINISTRADOR
           || $user['id_rol_usuario'] == Application::ROL_ADMINISTRADOR_PLANTILLAS
           || ($user['id_rol_usuario'] == Application::ROL_ADMINISTRADOR_REPORTES &&
-            $control_reporte == Application::CONTROL_REPORTE_AUTORIZAR_A_NOMINA)) { ?>
+            $control_reporte == Application::CONTROL_REPORTE_AUTORIZAR_A_RH)) { ?>
           <button id="rechazarBT2" class="btn btn-danger pull-right margin-right-sm no-display" data-toggle="modal" data-target="#rechazarModal">
             <i class='icon-sm icon_close_alt2'></i>Rechazar Reporte a Gerencia
           </button>
           <a href="javascript:void(0)" id="autorizarBT2" class="btn btn-success pull-right margin-right-sm no-display">
+            <i class='icon-sm icon_check_alt2'></i>Autorizar Reporte a RH
+          </a>
+        <?php } ?>
+        <?php if ($user['id_rol_usuario'] == Application::ROL_ADMINISTRADOR
+          || $user['id_rol_usuario'] == Application::ROL_ADMINISTRADOR_PLANTILLAS
+          || ($user['id_rol_usuario'] == Application::ROL_ADMINISTRADOR_REPORTES &&
+            $control_reporte == Application::CONTROL_REPORTE_AUTORIZAR_A_NOMINA)) { ?>
+          <button id="rechazarBT3" class="btn btn-danger pull-right margin-right-sm no-display" data-toggle="modal" data-target="#rechazarModal">
+            <i class='icon-sm icon_close_alt2'></i>Rechazar Reporte a Dirección
+          </button>
+          <a href="javascript:void(0)" id="autorizarBT3" class="btn btn-success pull-right margin-right-sm no-display">
             <i class='icon-sm icon_check_alt2'></i>Autorizar Reporte a Nómina
           </a>
         <?php } ?>
@@ -1784,7 +1837,7 @@
           </div>
           <div class="form-group">
             <div class="col-lg-offset-1 col-lg-12">
-              <button type="button" id="rechazarBT3" class="btn btn-danger" data-dismiss="modal">Rechazar</button>
+              <button type="button" id="rechazarBTConfirm" class="btn btn-danger" data-dismiss="modal">Rechazar</button>
               <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
             </div>
           </div>

@@ -20,6 +20,7 @@ class UsuarioTable extends AbstractTableGateway {
             'id_empleado' => $usuario->getIdEmpleado(),
             'id_rol_usuario' => $usuario->getIdRolUsuario(),
             'nombre' => $usuario->getNombre(),
+            'password' => $usuario->getPassword(),
         );
         $id = (int) $usuario->getId();
         if ($id == 0) {
@@ -41,7 +42,11 @@ class UsuarioTable extends AbstractTableGateway {
 
         $sql = new Sql($this->adapter);
         $select = $sql->select();
-        $select->from($this->table);
+        $select->from($this->table)
+            ->join('tab_empleado', 'tab_empleado.id = tab_usuario.id_empleado',
+              array('empleado' => 'nombre'))
+            ->join('cat_rol_usuario', 'cat_rol_usuario.id = tab_usuario.id_rol_usuario',
+              array('rol' => 'nombre'));
 
 //        echo $select->getSqlString();
         $statement = $sql->prepareStatementForSqlObject($select);
@@ -53,6 +58,8 @@ class UsuarioTable extends AbstractTableGateway {
                 'id' => $row["id"],
                 'id_rol_usuario' => $row["id_rol_usuario"],
                 'nombre' => $row["nombre"],
+                'empleado' => $row["empleado"],
+                'rol' => $row["rol"],
             ));
             $entities[] = $entity->toArray();
         }
@@ -63,7 +70,11 @@ class UsuarioTable extends AbstractTableGateway {
 
         $sql = new Sql($this->adapter);
         $select = $sql->select();
-        $select->from($this->table);
+        $select->from($this->table)
+        ->join('tab_empleado', 'tab_empleado.id = tab_usuario.id_empleado',
+          array('empleado' => 'nombre'))
+        ->join('cat_rol_usuario', 'cat_rol_usuario.id = tab_usuario.id_rol_usuario',
+          array('rol' => 'nombre'));
 
         $where = new  Where();
         $where->equalTo('tab_usuario.id', $id) ;
@@ -77,6 +88,8 @@ class UsuarioTable extends AbstractTableGateway {
               'id' => $row["id"],
               'id_rol_usuario' => $row["id_rol_usuario"],
               'nombre' => $row["nombre"],
+              'empleado' => $row["empleado"],
+              'rol' => $row["rol"],
             ));
             $entity = $entity->toArray();
         }
