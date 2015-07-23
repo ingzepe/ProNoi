@@ -410,7 +410,8 @@ $environment = $config['environment'];
                   var trs = "";
                   var totalEmpleados;
                   if(RESTRICT_EMPLEADOS){
-                    totalEmpleados = 10;
+//                    totalEmpleados = 10;
+                    totalEmpleados = empleados.length;
                   }else{
                     totalEmpleados = empleados.length;
                   }

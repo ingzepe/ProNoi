@@ -807,382 +807,400 @@
               dias: periodos.length
             },
             success: function (empleados) {
-              var trs = "";
-              var totalEmpleados;
-              if(RESTRICT_EMPLEADOS){
-                totalEmpleados = 10;
-              }else{
-                totalEmpleados = empleados.length;
-              }
+
+              //valid periodos vs empleados.registro
+              var periodoSyncronized = true;
+              var invalidMsj = "No se encontró la asistencia en el período para:<br/>";
+              empleados.forEach(function (empleado) {
+                console.log(empleado.nombre + " " + empleado.registro.length + " " + periodos.length);
+                if(empleado.registro.length < periodos.length){
+                  periodoSyncronized = false;
+                  invalidMsj += empleado.nombre + "<br/>";
+                }
+              });
+
+              if(!periodoSyncronized){
+                $.showMsg("error", invalidMsj);
+              }else {
+
+                var trs = "";
+                var totalEmpleados;
+                if (RESTRICT_EMPLEADOS) {
+//                  totalEmpleados = 10;
+                  totalEmpleados = empleados.length;
+                } else {
+                  totalEmpleados = empleados.length;
+                }
 //              empleados.forEach(function (empleado) {
-              for(var i=0; i<totalEmpleados; i++){
-                var empleado = empleados[i];
+                for (var i = 0; i < totalEmpleados; i++) {
+                  var empleado = empleados[i];
 
-                console.log("Empleado: " + empleado.id);
-                console.log(empleado);
+                  console.log("Empleado: " + empleado.id);
+                  console.log(empleado);
 
-                //static
-                trs += "<tr>";
-                trs += "<td><i class='icon-sm glyphicon glyphicon-ok-sign icon-pending ok_" + empleado.id + "'></i>&nbsp;" + empleado.nombre + "</td>";
-                trs += "<td>" + empleado.id + "</td>";
-                trs += "<td>" + empleado.id_rh + "</td>";
-                trs += "<td>" + empleado.id_mitrol + "</td>";
-                trs += "<td>" + empleado.fecha_ingreso + "</td>";
-                trs += "<td>" + empleado.horario + "</td>";
-                trs += "<td>" + empleado.unidad_negocio + "</td>";
-                trs += "<td>" + empleado.tipo_empleado + "</td>";
-                trs += "<td>" + empleado.campana + "</td>";
-                trs += "<td>" + empleado.jefe + "</td>";
-                trs += "<td>$ " + $.number(empleado.sueldo_diario, 2) + "</td>";
+                  //static
+                  trs += "<tr>";
+                  trs += "<td><i class='icon-sm glyphicon glyphicon-ok-sign icon-pending ok_" + empleado.id + "'></i>&nbsp;" + empleado.nombre + "</td>";
+                  trs += "<td>" + empleado.id + "</td>";
+                  trs += "<td>" + empleado.id_rh + "</td>";
+                  trs += "<td>" + empleado.id_mitrol + "</td>";
+                  trs += "<td>" + empleado.fecha_ingreso + "</td>";
+                  trs += "<td>" + empleado.horario + "</td>";
+                  trs += "<td>" + empleado.unidad_negocio + "</td>";
+                  trs += "<td>" + empleado.tipo_empleado + "</td>";
+                  trs += "<td>" + empleado.campana + "</td>";
+                  trs += "<td>" + empleado.jefe + "</td>";
+                  trs += "<td>$ " + $.number(empleado.sueldo_diario, 2) + "</td>";
 
-                if(calcularPeriodo) {
-                  // Asistencia
-                  var asistencias = 0;
-                  var retardos = 0;
-                  var faltas = 0;
-                  var faltasJustificadas = 0;
-                  var descansos = 0;
-                  var incapacidades = 0;
-                  var vacaciones = 0;
-                  var festivos = 0;
+                  if (calcularPeriodo) {
+                    // Asistencia
+                    var asistencias = 0;
+                    var retardos = 0;
+                    var faltas = 0;
+                    var faltasJustificadas = 0;
+                    var descansos = 0;
+                    var incapacidades = 0;
+                    var vacaciones = 0;
+                    var festivos = 0;
 
-                  empleado.registro.forEach(function (registro) {
-                    trs += "<td>" + registro.asistencia + "</td>";
-                    switch (registro.id_cat_asistencia) {
-                      case ASISTENCIA_ASISTENCIA:
-                      {
-                        asistencias++;
-                        break;
+                    empleado.registro.forEach(function (registro) {
+                      trs += "<td>" + registro.asistencia + "</td>";
+                      switch (registro.id_cat_asistencia) {
+                        case ASISTENCIA_ASISTENCIA:
+                        {
+                          asistencias++;
+                          break;
+                        }
+                        case ASISTENCIA_RETARDO:
+                        {
+                          retardos++;
+                          break;
+                        }
+                        case ASISTENCIA_FALTA:
+                        {
+                          faltas++;
+                          break;
+                        }
+                        case ASISTENCIA_FALTA_JUSTIFICADA:
+                        {
+                          faltasJustificadas++;
+                          break;
+                        }
+                        case ASISTENCIA_DESCANSO:
+                        {
+                          descansos++;
+                          break;
+                        }
+                        case ASISTENCIA_INCAPACIDAD:
+                        {
+                          incapacidades++;
+                          break;
+                        }
+                        case ASISTENCIA_VACACIONES:
+                        {
+                          vacaciones++;
+                          break;
+                        }
+                        case ASISTENCIA_FESTIVO:
+                        {
+                          festivos++;
+                          break;
+                        }
                       }
-                      case ASISTENCIA_RETARDO:
-                      {
-                        retardos++;
-                        break;
-                      }
-                      case ASISTENCIA_FALTA:
-                      {
-                        faltas++;
-                        break;
-                      }
-                      case ASISTENCIA_FALTA_JUSTIFICADA:
-                      {
-                        faltasJustificadas++;
-                        break;
-                      }
-                      case ASISTENCIA_DESCANSO:
-                      {
-                        descansos++;
-                        break;
-                      }
-                      case ASISTENCIA_INCAPACIDAD:
-                      {
-                        incapacidades++;
-                        break;
-                      }
-                      case ASISTENCIA_VACACIONES:
-                      {
-                        vacaciones++;
-                        break;
-                      }
-                      case ASISTENCIA_FESTIVO:
-                      {
-                        festivos++;
-                        break;
-                      }
-                    }
+                    });
+
+                    empleado.asistencias = asistencias;
+                    empleado.retardos = retardos;
+                    empleado.faltas = faltas;
+                    empleado.faltasJustificadas = faltasJustificadas;
+                    empleado.descansos = descansos;
+                    empleado.incapacidades = descansos;
+                    empleado.vacaciones = descansos;
+                    empleado.festivos = festivos;
+                  }
+
+                  //cols
+                  colsTmpl.forEach(function (col) {
+                    trs += "<td>" + col.replaceAll("?idEmpleado", empleado.id) + "</td>";
                   });
 
-                  empleado.asistencias = asistencias;
-                  empleado.retardos = retardos;
-                  empleado.faltas = faltas;
-                  empleado.faltasJustificadas = faltasJustificadas;
-                  empleado.descansos = descansos;
-                  empleado.incapacidades = descansos;
-                  empleado.vacaciones = descansos;
-                  empleado.festivos = festivos;
-                }
+                  //Calcular todos los campos
+                  trs += "<td class='text-center'><i class='icon-md icon_cog calcTodo' id_empleado='" + empleado.id + "'></i></td>";
 
-                //cols
-                colsTmpl.forEach(function (col) {
-                  trs += "<td>" + col.replaceAll("?idEmpleado", empleado.id) + "</td>";
-                });
+                  trs += "</tr>";
 
-                //Calcular todos los campos
-                trs += "<td class='text-center'><i class='icon-md icon_cog calcTodo' id_empleado='" + empleado.id + "'></i></td>";
-
-                trs += "</tr>";
-
-                allEmpleados[empleado.id] = empleado;
+                  allEmpleados[empleado.id] = empleado;
 
 //              });
-              }
+                }
 
-              if (campos.length > 0 && empleados.length > 0) {
-                if (table2)
-                  table2.destroy();
+                if (campos.length > 0 && empleados.length > 0) {
+                  if (table2)
+                    table2.destroy();
 
-                //Preview table
-                $("#previewTableHR").html(ths);
-                $("#previewTableBody").html(trs);
-                table2 = $('#previewTable').DataTable({
-                  "scrollY": 400,
-                  "scrollX": true,
-                  "bPaginate": false,
-                  "language": {
-                    "url": "/app/lang/Spanish.json"
-                  }
-                });
-                new $.fn.dataTable.FixedColumns( table2, {
-                  leftColumns: 1
-                } );
-                $(".calcAllEmpConfirmBT").show();
-
-                var calcsLeft = 0;
-                //******** Click on calcular ALL EMPLEADOS ALL REGLAS ************
-                $("#calcAllEmpBT").unbind();
-                $("#calcAllEmpBT").click(function (e) {
-                  $(".calcTodo").each(function(index) {
-                    var id_empleado = $(this).attr("id_empleado");
-                    var lastEmpleado = false;
-                    if($(".calcTodo").length-1 == index){
-                      lastEmpleado = true;
+                  //Preview table
+                  $("#previewTableHR").html(ths);
+                  $("#previewTableBody").html(trs);
+                  table2 = $('#previewTable').DataTable({
+                    "scrollY": 400,
+                    "scrollX": true,
+                    "bPaginate": false,
+                    "language": {
+                      "url": "/app/lang/Spanish.json"
                     }
-                    calcAllReglas(id_empleado, lastEmpleado);
                   });
-                });
+                  new $.fn.dataTable.FixedColumns(table2, {
+                    leftColumns: 1
+                  });
+                  $(".calcAllEmpConfirmBT").show();
 
-                //******** Click on calcular ALL REGLAS ************
-                $("#calcTodo").unbind();
-                $(".calcTodo").click(function (e) {
-                  var id_empleado = $(this).attr("id_empleado");
-                  calcAllReglas(id_empleado, true);
-                });
+                  var calcsLeft = 0;
+                  //******** Click on calcular ALL EMPLEADOS ALL REGLAS ************
+                  $("#calcAllEmpBT").unbind();
+                  $("#calcAllEmpBT").click(function (e) {
+                    $(".calcTodo").each(function (index) {
+                      var id_empleado = $(this).attr("id_empleado");
+                      var lastEmpleado = false;
+                      if ($(".calcTodo").length - 1 == index) {
+                        lastEmpleado = true;
+                      }
+                      calcAllReglas(id_empleado, lastEmpleado);
+                    });
+                  });
 
-                var calcAllReglas = function(id_empleado, lastEmpleado){
+                  //******** Click on calcular ALL REGLAS ************
+                  $("#calcTodo").unbind();
+                  $(".calcTodo").click(function (e) {
+                    var id_empleado = $(this).attr("id_empleado");
+                    calcAllReglas(id_empleado, true);
+                  });
 
-                  var reglas = new Array();
+                  var calcAllReglas = function (id_empleado, lastEmpleado) {
 
-                  $(".regla").each(function() {
+                    var reglas = new Array();
+
+                    $(".regla").each(function () {
+                      var id_campo = $(this).attr("id_campo");
+                      var id_regla = $(this).attr("id_regla");
+                      var orden = $(this).attr("orden");
+                      var id_empleado_regla = $(this).attr("id_empleado");
+                      if (id_empleado == id_empleado_regla) {
+                        var regla = {
+                          orden: orden,
+                          id_campo: id_campo,
+                          id_regla: id_regla,
+                          id_empleado: id_empleado
+                        }
+                        reglas.push(regla);
+                      }
+                    });
+
+                    reglas.sort($.sortBy("orden"));
+
+                    $.showSpinner();
+                    var nextRegla = true;
+                    setTimeout(function () {
+
+                      reglas.forEach(function (regla, index) {
+//                      console.log(regla);
+                        if (nextRegla) {
+                          var lastRegla = false;
+                          if (lastEmpleado) {
+                            if (reglas.length - 1 == index) {
+                              lastRegla = true;
+                            }
+                          }
+                          nextRegla = calcularRegla(regla.id_campo, regla.id_regla, regla.id_empleado, lastRegla);
+                        }
+                      });
+                      if (nextRegla) {
+                        $(".ok_" + id_empleado).removeClass('icon-pending').addClass('icon-ready');
+                        allEmpleados[id_empleado].ready = true;
+                      } else {
+                        $(".ok_" + id_empleado).removeClass('icon-ready').addClass('icon-pending');
+                        allEmpleados[id_empleado].ready = false;
+                      }
+                      //Enable last button
+                      var completed = true;
+                      allEmpleados.forEach(function (empleado) {
+                        if (!empleado.ready) {
+                          completed = false;
+                        }
+                      });
+                      if (completed) {
+                        $(".generarReporteBT3").prop("disabled", false);
+                      } else {
+                        $(".generarReporteBT3").prop("disabled", true);
+                      }
+                    }, 1000);
+
+                  };
+
+                  //******** Click on calcular REGLA ************
+                  $(".regla").unbind();
+                  $(".regla").click(function (e) {
+                    $.showSpinner();
                     var id_campo = $(this).attr("id_campo");
                     var id_regla = $(this).attr("id_regla");
-                    var orden = $(this).attr("orden");
-                    var id_empleado_regla = $(this).attr("id_empleado");
-                    if(id_empleado == id_empleado_regla){
-                      var regla = {
-                        orden: orden,
-                        id_campo: id_campo,
-                        id_regla: id_regla,
-                        id_empleado: id_empleado
-                      }
-                      reglas.push(regla);
-                    }
+                    var id_empleado = $(this).attr("id_empleado");
+                    calcularRegla(id_campo, id_regla, id_empleado, true);
                   });
 
-                  reglas.sort($.sortBy("orden"));
+                  var calcularRegla = function (id_campo, id_regla, id_empleado, lastRegla) {
 
-                  $.showSpinner();
-                  var nextRegla = true;
-                  setTimeout(function() {
+                    var nextRegla = true;
+                    selectedCampo = id_campo;
+                    selectedEmpleado = allEmpleados[id_empleado];
 
-                    reglas.forEach(function (regla, index) {
-//                      console.log(regla);
-                      if(nextRegla){
-                        var lastRegla = false;
-                        if(lastEmpleado){
-                          if(reglas.length-1 == index){
-                            lastRegla = true;
+                    $.executeSyncFetch({
+                      action: "/regla/fetch",
+                      data: {id_regla: id_regla},
+                      method: "POST",
+                      dataType: "json",
+                      success: function (data) {
+
+                        if (data.id_tipo_regla == TIPO_REGLA_SQL) {
+                          expressions = new Array();
+                          var sqlExpression = {
+                            id_regla: data.id,
+                            type: TIPO_EXP_REGLA,
+                            label: data.nombre
                           }
+                          expressions.push(sqlExpression);
+                        } else {
+                          expressions = JSON.parse(data.operacion);
                         }
-                        nextRegla = calcularRegla(regla.id_campo, regla.id_regla, regla.id_empleado, lastRegla);
-                      }
-                    });
-                    if(nextRegla){
-                      $(".ok_"+id_empleado).removeClass('icon-pending').addClass('icon-ready');
-                      allEmpleados[id_empleado].ready = true;
-                    }else{
-                      $(".ok_"+id_empleado).removeClass('icon-ready').addClass('icon-pending');
-                      allEmpleados[id_empleado].ready = false;
-                    }
-                    //Enable last button
-                    var completed = true;
-                    allEmpleados.forEach(function (empleado) {
-                      if(!empleado.ready){
-                        completed = false;
-                      }
-                    });
-                    if(completed){
-                      $(".generarReporteBT3").prop("disabled", false);
-                    }else{
-                      $(".generarReporteBT3").prop("disabled", true);
-                    }
-                  }, 1000);
 
-                };
+                        var valid = true;
+                        var missingValues = "";
+                        var campoIndex = 0;
 
-                //******** Click on calcular REGLA ************
-                $(".regla").unbind();
-                $(".regla").click(function (e) {
-                  $.showSpinner();
-                  var id_campo = $(this).attr("id_campo");
-                  var id_regla = $(this).attr("id_regla");
-                  var id_empleado = $(this).attr("id_empleado");
-                  calcularRegla(id_campo, id_regla, id_empleado, true);
-                });
+                        $("#reglasSectionModal").html("");
 
-                var calcularRegla = function(id_campo, id_regla, id_empleado, lastRegla){
+                        expressions.forEach(function (expression) {
+                          if (expression.type == TIPO_EXP_CAMPO) {
 
-                  var nextRegla = true;
-                  selectedCampo = id_campo;
-                  selectedEmpleado = allEmpleados[id_empleado];
+                            var campo = allCampos[expression.id_campo];
+                            expression.id = "campo_" + campoIndex;
+                            expression.tipo_campo = campo.id_tipo_campo;
+                            expression.value = $("#campo_" + expression.id_campo + "_empleado_" + selectedEmpleado.id).val();
+                          } else if (expression.type == TIPO_EXP_REGLA) {
 
-                  $.executeSyncFetch({
-                    action: "/regla/fetch",
-                    data: {id_regla: id_regla},
-                    method: "POST",
-                    dataType: "json",
-                    success: function (data) {
+                            var regla = allReglas[expression.id_regla];
+                            var sql = regla.operacion;
 
-                      if(data.id_tipo_regla == TIPO_REGLA_SQL){
-                        expressions = new Array();
-                        var sqlExpression = {
-                          id_regla: data.id,
-                          type: TIPO_EXP_REGLA,
-                          label: data.nombre
-                        }
-                        expressions.push(sqlExpression);
-                      }else{
-                        expressions = JSON.parse(data.operacion);
-                      }
-
-                      var valid = true;
-                      var missingValues = "";
-                      var campoIndex = 0;
-
-                      $("#reglasSectionModal").html("");
-
-                      expressions.forEach(function (expression) {
-                        if (expression.type == TIPO_EXP_CAMPO) {
-
-                          var campo = allCampos[expression.id_campo];
-                          expression.id = "campo_" + campoIndex;
-                          expression.tipo_campo = campo.id_tipo_campo;
-                          expression.value = $("#campo_" + expression.id_campo + "_empleado_" + selectedEmpleado.id).val();
-                        } else if (expression.type == TIPO_EXP_REGLA) {
-
-                          var regla = allReglas[expression.id_regla];
-                          var sql = regla.operacion;
-
-                          if (sql.indexOf("?") != -1) {
-                            var params = splitSQLParams(sql);
-                            for (var i = 0; i < params.length; i++) {
-                              //console.log(allValores);
-                              //console.log(regla.id + " " + params[i]);
-                              var reglaVal = allValores[regla.id][params[i]];
-                              if(reglaVal.type == TIPO_EXP_EMPLEADO){
-                                sql = sql.replaceAll("?"+params[i], selectedEmpleado[reglaVal.val]);
-                              }else{
-                                var val = $("#campo_" + reglaVal.val + "_empleado_" + selectedEmpleado.id).val();
-                                if(val && val != "undefined"){
-                                  sql = sql.replaceAll("?"+params[i], val);
-                                }else{
-                                  valid = false;
-                                  missingValues += "<br/>" + reglaVal.label;
+                            if (sql.indexOf("?") != -1) {
+                              var params = splitSQLParams(sql);
+                              for (var i = 0; i < params.length; i++) {
+                                //console.log(allValores);
+                                //console.log(regla.id + " " + params[i]);
+                                var reglaVal = allValores[regla.id][params[i]];
+                                if (reglaVal.type == TIPO_EXP_EMPLEADO) {
+                                  sql = sql.replaceAll("?" + params[i], selectedEmpleado[reglaVal.val]);
+                                } else {
+                                  var val = $("#campo_" + reglaVal.val + "_empleado_" + selectedEmpleado.id).val();
+                                  if (val && val != "undefined") {
+                                    sql = sql.replaceAll("?" + params[i], val);
+                                  } else {
+                                    valid = false;
+                                    missingValues += "<br/>" + reglaVal.label;
+                                  }
                                 }
                               }
                             }
-                          }
 
-                          if(valid){
-                            //console.log(sql);
-                            $.executeSyncFetch({
-                              action: "/regla/sql",
-                              data: {
-                                db: regla.db,
-                                sql: sql
-                              },
-                              method: "POST",
-                              dataType: "json",
-                              success: function (data) {
-                                if (data.success) {
-                                  if (data.cols.length == 1 && data.rows.length == 1) {
-                                    expression.value = data.rows[0][0];
-                                  } else if (data.cols.length == 1 && data.rows.length == 0) {
-                                    nextRegla = false;
-                                    $.showMsg("error", "El sql no ha regresado resultados.");
+                            if (valid) {
+                              //console.log(sql);
+                              $.executeSyncFetch({
+                                action: "/regla/sql",
+                                data: {
+                                  db: regla.db,
+                                  sql: sql
+                                },
+                                method: "POST",
+                                dataType: "json",
+                                success: function (data) {
+                                  if (data.success) {
+                                    if (data.cols.length == 1 && data.rows.length == 1) {
+                                      expression.value = data.rows[0][0];
+                                    } else if (data.cols.length == 1 && data.rows.length == 0) {
+                                      nextRegla = false;
+                                      $.showMsg("error", "El sql no ha regresado resultados.");
+                                    } else {
+                                      nextRegla = false;
+                                      $.showMsg("error", "El sql debe regresar un solo resultado.");
+                                    }
                                   } else {
                                     nextRegla = false;
-                                    $.showMsg("error", "El sql debe regresar un solo resultado.");
+                                    $.showMsg("error", data.message);
                                   }
-                                } else {
-                                  nextRegla = false;
-                                  $.showMsg("error", data.message);
-                                }
-                              },
-                              errorMsg: "Ocurrió un error al obtener ejecutar el sql."
-                            });
-                          }
+                                },
+                                errorMsg: "Ocurrió un error al obtener ejecutar el sql."
+                              });
+                            }
 
-                        }
-                      });
-
-                      //Validar que los campos dinámicos de las expresiones contengan valores
-                      //console.log(expressions);
-                      expressions.forEach(function (expression) {
-                        if (expression.type == TIPO_EXP_CAMPO && expression.tipo_campo &&
-                            (expression.tipo_campo == TIPO_CAMPO_CATALOGO || expression.tipo_campo == TIPO_CAMPO_DINAMICO)) {
-
-                          expression.value = $("#campo_" + expression.id_campo + "_empleado_" + selectedEmpleado.id).val();
-                          if (!(expression.value && expression.value != "undefined")) {
-                            valid = false;
-                            missingValues += "<br/>" + expression.label;
-                          }
-                        }
-                      });
-
-                      if (valid) {
-                        var operacion = "";
-                        expressions.forEach(function (expression) {
-//                            console.log(expression);
-//                            console.log(selectedEmpleado);
-                          if (expression.type == TIPO_EXP_CAMPO || expression.type == TIPO_EXP_REGLA) {
-                            operacion += expression.value;
-                          } else if (expression.type == TIPO_EXP_EMPLEADO) {
-                            operacion += selectedEmpleado[expression.value];
-                          } else {
-                            operacion += expression.label;
                           }
                         });
-                        try {
+
+                        //Validar que los campos dinámicos de las expresiones contengan valores
+                        //console.log(expressions);
+                        expressions.forEach(function (expression) {
+                          if (expression.type == TIPO_EXP_CAMPO && expression.tipo_campo &&
+                            (expression.tipo_campo == TIPO_CAMPO_CATALOGO || expression.tipo_campo == TIPO_CAMPO_DINAMICO)) {
+
+                            expression.value = $("#campo_" + expression.id_campo + "_empleado_" + selectedEmpleado.id).val();
+                            if (!(expression.value && expression.value != "undefined")) {
+                              valid = false;
+                              missingValues += "<br/>" + expression.label;
+                            }
+                          }
+                        });
+
+                        if (valid) {
+                          var operacion = "";
+                          expressions.forEach(function (expression) {
+//                            console.log(expression);
+//                            console.log(selectedEmpleado);
+                            if (expression.type == TIPO_EXP_CAMPO || expression.type == TIPO_EXP_REGLA) {
+                              operacion += expression.value;
+                            } else if (expression.type == TIPO_EXP_EMPLEADO) {
+                              operacion += selectedEmpleado[expression.value];
+                            } else {
+                              operacion += expression.label;
+                            }
+                          });
+                          try {
 //                          console.log("Operación: " + operacion);
-                          result = Parser.evaluate(operacion);
+                            result = Parser.evaluate(operacion);
 //                          $.showMsg("success", allCampos[selectedCampo].nombre + " - Resultado: " + result);
-                          $("#campo_" + selectedCampo + "_empleado_" + selectedEmpleado.id).val(result);
-                        } catch (ex) {
-                          $.showMsg("error", "Error al evaluar la operación.<br/>" + ex);
+                            $("#campo_" + selectedCampo + "_empleado_" + selectedEmpleado.id).val(result);
+                          } catch (ex) {
+                            $.showMsg("error", "Error al evaluar la operación.<br/>" + ex);
+                          }
+                        } else {
+                          nextRegla = false;
+                          $.showMsg("error", "Por favor ingrese los siguientes valores en los campos:" + missingValues);
                         }
-                      } else {
-                        nextRegla = false;
-                        $.showMsg("error", "Por favor ingrese los siguientes valores en los campos:" + missingValues);
-                      }
 
-                      if(!nextRegla || lastRegla){
-                        $.hideSpinner();
-                      }
+                        if (!nextRegla || lastRegla) {
+                          $.hideSpinner();
+                        }
 
-                    },
-                    errorMsg: "Ocurrió un error al obtener la regla."
-                  });
+                      },
+                      errorMsg: "Ocurrió un error al obtener la regla."
+                    });
 
-                  if(!nextRegla){
-                    $(".ok_"+id_empleado).removeClass('icon-ready').addClass('icon-pending');
-                    allEmpleados[id_empleado].ready = false;
-                  }
+                    if (!nextRegla) {
+                      $(".ok_" + id_empleado).removeClass('icon-ready').addClass('icon-pending');
+                      allEmpleados[id_empleado].ready = false;
+                    }
 
-                  return nextRegla;
-                };//Calcula Regla
+                    return nextRegla;
+                  };//Calcula Regla
+                }
 
-              }
-            },
+              }//valid
+            },//success
             errorMsg: "Ocurrió un error al obtener los campos."
           });
         },
