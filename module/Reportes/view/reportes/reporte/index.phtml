@@ -106,6 +106,7 @@
       method: "POST",
       dataType: "json",
       success: function (data) {
+        $("#plantilla_id_tipo_empleado").val(data.id_tipo_empleado);
         $("#plantillaBC").html(data.nombre);
         calcularPeriodo = data.periodo == 1 ? true : false;
 //        console.log(calcularPeriodo);
@@ -495,7 +496,7 @@
           errorMsg: "Ocurrió un error al ordenar el campo."
         });
       });
-    }
+    };
 
     if (parseInt($("#id_reporte").val()) != 0) {
       fetch();
@@ -794,12 +795,14 @@
             empleadosURL = "/empleado/fetchAllByIdTipoEmpleado";
           }
 
+          console.log($("#plantilla_id_tipo_empleado").val());
+
           $.executeSyncFetch({
             action: empleadosURL,
             method: "POST",
             dataType: "json",
             data: {
-              id_tipo_empleado: $("#id_tipo_empleado").val(),
+              id_tipo_empleado: $("#plantilla_id_tipo_empleado").val(),
 //              inicio: periodoDate.periodoJSON.inicio.mes + "/" + periodoDate.periodoJSON.inicio.dia  + "/" + periodoDate.periodoJSON.inicio.anio,
 //              fin: periodoDate.periodoJSON.fin.mes + "/" + periodoDate.periodoJSON.fin.dia + "/" + periodoDate.periodoJSON.fin.anio,
               inicio: periodoDate.periodoJSON.inicio.anio + "-" + periodoDate.periodoJSON.inicio.mes + "-" + periodoDate.periodoJSON.inicio.dia,
@@ -810,14 +813,16 @@
 
               //valid periodos vs empleados.registro
               var periodoSyncronized = true;
-              var invalidMsj = "No se encontró la asistencia en el período para:<br/>";
-              empleados.forEach(function (empleado) {
-                console.log(empleado.nombre + " " + empleado.registro.length + " " + periodos.length);
-                if(empleado.registro.length < periodos.length){
-                  periodoSyncronized = false;
-                  invalidMsj += empleado.nombre + "<br/>";
-                }
-              });
+              if(calcularPeriodo) {
+                var invalidMsj = "No se encontró la asistencia en el período para:<br/>";
+                empleados.forEach(function (empleado) {
+                  console.log(empleado.nombre + " " + empleado.registro.length + " " + periodos.length);
+                  if (empleado.registro.length < periodos.length) {
+                    periodoSyncronized = false;
+                    invalidMsj += empleado.nombre + "<br/>";
+                  }
+                });
+              }
 
               if(!periodoSyncronized){
                 $.showMsg("error", invalidMsj);
@@ -1032,7 +1037,7 @@
                       } else {
                         $(".generarReporteBT3").prop("disabled", true);
                       }
-                    }, 1000);
+                    }, 100);
 
                   };
 
@@ -1474,6 +1479,7 @@
               echo "0";
             } ?>"/>
             <input type="hidden" id="id_plantilla" name="id_plantilla" value="<?php echo $id_plantilla; ?>"/>
+            <input type="hidden" id="plantilla_id_tipo_empleado" name="plantilla_id_tipo_empleado"/>
 
             <div class="form-group">
               <label class="control-label col-lg-2">Nombre <span class="required">*</span></label>

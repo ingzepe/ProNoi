@@ -50,6 +50,8 @@ class EmpleadoTable extends AbstractTableGateway
   public function fetchAllByIdTipoEmpleado($id_tipo_empleado)
   {
 
+//    echo $id_tipo_empleado;
+
     $sql = new Sql($this->adapter);
     $select = $sql->select();
     $select->from($this->table)
@@ -58,18 +60,19 @@ class EmpleadoTable extends AbstractTableGateway
       ->join('tab_unidad_negocio', 'tab_unidad_negocio.id = tab_tipo_empleado.id_unidad',
         array('unidad_negocio' => 'nombre'));
 
+//    $select->from($this->table);
+
     $where = new Where();
     $where->equalTo('tab_empleado.id_tipo_empleado', $id_tipo_empleado);
-    $select->where($where);
-    $where = new Where();
-    $where->equalTo('tab_empleado.activo', 'True');
-    $select->where($where);
-    $where = new Where();
-    $where->isNotNull('tab_empleado.id_rh');
-    $select->where($where);
-    $where = new Where();
-    $where->isNotNull('tab_empleado.id_mitrol');
-    $select->where($where);
+    $where2 = new Where();
+    $where2->equalTo('tab_empleado.activo', 'True');
+    $where3 = new Where();
+    $where3->isNotNull('tab_empleado.id_rh');
+    $select->where(array($where, $where2, $where3));
+
+//    $where = new Where();
+//    $where->isNotNull('tab_empleado.id_mitrol');
+//    $select->where($where);
 
     $statement = $sql->prepareStatementForSqlObject($select);
     $resultSet = $statement->execute();

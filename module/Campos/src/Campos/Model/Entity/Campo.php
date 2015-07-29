@@ -21,6 +21,7 @@ class Campo {
     protected $_activo;
     protected $_orden;
     protected $_color;
+    protected $_clave;
 
     public function __construct(array $options = null) {
         if (is_array($options)) {
@@ -314,6 +315,22 @@ class Campo {
     public function setColor($color)
     {
         $this->_color = $color;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getClave()
+    {
+        return $this->_clave;
+    }
+
+    /**
+     * @param mixed $clave
+     */
+    public function setClave($clave)
+    {
+        $this->_clave = $clave;
     }
 
 }

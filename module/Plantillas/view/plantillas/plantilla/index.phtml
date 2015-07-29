@@ -327,8 +327,15 @@
     /******************************************** CAMPOS ************************************************/
 
     var table;
+    var previewTable;
 
     var refreshTable = function () {
+      if(table) {
+        table.destroy();
+      }
+      if(previewTable) {
+        previewTable.destroy();
+      }
       $.executeFetch({
         action: "/campo/fetchAll",
         method: "POST",
@@ -349,10 +356,19 @@
               }
             }
 
+            var up = "";
+            if (parseInt(campo.orden) != 1) {
+              up = "<i class='icon-sm arrow_up_alt upBT' id='up_" + campo.id + "' orden='" + campo.orden + "'></i> ";
+            }
+            var down = "";
+            if (parseInt(campo.orden) < data.length) {
+              down = "<i class='icon-sm arrow_down_alt downBT' id='down_" + campo.id + "' orden='" + campo.orden + "'></i> ";
+            }
+
             html += "<tr id='tr_" + campo.id + "'>"
-              + "<td class='text-center'><input type='checkbox' class='camposCB' id='cb_" + campo.id + "' checked/></td>"
-              + "<td>" + no++ + "</td>"
+              + "<td class='text-center'>" + up + campo.orden + down + "</td>"
               + "<td>" + campo.nombre + "</td>"
+              + "<td>" + campo.clave + "</td>"
               + "<td>" + campo.tipo_campo + "</td>"
               + "<td>" + campo.prefijo + "</td>"
               + "<td>" + campo.sufijo + "</td>"
@@ -395,20 +411,21 @@
                 fin = new Date(parseInt(fin[2]), parseInt(fin[1]) - 1, parseInt(fin[0]));
                 while (inicio <= fin) {
                   var label = inicio.toLocaleString().split(" ");
-                  html2 += "<td class='col_" + campo.id + "'>" + label[0] + "</td>";
+                  html2 += "<th class='col_" + campo.id + "'>" + label[0] + "</th>";
                   html3 += "<td class='col_" + campo.id + "'>" + contenido + "</td>";
                   var newDate = inicio.setDate(inicio.getDate() + 1);
                   inicio = new Date(newDate);
                 }
               } else {
                 for (var i = 0; i < parseInt(campo.repetir); i++) {
-                  html2 += "<td class='col_" + campo.id + "'>" + campo.nombre + "</td>";
+                  html2 += "<th class='col_" + campo.id + "'>" + campo.nombre + "</th>";
                   html3 += "<td class='col_" + campo.id + "'>" + campo.prefijo + campo.valor + campo.sufijo + "</td>";
                 }
               }
             } else {
-              html2 += "<td class='col_" + campo.id + "'>" + campo.nombre + "</td>";
+              html2 += "<th class='col_" + campo.id + "'>" + campo.nombre + "</th>";
               html3 += "<td class='col_" + campo.id + "'>" + contenido + "</td>";
+//              html3 += "<td class='col_" + campo.id + "'> x </td>";
             }
 
           });
@@ -427,8 +444,8 @@
           table = $('#mainTable').DataTable({
             "columns": [
               {"width": "5%"},
-              {"width": "5%"},
-              {"width": "30%"},
+              {"width": "25%"},
+              {"width": "10%"},
               {"width": "15%"},
               {"width": "10%"},
               {"width": "10%"},
@@ -439,7 +456,6 @@
             "language": {
               "url": "/app/lang/Spanish.json"
             },
-            "order": [[1, "asc"]],
             "aoColumnDefs": [
               {'bSortable': false, 'aTargets': [0]}
             ]
@@ -453,19 +469,69 @@
             //Preview table
             $("#previewTableHR").html(html2);
             $("#previewTableBR").html(html3);
-            $('#previewTable').DataTable({
-              dom: 'Rlfrtip',
+            previewTable = $('#previewTable').DataTable({
+//              dom: 'Rlfrtip',
+              "scrollX": true,
               "bPaginate": false,
               "language": {
                 "url": "/app/lang/Spanish.json"
-              }
+              },
+              "aoColumnDefs": [
+                {'bSortable': false, 'aTargets': [0]}
+              ]
             });
+            setTimeout(function(){
+              previewTable.columns.adjust().draw();
+            }, 500);
           }
+
+          //Ordenar campos hacia arriba
+          $(".upBT").click(function (e) {
+            var id = $(this).attr("id").substring(3);
+            var orden = parseInt($(this).attr("orden"));
+            $.executeFetch({
+              action: "/campo/orden",
+              data: {
+                id: id,
+                id_plantilla: $("#id_plantilla").val(),
+                orden: orden,
+                action: 'up'
+              },
+              method: "POST",
+              dataType: "json",
+              success: function () {
+                refreshTable();
+              },
+              successMsg: "Campo ordenado.",
+              errorMsg: "Ocurrió un error al ordenar el campo."
+            });
+          });
+          //Ordenar campos hacia abajo
+          $(".downBT").click(function (e) {
+            var id = $(this).attr("id").substring(5);
+            var orden = parseInt($(this).attr("orden"));
+            $.executeFetch({
+              action: "/campo/orden",
+              data: {
+                id: id,
+                id_plantilla: $("#id_plantilla").val(),
+                orden: orden,
+                action: 'down'
+              },
+              method: "POST",
+              dataType: "json",
+              success: function () {
+                refreshTable();
+              },
+              successMsg: "Campo ordenado.",
+              errorMsg: "Ocurrió un error al ordenar el campo."
+            });
+          });
 
         },
         errorMsg: "Ocurrió un error al obtener los campos."
       });
-    }
+    };
 
     refreshTable();
 
@@ -487,10 +553,6 @@
     $('#eliminarModal').on('show.bs.modal', function (e) {
       var id_campo = $(e.relatedTarget).data('id');
       $("#id_campo").val(id_campo);
-    });
-
-    $("#previewHint").click(function (e) {
-      $.showMsg("info", "Puedes cambiar el orden de las columnas arrastrandolas desde el encabezado.");
     });
 
   });
@@ -536,6 +598,8 @@
                   <option value="">Seleccionar</option>
                   <option value="1">Club de Asistencia</option>
                   <option value="2">Proventel</option>
+                  <option value="3">Protec</option>
+                  <option value="4">Ecotel</option>
                 </select>
               </div>
             </div>
@@ -644,9 +708,9 @@
         <table id="mainTable" class="table table-bordered" cellspacing="0" width="100%">
           <thead>
           <tr>
-            <th>Seleccionar</th>
-            <th>No.</th>
+            <th>Orden</th>
             <th>Nombre</th>
+            <th>Clave</th>
             <th>Tipo</th>
             <th>Prefijo</th>
             <th>Sufijo</th>
@@ -663,8 +727,7 @@
     <section class="panel no-display" id="previewSection">
       <header class="panel-heading">
         <i class='icon-md icon_table'></i>
-        Vista Previa&nbsp;&nbsp;
-        <i class='icon-md icon_question_alt' id="previewHint"></i>
+        Vista Previa
       </header>
       <div class="panel-body">
         <table id="previewTable" class="table table-bordered" cellspacing="0" width="100%">

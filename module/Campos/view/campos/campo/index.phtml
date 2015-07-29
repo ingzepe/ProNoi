@@ -1,437 +1,465 @@
-<link rel="stylesheet" href="/css/daterangepicker.css" />
+<link rel="stylesheet" href="/css/daterangepicker.css"/>
 <script type="text/javascript" src="/js/jquery.validate.min.js"></script>
 <script src="/js/moment.js"></script>
 <script src="/js/daterangepicker.js"></script>
 
 <script type="text/javascript" charset="utf-8">
-    $(document).ready(function() {
+  $(document).ready(function () {
 
-        //Indice opciones de catálogos
-        var opId = 2;
+    //Indice opciones de catálogos
+    var opId = 2;
 
-        $("#campo_form").validate({
-            rules: {
-                nombre: {
-                    required: true,
-                    remote: {
-                        url: "/campo/checkName",
-                        type: "POST",
-                        async: false,
-                        data:{
-                            id_campo: function() {
-                                return $( "#id_campo" ).val();
-                            },
-                            id_plantilla: function() {
-                                return $( "#id_plantilla" ).val();
-                            },
-                            nombre: function() {
-                                return $( "#nombre" ).val();
-                            }
-                        }
-                    }
-                },
-                tipo: {
-                    required: true
-                },
-                descripcion: {
-                    minlength: 5
-                },
-                regla_negocio: {
-                    required: true
-                }
-            },
-            messages: {
-                nombre: {
-                    required: "Ingrese un nombre para el campo.",
-                    minlength: "El nombre del campo debe contener al menos 5 carácteres.",
-                    remote: "El nombre no se encuentra disponible."
-                },
-                tipo: {
-                    required: "Elija un tipo de campo."
-                },
-                descripcion: {
-                    minlength: "La descripción debe contener al menos 5 carácteres."
-                },
-                regla_negocio: {
-                    required: "Elija una regla de negocio."
-                }
-            },
-            invalidHandler: function(form, validator) {
-                var errors = validator.numberOfInvalids();
-                if (errors) {
-                    validator.errorList[0].element.focus();
-                }
+    $("#campo_form").validate({
+      rules: {
+        nombre: {
+          required: true,
+          minlength: 3,
+          remote: {
+            url: "/campo/checkName",
+            type: "POST",
+            async: false,
+            data: {
+              id_campo: function () {
+                return $("#id_campo").val();
+              },
+              id_plantilla: function () {
+                return $("#id_plantilla").val();
+              },
+              nombre: function () {
+                return $("#nombre").val();
+              }
             }
-        });
-
-        //Load reglas
-        $.executeSyncFetch({
-            action: "/regla/fetchAll",
-            method: "POST",
-            dataType:"json",
-            data: {id_plantilla: $("#id_plantilla").val()},
-            success: function(data){
-                data.forEach(function(regla) {
-                    $("#regla_negocio").append("<option value='"+regla.id+"'>"+regla.nombre+"</option>");
-                });
-            },
-            errorMsg: "Ocurrió un error al obtener los campos."
-        });
-
-        $.executeFetch({
-            action: "/plantilla/fetch",
-            data: {id_plantilla: $("#id_plantilla").val()},
-            method: "POST",
-            dataType:"json",
-            success: function(data){
-                $("#plantillaBC").html(data.nombre);
-                $("#plantillaBC").attr("href","/plantilla?id="+data.id);
-                $("#backBT").attr("href","/plantilla?id="+data.id);
-            },
-            errorMsg: "Ocurrió un error al obtener la plantilla."
-        });
-
-        var loadCatalogo = function(opts){
-            opts = opts.split("|");
-            $("#cat_1").val(opts[0]);
-            var html;
-            for(var i=1; i<opts.length; i++){
-                html = "<div class='input-group dynamic-inpt'>"
-                +" <input type='text' class='form-control cat' name='cat_"+opId+++"' value='"+opts[i]+"'/>"
-                +" <span class='input-group-addon'>"
-                +" <i class='icon-sm icon_minus_alt dynamicRemove'></i>"
-                +" </span>"
-                +" </div>";
-                $("#opcsDiv").append(html);
-            }
-            $(".dynamicRemove").click(function (ev) {
-                $(this).parent().parent().remove();
-                opId--;
-            });
+          }
+        },
+        tipo: {
+          required: true
+        },
+        descripcion: {
+          minlength: 5
+        },
+        regla_negocio: {
+          required: true
         }
-
-
-        var fetch = function(){
-            $.executeFetch({
-                action: "/campo/fetch",
-                data: {id_campo: $("#id_campo").val()},
-                method: "POST",
-                dataType:"json",
-                success: function(data){
-                    $("#headerSection").html(data.nombre);
-                    $("#campoBC").html(data.nombre);
-                    $("#campoBC").attr("href","/campo?id="+data.id);
-
-                    $("#nombre").val(data.nombre);
-                    $("#tipo").val(data.id_tipo_campo);
-                    $("#tipo").trigger("change");
-                    if(data.id_tipo_campo === "1"){
-                        loadCatalogo(data.valor);
-                    }else if(data.id_tipo_campo === "2"){
-                        $("#regla_negocio").val(data.id_regla_negocio);
-                    }
-                    if(data.id_repetir_campo){
-                        $("#repetir").val(data.id_repetir_campo);
-                        $("#repetir").trigger("change");
-                        if(data.id_repetir_campo === "1"){
-                            $("#fechas").val(data.repetir);
-                        }else {
-                            $("#veces").val(data.repetir);
-                        }
-                    }
-                    $("#prefijo").val(data.prefijo);
-                    $("#sufijo").val(data.sufijo);
-                    $("#formato").val(data.id_formato);
-                    $("#valor").val(data.valor);
-                    $("#descripcion").val(data.descripcion);
-                    $("#orden").val(data.orden);
-                    $("#color").val(data.color);
-
-                    $("#camposSection").show(500);
-                },
-                errorMsg: "Ocurrió un error al obtener el campo."
-            });
+      },
+      messages: {
+        nombre: {
+          required: "Ingrese un nombre para el campo.",
+          minlength: "El nombre del campo debe contener al menos 3 carácteres.",
+          remote: "El nombre no se encuentra disponible."
+        },
+        tipo: {
+          required: "Elija un tipo de campo."
+        },
+        descripcion: {
+          minlength: "La descripción debe contener al menos 5 carácteres."
+        },
+        regla_negocio: {
+          required: "Elija una regla de negocio."
         }
-
-        if(parseInt($("#id_campo").val()) !== 0){
-            fetch();
+      },
+      invalidHandler: function (form, validator) {
+        var errors = validator.numberOfInvalids();
+        if (errors) {
+          validator.errorList[0].element.focus();
         }
-
-        $("#guardarBT").click( function( e ){
-            if($("#tipo").val() === "1"){
-                var ids = "";
-                $(".cat").each(function( index ) {
-                    ids += $(this).attr("name")+",";
-                });
-                $("#cat_ids").val(ids);
-            }
-            $.executePostValid({
-                form: $("#campo_form"),
-                action: "/campo/update",
-                method: "POST",
-                dataType:"json",
-                success: function(data){
-                    $("#id_campo").val(data.id);
-                    $("#headerSection").html(data.nombre);
-                    $("#campoBC").html(data.nombre);
-                    $("#campoBC").attr("href","/campo?id="+data.id);
-                    $("#camposSection").show(500);
-                },
-                successMsg: "Campo guardado.",
-                errorMsg: "Ocurrió un error al guardar el campo."
-            });
-        });
-
-        $('#fechas').dateRangePicker({
-            format: 'DD/MM/YYYY',
-            separator: ' - ',
-            startDate : new Date(),
-            setValue: function(dates) {
-                var fechas = dates.split(" - ");
-                var inicio = fechas[0];
-                var fin = fechas[1];
-                inicio = inicio.split("/");
-                fin = fin.split("/");
-                inicio = new Date(parseInt(inicio[2]),parseInt(inicio[1])-1,parseInt(inicio[0]));
-                fin = new Date(parseInt(fin[2]),parseInt(fin[1])-1,parseInt(fin[0]));
-                console.log(inicio+" - "+fin);
-                var i = 0;
-                while(inicio < fin){
-                    var newDate = inicio.setDate(inicio.getDate() + 1);
-                    inicio = new Date(newDate);
-                    i++;
-                }
-                if(i>7){
-                    $.showMsg("warning","El rango de fechas se convierte en columnas."
-                    + "</br>Al seleccionar más de 7 días el reporte podría verse ajustado.");
-                }
-                this.value = dates;
-            }
-        });
-
-        $("#tipo").change( function( e ){
-            switch($(this).val()){
-                case "1":{
-                    $(".reglasSection").hide(500);
-                    $("#valorSection").hide(500);
-                    $("#opcsSection").show(500);
-//                    $("#repetirSection").show(500);
-                    break;
-                }case "2":{
-                    $("#valorSection").hide(500);
-                    $("#opcsSection").hide(500);
-//                    $("#repetirSection").hide(500);
-                    $(".reglasSection").show(500);
-                    break;
-                }case "3":{
-                    $(".reglasSection").hide(500);
-                    $("#opcsSection").hide(500);
-                    $("#valorSection").show(500);
-//                    $("#repetirSection").show(500);
-                    break;
-                }default :{
-                    $(".reglasSection").hide(500);
-                    $("#opcsSection").hide(500);
-                    $("#valorSection").hide(500);
-//                    $("#repetirSection").show(500);
-                    break;
-                }
-            }
-        });
-
-        $("#repetir").change( function( e ){
-            if($(this).val() === "1"){
-                $("#vecesDiv").hide(500);
-                $("#fechaDiv").show(500);
-            }else if($(this).val() === "2"){
-                $("#fechaDiv").hide(500);
-                $("#vecesDiv").show(500);
-            }else {
-                $("#fechaDiv").hide(500);
-                $("#vecesDiv").hide(500);
-            }
-        });
-
-        $("#veces").change( function( e ){
-            var veces = parseInt($(this).val());
-            if(veces > 5){
-                $.showMsg("warning","Las veces a repetir son columnas."
-                + "</br>Al seleccionar una repetición alta el reporte podría verse ajustado.");
-            }
-        });
-
-        $(".icon_plus_alt").click(function (ev) {
-            var html = "<div class='input-group dynamic-inpt'>"
-                +" <input type='text' class='form-control cat' name='cat_"+opId+++"'/>"
-                +" <span class='input-group-addon'>"
-                +" <i class='icon-sm icon_minus_alt dynamicRemove'></i>"
-                +" </span>"
-                +" </div>";
-            $("#opcsDiv").append(html);
-            $(".dynamicRemove").click(function (ev) {
-                $(this).parent().parent().remove();
-                opId--;
-            });
-        });
-
-        /******************************************** REGLAS ************************************************/
-
-        var table = $('#mainTable').DataTable({
-            "language": {
-                "url": "/app/lang/Spanish.json"
-            },
-            "order": [[ 1, "asc" ]],
-            "aoColumnDefs": [
-                { 'bSortable': false, 'aTargets': [0]}
-            ]
-        });
-        $("#mainTable tbody tr").hover( function( e ) {
-            if ( $(this).hasClass('row_selected') ) {
-                $(this).removeClass('row_selected');
-            }
-            else {
-                table.$('tr.row_selected').removeClass('row_selected');
-                $(this).addClass('row_selected');
-            }
-        });
-
+      }
     });
+
+    //Load reglas
+    $.executeSyncFetch({
+      action: "/regla/fetchAll",
+      method: "POST",
+      dataType: "json",
+      data: {id_plantilla: $("#id_plantilla").val()},
+      success: function (data) {
+        data.forEach(function (regla) {
+          $("#regla_negocio").append("<option value='" + regla.id + "'>" + regla.nombre + "</option>");
+        });
+      },
+      errorMsg: "Ocurrió un error al obtener los campos."
+    });
+
+    $.executeFetch({
+      action: "/plantilla/fetch",
+      data: {id_plantilla: $("#id_plantilla").val()},
+      method: "POST",
+      dataType: "json",
+      success: function (data) {
+        $("#plantillaBC").html(data.nombre);
+        $("#plantillaBC").attr("href", "/plantilla?id=" + data.id);
+        $("#backBT").attr("href", "/plantilla?id=" + data.id);
+      },
+      errorMsg: "Ocurrió un error al obtener la plantilla."
+    });
+
+    var loadCatalogo = function (opts) {
+      opts = opts.split("|");
+      $("#cat_1").val(opts[0]);
+      var html;
+      for (var i = 1; i < opts.length; i++) {
+        html = "<div class='input-group dynamic-inpt'>"
+          + " <input type='text' class='form-control cat' name='cat_" + opId++ + "' value='" + opts[i] + "'/>"
+          + " <span class='input-group-addon'>"
+          + " <i class='icon-sm icon_minus_alt dynamicRemove'></i>"
+          + " </span>"
+          + " </div>";
+        $("#opcsDiv").append(html);
+      }
+      $(".dynamicRemove").click(function (ev) {
+        $(this).parent().parent().remove();
+        opId--;
+      });
+    }
+
+
+    var fetch = function () {
+      $.executeFetch({
+        action: "/campo/fetch",
+        data: {id_campo: $("#id_campo").val()},
+        method: "POST",
+        dataType: "json",
+        success: function (data) {
+          $("#headerSection").html(data.nombre);
+          $("#campoBC").html(data.nombre);
+          $("#campoBC").attr("href", "/campo?id=" + data.id);
+
+          $("#nombre").val(data.nombre);
+          $("#clave").val(data.clave);
+          $("#tipo").val(data.id_tipo_campo);
+          $("#tipo").trigger("change");
+          if (data.id_tipo_campo === "1") {
+            loadCatalogo(data.valor);
+          } else if (data.id_tipo_campo === "2") {
+            $("#regla_negocio").val(data.id_regla_negocio);
+          }
+          if (data.id_repetir_campo) {
+            $("#repetir").val(data.id_repetir_campo);
+            $("#repetir").trigger("change");
+            if (data.id_repetir_campo === "1") {
+              $("#fechas").val(data.repetir);
+            } else {
+              $("#veces").val(data.repetir);
+            }
+          }
+          $("#prefijo").val(data.prefijo);
+          $("#sufijo").val(data.sufijo);
+          $("#formato").val(data.id_formato);
+          $("#valor").val(data.valor);
+          $("#descripcion").val(data.descripcion);
+          $("#orden").val(data.orden);
+          $("#color").val(data.color);
+
+          $("#camposSection").show(500);
+        },
+        errorMsg: "Ocurrió un error al obtener el campo."
+      });
+    }
+
+    if (parseInt($("#id_campo").val()) !== 0) {
+      fetch();
+    }
+
+    $("#guardarBT").click(function (e) {
+      if ($("#tipo").val() === "1") {
+        var ids = "";
+        $(".cat").each(function (index) {
+          ids += $(this).attr("name") + ",";
+        });
+        $("#cat_ids").val(ids);
+      }
+      $.executePostValid({
+        form: $("#campo_form"),
+        action: "/campo/update",
+        method: "POST",
+        dataType: "json",
+        success: function (data) {
+          $("#id_campo").val(data.id);
+          $("#headerSection").html(data.nombre);
+          $("#campoBC").html(data.nombre);
+          $("#campoBC").attr("href", "/campo?id=" + data.id);
+          $("#camposSection").show(500);
+        },
+        successMsg: "Campo guardado.",
+        errorMsg: "Ocurrió un error al guardar el campo."
+      });
+    });
+
+    $('#fechas').dateRangePicker({
+      format: 'DD/MM/YYYY',
+      separator: ' - ',
+      startDate: new Date(),
+      setValue: function (dates) {
+        var fechas = dates.split(" - ");
+        var inicio = fechas[0];
+        var fin = fechas[1];
+        inicio = inicio.split("/");
+        fin = fin.split("/");
+        inicio = new Date(parseInt(inicio[2]), parseInt(inicio[1]) - 1, parseInt(inicio[0]));
+        fin = new Date(parseInt(fin[2]), parseInt(fin[1]) - 1, parseInt(fin[0]));
+        console.log(inicio + " - " + fin);
+        var i = 0;
+        while (inicio < fin) {
+          var newDate = inicio.setDate(inicio.getDate() + 1);
+          inicio = new Date(newDate);
+          i++;
+        }
+        if (i > 7) {
+          $.showMsg("warning", "El rango de fechas se convierte en columnas."
+            + "</br>Al seleccionar más de 7 días el reporte podría verse ajustado.");
+        }
+        this.value = dates;
+      }
+    });
+
+    $("#tipo").change(function (e) {
+      switch ($(this).val()) {
+        case "1":
+        {
+          $(".reglasSection").hide(500);
+          $("#valorSection").hide(500);
+          $("#opcsSection").show(500);
+//                    $("#repetirSection").show(500);
+          break;
+        }
+        case "2":
+        {
+          $("#valorSection").hide(500);
+          $("#opcsSection").hide(500);
+//                    $("#repetirSection").hide(500);
+          $(".reglasSection").show(500);
+          break;
+        }
+        case "3":
+        {
+          $(".reglasSection").hide(500);
+          $("#opcsSection").hide(500);
+          $("#valorSection").show(500);
+//                    $("#repetirSection").show(500);
+          break;
+        }
+        default :
+        {
+          $(".reglasSection").hide(500);
+          $("#opcsSection").hide(500);
+          $("#valorSection").hide(500);
+//                    $("#repetirSection").show(500);
+          break;
+        }
+      }
+    });
+
+    $("#repetir").change(function (e) {
+      if ($(this).val() === "1") {
+        $("#vecesDiv").hide(500);
+        $("#fechaDiv").show(500);
+      } else if ($(this).val() === "2") {
+        $("#fechaDiv").hide(500);
+        $("#vecesDiv").show(500);
+      } else {
+        $("#fechaDiv").hide(500);
+        $("#vecesDiv").hide(500);
+      }
+    });
+
+    $("#veces").change(function (e) {
+      var veces = parseInt($(this).val());
+      if (veces > 5) {
+        $.showMsg("warning", "Las veces a repetir son columnas."
+          + "</br>Al seleccionar una repetición alta el reporte podría verse ajustado.");
+      }
+    });
+
+    $(".icon_plus_alt").click(function (ev) {
+      var html = "<div class='input-group dynamic-inpt'>"
+        + " <input type='text' class='form-control cat' name='cat_" + opId++ + "'/>"
+        + " <span class='input-group-addon'>"
+        + " <i class='icon-sm icon_minus_alt dynamicRemove'></i>"
+        + " </span>"
+        + " </div>";
+      $("#opcsDiv").append(html);
+      $(".dynamicRemove").click(function (ev) {
+        $(this).parent().parent().remove();
+        opId--;
+      });
+    });
+
+    /******************************************** REGLAS ************************************************/
+
+    var table = $('#mainTable').DataTable({
+      "language": {
+        "url": "/app/lang/Spanish.json"
+      },
+      "order": [[1, "asc"]],
+      "aoColumnDefs": [
+        {'bSortable': false, 'aTargets': [0]}
+      ]
+    });
+    $("#mainTable tbody tr").hover(function (e) {
+      if ($(this).hasClass('row_selected')) {
+        $(this).removeClass('row_selected');
+      }
+      else {
+        table.$('tr.row_selected').removeClass('row_selected');
+        $(this).addClass('row_selected');
+      }
+    });
+
+  });
 </script>
 
 <div class="row">
-    <div class="col-lg-12">
+  <div class="col-lg-12">
 
-        <section class="panel">
-            <header class="panel-heading" id="headerSection">
-                Nuevo Campo
-            </header>
-            <div class="panel-body">
-                <div class="form">
-                    <form class="form-validate form-horizontal" id="campo_form">
-                        <input type="hidden" id="id_plantilla" name="id_plantilla" value="<?php echo $id_plantilla; ?>"/>
-                        <input type="hidden" id="id_campo" name="id_campo" value="<?php if($id){ echo $id; }else{ echo "0"; } ?>"/>
-                        <input type="hidden" id="cat_ids" name="cat_ids"/>
-                        <input type="hidden" id="orden" name="orden"/>
-                        <input type="hidden" id="color" name="color"/>
-                        <div class="form-group ">
-                            <label  class="control-label col-lg-2">Nombre <span class="required">*</span></label>
-                            <div class="col-lg-5">
-                                <input class="form-control" id="nombre" name="nombre" minlength="5" type="text" required />
-                            </div>
-                        </div>
+    <section class="panel">
+      <header class="panel-heading" id="headerSection">
+        Nuevo Campo
+      </header>
+      <div class="panel-body">
+        <div class="form">
+          <form class="form-validate form-horizontal" id="campo_form">
+            <input type="hidden" id="id_plantilla" name="id_plantilla" value="<?php echo $id_plantilla; ?>"/>
+            <input type="hidden" id="id_campo" name="id_campo" value="<?php if ($id) {
+              echo $id;
+            } else {
+              echo "0";
+            } ?>"/>
+            <input type="hidden" id="cat_ids" name="cat_ids"/>
+            <input type="hidden" id="orden" name="orden"/>
+            <input type="hidden" id="color" name="color"/>
 
-                        <div class="form-group">
-                            <label  class="control-label col-lg-2">Tipo <span class="required">*</span></label>
-                            <div class="col-lg-5">
-                                <select class="form-control" id="tipo" name="tipo" required>
-                                    <option value="">Seleccionar</option>
-                                    <option value="1">Catálogo</option>
-                                    <option value="2">Regla de Negocio</option>
-                                    <option value="3">Valor</option>
-                                    <option value="4">Dinámico</option>
-                                </select>
+            <div class="form-group ">
+              <label class="control-label col-lg-2">Nombre <span class="required">*</span></label>
+              <div class="col-lg-5">
+                <input class="form-control" id="nombre" name="nombre" minlength="5" type="text" required/>
+              </div>
+            </div>
 
-                                <select class="form-control m-bot15 reglasSection no-display" id="regla_negocio" name="regla_negocio">
-                                    <option value="">Seleccionar Regla</option>
-                                </select>
-                            </div>
-                        </div>
+            <div class="form-group ">
+              <label class="control-label col-lg-2">Clave</label>
+              <div class="col-lg-2">
+                <input class="form-control" id="clave" name="clave" type="text"/>
+              </div>
+            </div>
 
-                        <div class="form-group no-display" id="opcsSection">
-                            <div class="col-lg-2 text-right">
-                                <label  class="control-label">Agregar Opciones:</label>
-                            </div>
-                            <div class="col-lg-2" id="opcsDiv">
-                                <div class="input-group dynamic-inpt">
-                                    <input type="text" class="form-control cat" id="cat_1" name="cat_1"/>
+            <div class="form-group">
+              <label class="control-label col-lg-2">Tipo <span class="required">*</span></label>
+              <div class="col-lg-5">
+                <select class="form-control" id="tipo" name="tipo" required>
+                  <option value="">Seleccionar</option>
+                  <option value="1">Catálogo</option>
+                  <option value="2">Regla de Negocio</option>
+                  <option value="3">Valor</option>
+                  <option value="4">Dinámico</option>
+                </select>
+
+                <select class="form-control m-bot15 reglasSection no-display" id="regla_negocio" name="regla_negocio">
+                  <option value="">Seleccionar Regla</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group no-display" id="opcsSection">
+              <div class="col-lg-2 text-right">
+                <label class="control-label">Agregar Opciones:</label>
+              </div>
+              <div class="col-lg-2" id="opcsDiv">
+                <div class="input-group dynamic-inpt">
+                  <input type="text" class="form-control cat" id="cat_1" name="cat_1"/>
                                     <span class="input-group-addon">
                                         <i class="icon-sm icon_plus_alt"></i>
                                     </span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group no-display" id="valorSection">
-                            <label  class="control-label col-lg-2">Valor</label>
-                            <div class="col-lg-2">
-                                <input class="form-control" id="valor" name="valor" type="text"/>
-                            </div>
-                        </div>
+                </div>
+              </div>
+            </div>
+            <div class="form-group no-display" id="valorSection">
+              <label class="control-label col-lg-2">Valor</label>
 
-<!--                        <div class="form-group" id="repetirSection">-->
-<!--                            <label  class="control-label col-lg-2">Repetir</label>-->
-<!--                            <div class="col-lg-2">-->
-<!--                                <select class="form-control m-bot15" id="repetir" name="repetir">-->
-<!--                                    <option value="">Seleccionar</option>-->
-<!--                                    <option value="1">Fecha</option>-->
-<!--                                    <option value="2">Veces</option>-->
-<!--                                </select>-->
-<!--                            </div>-->
-<!--                        </div>-->
+              <div class="col-lg-2">
+                <input class="form-control" id="valor" name="valor" type="text"/>
+              </div>
+            </div>
 
-                        <div class="form-group repetirOps" id="fechaDiv">
-                            <label  class="control-label col-lg-2">Fechas</label>
-                            <div class="col-lg-2">
-                                <div class='input-group date'>
-                                    <input type='text' class="form-control" id="fechas" name="fechas"/>
+            <!--                        <div class="form-group" id="repetirSection">-->
+            <!--                            <label  class="control-label col-lg-2">Repetir</label>-->
+            <!--                            <div class="col-lg-2">-->
+            <!--                                <select class="form-control m-bot15" id="repetir" name="repetir">-->
+            <!--                                    <option value="">Seleccionar</option>-->
+            <!--                                    <option value="1">Fecha</option>-->
+            <!--                                    <option value="2">Veces</option>-->
+            <!--                                </select>-->
+            <!--                            </div>-->
+            <!--                        </div>-->
+
+            <div class="form-group repetirOps" id="fechaDiv">
+              <label class="control-label col-lg-2">Fechas</label>
+
+              <div class="col-lg-2">
+                <div class='input-group date'>
+                  <input type='text' class="form-control" id="fechas" name="fechas"/>
                                     <span class="input-group-addon">
                                         <span class="glyphicon glyphicon-calendar"></span>
                                     </span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group repetirOps" id="vecesDiv">
-                            <label  class="control-label col-lg-2">Veces</label>
-                            <div class="col-lg-2">
-                                <select class="form-control m-bot15" id="veces" name="veces">
-                                    <?php
-                                        for($i=2; $i<=20; $i++){
-                                            echo "<option value='".$i."'>".$i."</option>";
-                                        }
-                                    ?>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label  class="control-label col-lg-2">Prefijo</label>
-                            <div class="col-lg-2">
-                                <input class="form-control" id="prefijo" name="prefijo" type="text"/>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label  class="control-label col-lg-2">Sufijo</label>
-                            <div class="col-lg-2">
-                                <input class="form-control" id="sufijo" name="sufijo" type="text"/>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label  class="control-label col-lg-2">Formato</label>
-                            <div class="col-lg-2">
-                                <select class="form-control m-bot15" id="formato" name="formato">
-                                    <option value="">Seleccionar</option>
-                                    <option value="1">Texto</option>
-                                    <option value="2">Número</option>
-                                    <option value="3">Moneda</option>
-                                    <option value="4">Fecha</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label  class="control-label col-lg-2">Descripción</label>
-                            <div class="col-lg-5">
-                                <textarea class="form-control" id="descripcion" name="descripcion" rows="6"></textarea>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <div class="col-lg-offset-2 col-lg-10">
-                                <button class="btn btn-primary" type="button" id="guardarBT">Guardar</button>
-                                <a class="btn btn-default" id="backBT">Regresar</a>
-                            </div>
-                        </div>
-                    </form>
                 </div>
+              </div>
             </div>
-        </section>
+            <div class="form-group repetirOps" id="vecesDiv">
+              <label class="control-label col-lg-2">Veces</label>
 
-    </div>
+              <div class="col-lg-2">
+                <select class="form-control m-bot15" id="veces" name="veces">
+                  <?php
+                  for ($i = 2; $i <= 20; $i++) {
+                    echo "<option value='" . $i . "'>" . $i . "</option>";
+                  }
+                  ?>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-lg-2">Prefijo</label>
+
+              <div class="col-lg-2">
+                <input class="form-control" id="prefijo" name="prefijo" type="text"/>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-lg-2">Sufijo</label>
+
+              <div class="col-lg-2">
+                <input class="form-control" id="sufijo" name="sufijo" type="text"/>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-lg-2">Formato</label>
+
+              <div class="col-lg-2">
+                <select class="form-control m-bot15" id="formato" name="formato">
+                  <option value="">Seleccionar</option>
+                  <option value="1">Texto</option>
+                  <option value="2">Número</option>
+                  <option value="3">Moneda</option>
+                  <option value="4">Fecha</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-lg-2">Descripción</label>
+
+              <div class="col-lg-5">
+                <textarea class="form-control" id="descripcion" name="descripcion" rows="6"></textarea>
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="col-lg-offset-2 col-lg-10">
+                <button class="btn btn-primary" type="button" id="guardarBT">Guardar</button>
+                <a class="btn btn-default" id="backBT">Regresar</a>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+  </div>
 </div>
 
