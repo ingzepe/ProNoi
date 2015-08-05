@@ -1,0 +1,30 @@
+<?php
+use Application\Model\Application;
+$session = new \Zend\Session\Container('user');
+$user = $session->user;
+
+$reader = new Zend\Config\Reader\Ini();
+$config = $reader->fromFile('config/autoload/config.ini');
+$environment = $config['environment'];
+?>
+
+<div class="row">
+  <div class="col-lg-12">
+
+    <section class="panel" id="prmisosSection">
+      <header class="panel-heading">
+        Demos
+      </header>
+      <div class="panel-body">
+        <h4><a target="_blank" href="videos/Asistencia_Asignar_permisos_automaticos.mp4">Asistencia - Asignar permisos automáticos</a></h4>
+        <h4><a target="_blank" href="videos/Asistencia_Asignar_permisos_manuales.mp4">Asistencia - Asignar permisos manuales</a></h4>
+        <h4><a target="_blank" href="videos/Asistencia_Registrar_Asistencia_Automatica.mp4">Asistencia - Registrar asistencia automática</a></h4>
+        <h4><a target="_blank" href="videos/Asistencia_Registrar_Asistencia_Manual.mp4">Asistencia - Registrar asistencia manual</a></h4>
+        <h4><a target="_blank" href="videos/Reportes_Bono_de_Asistencia.mp4">Reportes - Club de Asistencia - Bonos</a></h4>
+        <h4><a target="_blank" href="videos/Reportes_Incidencias_Club.mp4">Reportes - Club de Asistencia - Incidencias</a></h4>
+        <h4><a target="_blank" href="videos/Reportes_Incidencias_Ecotel.mp4">Reportes - Ecotel - Incidencias</a></h4>
+      </div>
+    </section>
+
+  </div>
+</div>

@@ -66,9 +66,10 @@ class EmpleadoTable extends AbstractTableGateway
     $where->equalTo('tab_empleado.id_tipo_empleado', $id_tipo_empleado);
     $where2 = new Where();
     $where2->equalTo('tab_empleado.activo', 'True');
-    $where3 = new Where();
-    $where3->isNotNull('tab_empleado.id_rh');
-    $select->where(array($where, $where2, $where3));
+//    $where3 = new Where();
+//    $where3->isNotNull('tab_empleado.id_rh');
+//    $select->where(array($where, $where2, $where3));
+    $select->where(array($where, $where2));
 
 //    $where = new Where();
 //    $where->isNotNull('tab_empleado.id_mitrol');

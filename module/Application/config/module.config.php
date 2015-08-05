@@ -144,6 +144,12 @@ return array(
             'class' => 'icon_calendar',
             'id' => 'asistenciaBC'
           ),
+          array(
+            'label' => 'Demos',
+            'route' => 'demos',
+            'class' => 'icon_film',
+            'id' => 'demosBC'
+          ),
         ),
       ),
     ),

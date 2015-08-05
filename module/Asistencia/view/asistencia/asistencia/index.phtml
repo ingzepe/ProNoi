@@ -205,8 +205,8 @@ $environment = $config['environment'];
       success: function (tipoEmpleadoData) {
         var html = "<option value=''>Seleccionar</option>";
         tipoEmpleadoData.forEach(function (tipo) {
-          tipoEmpleadoPermitidos[tipo.id] = tipo;
-          html += "<option value='" + tipo.id + "'>" + tipo.tipo_empleado + "</option>";
+          tipoEmpleadoPermitidos[tipo.id_tipo_empleado] = tipo;
+          html += "<option value='" + tipo.id_tipo_empleado + "'>" + tipo.tipo_empleado + "</option>";
         });
         $("#asistencia_tipo_empleado").html(html);
       },
@@ -410,8 +410,7 @@ $environment = $config['environment'];
                   var trs = "";
                   var totalEmpleados;
                   if(RESTRICT_EMPLEADOS){
-//                    totalEmpleados = 10;
-                    totalEmpleados = empleados.length;
+                    totalEmpleados = 10;
                   }else{
                     totalEmpleados = empleados.length;
                   }
@@ -419,96 +418,103 @@ $environment = $config['environment'];
                   for(var i=0; i<totalEmpleados; i++){
                     var empleado = empleados[i];
 
-                    //static
-                    trs += "<tr>";
-                    trs += "<td>" + empleado.nombre + "</td>";
-                    trs += "<td>" + empleado.id + "</td>";
-                    trs += "<td>" + empleado.id_rh + "</td>";
+                    if(empleado.id_mitrol){
+
+                      //static
+                      trs += "<tr>";
+                      trs += "<td>" + empleado.nombre + "</td>";
+                      trs += "<td>" + empleado.id + "</td>";
+                      trs += "<td>" + empleado.id_rh + "</td>";
 //                  trs += "<td>" + empleado.id_mitrol + "</td>";
 //                  trs += "<td>" + empleado.fecha_ingreso + "</td>";
-                    trs += "<td>" + empleado.horario + "</td>";
+                      trs += "<td>" + empleado.horario + "</td>";
 //                  trs += "<td>" + empleado.unidad_negocio + "</td>";
 //                  trs += "<td>" + empleado.tipo_empleado + "</td>";
 //                  trs += "<td>" + empleado.campana + "</td>";
 //                  trs += "<td>" + empleado.jefe + "</td>";
 //                  trs += "<td>$ " + $.number(empleado.sueldo_diario, 2) + "</td>";
 
-                    console.log("Empleado: " + empleado.id);
+                      console.log("Empleado: " + empleado.id);
 
-                    $.executeSyncFetch({
-                      action: "/regla/empleadoAsistenciaMitrol",
-                      method: "POST",
-                      dataType: "json",
-                      data: {
-                        id_empleado: empleado.id_mitrol,
-                        inicio: periodoDate.periodoJSON.inicio.anio + "-" + periodoDate.periodoJSON.inicio.mes + "-" + periodoDate.periodoJSON.inicio.dia,
-                        fin: periodoDate.periodoJSON.fin.anio + "-" + periodoDate.periodoJSON.fin.mes + "-" + periodoDate.periodoJSON.fin.dia
-                      },
-                      success: function (data) {
-                        empleado.asistencias = new Array();
-                        empleado.retardos = new Array();
+                      $.executeSyncFetch({
+                        action: "/regla/empleadoAsistenciaMitrol",
+                        method: "POST",
+                        dataType: "json",
+                        data: {
+                          id_empleado: empleado.id_mitrol,
+                          inicio: periodoDate.periodoJSON.inicio.anio + "-" + periodoDate.periodoJSON.inicio.mes + "-" + periodoDate.periodoJSON.inicio.dia,
+                          fin: periodoDate.periodoJSON.fin.anio + "-" + periodoDate.periodoJSON.fin.mes + "-" + periodoDate.periodoJSON.fin.dia
+                        },
+                        success: function (data) {
+                          console.log(data);
+                          empleado.asistencias = new Array();
+                          empleado.retardos = new Array();
 //                        empleado.retardos = 0;
-                        data.asistencias.forEach(function (asistencia) {
-                          empleado.asistencias[asistencia[0]+"-"+asistencia[1]+"-"+asistencia[2]] = asistencia;
-                          var entrada = empleado.horario.split("-")[0] + ":00";
-                          entrada = entrada.split(":");
-                          var entradaDate = new Date(asistencia[3]);
-                          entradaDate.setHours(entrada[0]);
-                          entradaDate.setMinutes(entrada[1]+TOLERANCIA);
-                          entradaDate.setSeconds(entrada[2]);
-                          var firstEventDate = new Date(asistencia[3]);
-                          if(firstEventDate < entradaDate){
-                            empleado.retardos[asistencia[0]+"-"+asistencia[1]+"-"+asistencia[2]] = asistencia;
+                          data.asistencias.forEach(function (asistencia) {
+                            empleado.asistencias[asistencia[0]+"-"+asistencia[1]+"-"+asistencia[2]] = asistencia;
+                            var entrada = empleado.horario.split("-")[0] + ":00";
+                            entrada = entrada.split(":");
+                            var entradaDate = new Date(asistencia[3]);
+                            entradaDate.setHours(entrada[0]);
+                            entradaDate.setMinutes(entrada[1]+TOLERANCIA);
+                            entradaDate.setSeconds(entrada[2]);
+                            var firstEventDate = new Date(asistencia[3]);
+                            if(firstEventDate < entradaDate){
+                              empleado.retardos[asistencia[0]+"-"+asistencia[1]+"-"+asistencia[2]] = asistencia;
 //                            empleado.retardos++;
-                          }
-                        });
-                      },
-                      errorMsg: "Ocurrió un error al obtener la asistencia de " + empleado.nombre
-                    });
-
-                    //periodo
-                    var selectLayout;
-                    periodos.forEach(function (periodo) {
-
-                      var dateIndex = periodo.value.getFullYear() + "-" + (periodo.value.getMonth()+1) + "-" + periodo.value.getDate();
-                      var dateIndexAux = periodo.value.getDate() + "/" + (periodo.value.getMonth()+1) + "/" + periodo.value.getFullYear();
-                      dateIndexAux = $.fixCeroDate(dateIndexAux, "/");
-                      var sqlDate = (periodo.value.getMonth()+1) + "/" + periodo.value.getDate() + "/" + periodo.value.getFullYear();
-                      sqlDate = $.fixCeroDate(sqlDate, "/");
-
-                      var dateCalculated = false;
-                      $(".festivosInpts").each(function() {
-                        var festivo = $(this).val();
-                        if(festivo && festivo == dateIndexAux){
-                          selectLayout = "<select class='form-control periodo' fecha='" + dateIndex + "'"+" empleado='" + empleado.id + "'>";
-                          selectLayout += "<option value='" + ASISTENCIA_FESTIVO + "'>Festivo</option>";
-                          dateCalculated = true;
-                        }
+                            }
+                          });
+                        },
+                        errorMsg: "Ocurrió un error al obtener la asistencia de " + empleado.nombre
                       });
 
-                      if(!dateCalculated){
-                        selectLayout = "<select class='form-control periodo' fecha='" + dateIndex + "'"+" empleado='" + empleado.id + "'>";
-                        if(empleado.retardos[dateIndex]){
-                          selectLayout += "<option value='" + ASISTENCIA_RETARDO + "'>Retardo</option>";
-                        }else if(empleado.asistencias[dateIndex]){
-                          selectLayout += "<option value='" + ASISTENCIA_ASISTENCIA + "'>Asistencia</option>";
-                        }else{
-                          selectLayout += "<option value='" + ASISTENCIA_FALTA + "'>Falta</option>";
-                          selectLayout += "<option value='" + ASISTENCIA_FALTA_JUSTIFICADA + "'>Falta Justificada</option>";
-                          selectLayout += "<option value='" + ASISTENCIA_DESCANSO + "'>Descanso</option>";
-                          selectLayout += "<option value='" + ASISTENCIA_INCAPACIDAD + "'>Incapacidad</option>";
-                          selectLayout += "<option value='" + ASISTENCIA_VACACIONES + "'>Vacaciones</option>";
+                      //periodo
+                      var selectLayout;
+                      periodos.forEach(function (periodo) {
+
+                        var dateIndex = periodo.value.getFullYear() + "-" + (periodo.value.getMonth()+1) + "-" + periodo.value.getDate();
+                        var dateIndexAux = periodo.value.getDate() + "/" + (periodo.value.getMonth()+1) + "/" + periodo.value.getFullYear();
+                        dateIndexAux = $.fixCeroDate(dateIndexAux, "/");
+                        var sqlDate = (periodo.value.getMonth()+1) + "/" + periodo.value.getDate() + "/" + periodo.value.getFullYear();
+                        sqlDate = $.fixCeroDate(sqlDate, "/");
+
+                        var dateCalculated = false;
+                        $(".festivosInpts").each(function() {
+                          var festivo = $(this).val();
+                          if(festivo && festivo == dateIndexAux){
+                            selectLayout = "<select class='form-control periodo' fecha='" + dateIndex + "'"+" empleado='" + empleado.id + "'>";
+                            selectLayout += "<option value='" + ASISTENCIA_FESTIVO + "'>Festivo</option>";
+                            dateCalculated = true;
+                          }
+                        });
+
+                        if(!dateCalculated){
+                          selectLayout = "<select class='form-control periodo' fecha='" + dateIndex + "'"+" empleado='" + empleado.id + "'>";
+                          if(empleado.retardos[dateIndex]){
+                            selectLayout += "<option value='" + ASISTENCIA_RETARDO + "'>Retardo</option>";
+                          }else if(empleado.asistencias[dateIndex]){
+                            selectLayout += "<option value='" + ASISTENCIA_ASISTENCIA + "'>Asistencia</option>";
+                          }else{
+                            selectLayout += "<option value='" + ASISTENCIA_FALTA + "'>Falta</option>";
+                            selectLayout += "<option value='" + ASISTENCIA_FALTA_JUSTIFICADA + "'>Falta Justificada</option>";
+                            selectLayout += "<option value='" + ASISTENCIA_DESCANSO + "'>Descanso</option>";
+                            selectLayout += "<option value='" + ASISTENCIA_INCAPACIDAD + "'>Incapacidad</option>";
+                            selectLayout += "<option value='" + ASISTENCIA_VACACIONES + "'>Vacaciones</option>";
+                          }
                         }
-                      }
 
-                      selectLayout += "</select>";
+                        selectLayout += "</select>";
 
-                      trs += "<td>" + selectLayout + "</td>";
-                    });
+                        trs += "<td>" + selectLayout + "</td>";
+                      });
 
-                    trs += "</tr>";
+                      trs += "</tr>";
 
-                    allEmpleados[empleado.id] = empleado;
+                      allEmpleados[empleado.id] = empleado;
+
+                    }else{
+                      $.showMsg("error", "No se ha encontrado el id de Mitrol para " + empleado.nombre);
+                    }
 
 //                  });
                   }
@@ -587,9 +593,14 @@ $environment = $config['environment'];
               data: {id_tipo_empleado: $("#asistencia_tipo_empleado").val()},
               success: function (empleados) {
                 var trs = "";
-                var totalEmpleados = empleados.length;
+                var totalEmpleados;
+                if(RESTRICT_EMPLEADOS){
+                  totalEmpleados = 10;
+                }else{
+                  totalEmpleados = empleados.length;
+                }
 //                empleados.forEach(function (empleado) {
-                for(var i=0; i<10; i++){
+                for(var i=0; i<totalEmpleados; i++){
                   var empleado = empleados[i];
 
                   //static

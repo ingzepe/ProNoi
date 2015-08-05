@@ -812,27 +812,38 @@
             success: function (empleados) {
 
               //valid periodos vs empleados.registro
-              var periodoSyncronized = true;
-              if(calcularPeriodo) {
-                var invalidMsj = "No se encontró la asistencia en el período para:<br/>";
-                empleados.forEach(function (empleado) {
-                  console.log(empleado.nombre + " " + empleado.registro.length + " " + periodos.length);
-                  if (empleado.registro.length < periodos.length) {
-                    periodoSyncronized = false;
-                    invalidMsj += empleado.nombre + "<br/>";
-                  }
-                });
-              }
+//              var periodoSyncronized = true;
+//              if(calcularPeriodo) {
+//                var invalidMsj = "No se encontró la asistencia en el período para:<br/>";
+//
+//                var totalEmpleados;
+//                if (RESTRICT_EMPLEADOS) {
+//                  totalEmpleados = 10;
+//                } else {
+//                  totalEmpleados = empleados.length;
+//                }
+//                for (var i = 0; i < totalEmpleados; i++) {
+//                  var empleado = empleados[i];
+//                  console.log(empleado.nombre + " " + empleado.registro.length + " " + periodos.length);
+//                  if (empleado.registro.length < periodos.length) {
+//                    periodoSyncronized = false;
+//                    invalidMsj += empleado.nombre + "<br/>";
+//                  }
+//                }
+//
+//              }
 
-              if(!periodoSyncronized){
-                $.showMsg("error", invalidMsj);
-              }else {
+//              if(!periodoSyncronized){
+//                $.showMsg("error", invalidMsj);
+//              }else {
+
+                var periodoSyncronized = true;
+                var invalidMsj = "No se encontró la asistencia en el período para:<br/>";
 
                 var trs = "";
                 var totalEmpleados;
                 if (RESTRICT_EMPLEADOS) {
-//                  totalEmpleados = 10;
-                  totalEmpleados = empleados.length;
+                  totalEmpleados = 10;
                 } else {
                   totalEmpleados = empleados.length;
                 }
@@ -842,6 +853,12 @@
 
                   console.log("Empleado: " + empleado.id);
                   console.log(empleado);
+
+                  if (calcularPeriodo && empleado.registro.length < periodos.length) {
+                    periodoSyncronized = false;
+                    invalidMsj += empleado.nombre + "<br/>";
+                  } else {
+
 
                   //static
                   trs += "<tr>";
@@ -938,6 +955,8 @@
 
 //              });
                 }
+
+              }
 
                 if (campos.length > 0 && empleados.length > 0) {
                   if (table2)
@@ -1204,7 +1223,11 @@
                   };//Calcula Regla
                 }
 
-              }//valid
+              if(!periodoSyncronized){
+                $.showMsg("error", invalidMsj);
+              }
+
+              //}//valid
             },//success
             errorMsg: "Ocurrió un error al obtener los campos."
           });
