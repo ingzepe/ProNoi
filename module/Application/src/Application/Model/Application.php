@@ -13,6 +13,9 @@ use Zend\Config\Reader\Ini;
 
 class Application {
 
+  const SUCCESS                                 = 'success';
+  const FAILURE                                 = 'failure';
+
   const ROL_ADMINISTRADOR                       = 1;
   const ROL_ADMINISTRADOR_PLANTILLAS            = 2;
   const ROL_ADMINISTRADOR_REPORTES              = 3;
@@ -64,5 +67,17 @@ class Application {
 
   //10 mins de tolerancia
   const TOLERANCIA                              = 10;
+
+  //Transform YYYY-mm-dd to dd-mm-YYYY if SQL server is in spanish
+  public static function transformDate($date) {
+    $reader = new Ini();
+    $config = $reader->fromFile('config/autoload/config.ini');
+    $sqlsrvlang = $config['sqlsrvlang'];
+    if($sqlsrvlang == 'es'){
+      $dates = explode('-', $date);
+      $date = $dates[2].'-'.$dates[1].'-'.$dates[0];
+    }
+    return $date;
+  }
 
 }

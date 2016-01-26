@@ -61,12 +61,15 @@ use Application\Model\Application;
           && $("#control_reporte").val() == CONTROL_REPORTE_CONSULTAR
           && reporte.id_estado == REPORTE_ESTADO_AUTORIZADO_POR_DIRECCION)
           //Generar reportes
-          || ($("#id_rol_usuario").val() == ROL_ADMINISTRADOR_REPORTES
+          || (($("#id_rol_usuario").val() == ROL_ADMINISTRADOR_REPORTES
+              || $("#id_rol_usuario").val() == ROL_PERSONAL_RH
+              || $("#id_rol_usuario").val() == ROL_PERSONAL_NOMINA)
           && ($("#control_reporte").val() == CONTROL_REPORTE_AUTORIZAR_A_DIRECCION
+          || $("#control_reporte").val() == CONTROL_REPORTE_AUTORIZAR_A_RH
           || $("#control_reporte").val() == CONTROL_REPORTE_AUTORIZAR_A_NOMINA))
         ){
           html += "<td class='text-center'>";
-          html += "<a href='/reporte?id=" + reporte.id + "&id_plantilla=" + reporte.id_plantilla + "'>";
+          html += "<a href='reporte?id=" + reporte.id + "&id_plantilla=" + reporte.id_plantilla + "'>";
           html += "<i class='icon-md icon_search_alt'></i>";
           html += "</a>";
           html += "</td>";
@@ -120,7 +123,7 @@ use Application\Model\Application;
       table = $('#mainTable').DataTable({
         "columns": colWidths,
         "language": {
-          "url": "/app/lang/Spanish.json"
+          "url": "app/lang/Spanish.json"
         },
         "order": [[1, "asc"]],
         "aoColumnDefs": [
@@ -141,7 +144,7 @@ use Application\Model\Application;
     var refreshTable = function () {
       if (id_plantilla != 0) {
         $.executeFetch({
-          action: "/reporte/fetchAllByIdPlantilla",
+         action: "reporte/fetchAllByIdPlantilla",
           method: "POST",
           dataType: "json",
           data: {id_plantilla: id_plantilla},
@@ -151,21 +154,21 @@ use Application\Model\Application;
           errorMsg: "Ocurrió un error al obtener las reportes."
         });
         $.executeFetch({
-          action: "/plantilla/fetch",
+         action: "plantilla/fetch",
           data: {id_plantilla: $("#id_plantilla").val()},
           method: "POST",
           dataType: "json",
           success: function (data) {
             $("#plantillaBC").html(data.nombre);
-            $("#plantillaBC").attr("href", "/plantilla?id=" + data.id);
-            $("#reportesBC").attr("href", "/reportes?id=" + data.id);
-            $("#backBT").attr("href", "/plantilla?id=" + data.id);
+            $("#plantillaBC").attr("href", "plantilla?id=" + data.id);
+            $("#reportesBC").attr("href", "reportes?id=" + data.id);
+            $("#backBT").attr("href", "plantilla?id=" + data.id);
           },
           errorMsg: "Ocurrió un error al obtener la plantilla."
         });
       } else {
         $.executeFetch({
-          action: "/reporte/fetchAllPermisosByIdUsuarioAndTipoEmpleado",
+         action: "reporte/fetchAllPermisosByIdUsuarioAndTipoEmpleado",
           method: "POST",
           dataType: "json",
           success: function (data) {
@@ -185,7 +188,7 @@ use Application\Model\Application;
 
     $("#eliminarBT").click(function (e) {
       $.executePost({
-        action: "/reporte/remove",
+       action: "reporte/remove",
         method: "POST",
         data: {id_reporte: $("#id_reporte").val()},
         dataType: "json",
@@ -217,7 +220,7 @@ use Application\Model\Application;
           || $user['id_rol_usuario'] == Application::ROL_ADMINISTRADOR_PLANTILLAS
           || ($user['id_rol_usuario'] == Application::ROL_ADMINISTRADOR_REPORTES) &&
           $control_reporte == Application::CONTROL_REPORTE_GENERAR) { ?>
-          <a href="/reporte?id_plantilla=<?php echo $id; ?>" class="btn  btn-primary pull-right">
+          <a href="reporte?id_plantilla=<?php echo $id; ?>" class="btn  btn-primary pull-right">
             Agregar
           </a>
         <?php } ?>

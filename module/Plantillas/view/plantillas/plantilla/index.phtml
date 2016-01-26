@@ -13,7 +13,7 @@
           required: true,
           minlength: 5,
           remote: {
-            url: "/plantilla/checkName",
+            url: "plantilla/checkName",
             type: "POST",
             async: false,
             data: {
@@ -95,7 +95,7 @@
       var id_unidad = $(this).val();
       $("#tipo_empleado").val("");
       $.executeFetch({
-        action: "/empleado/fetchAllTipoEmpleadoByIdUnidad",
+       action: "empleado/fetchAllTipoEmpleadoByIdUnidad",
         method: "POST",
         dataType: "json",
         data: { id_unidad: id_unidad },
@@ -112,14 +112,14 @@
 
     var fetch = function () {
       $.executeFetch({
-        action: "/plantilla/fetch",
+       action: "plantilla/fetch",
         data: {id_plantilla: $("#id_plantilla").val()},
         method: "POST",
         dataType: "json",
         success: function (data) {
 
           $.executeFetch({
-            action: "/empleado/fetchAllTipoEmpleadoByIdUnidad",
+           action: "empleado/fetchAllTipoEmpleadoByIdUnidad",
             method: "POST",
             dataType: "json",
             data: { id_unidad:  data.id_unidad_negocio},
@@ -132,7 +132,7 @@
               $("#tipo_empleado").html(html);
               $("#headerSection").html(data.nombre);
               $("#plantillaBC").html(data.nombre);
-              $("#plantillaBC").attr("href", "/plantilla?id=" + data.id);
+              $("#plantillaBC").attr("href", "plantilla?id=" + data.id);
               $("#unidad_negocio").val(data.id_unidad_negocio);
               $("#tipo_empleado").val(data.id_tipo_empleado);
               $("#nombre").val(data.nombre);
@@ -144,14 +144,14 @@
                 $("#periodo").val("False");
                 $("#periodoCB").prop('checked', false);
               }
-              $("#agregarBT").attr("href", "/campo?id_plantilla=" + data.id);
+              $("#agregarBT").attr("href", "campo?id_plantilla=" + data.id);
               $("#prmisosSection").show();
               $("#camposSection").show();
               $("#previewSection").show();
               $("#reglasSection").show();
-              $("#reglasSection").attr("href", "/reglas?id=" + data.id);
+              $("#reglasSection").attr("href", "reglas?id=" + data.id);
               $("#reportesSection").show();
-              $("#reportesSection").attr("href", "/reportes?id=" + data.id);
+              $("#reportesSection").attr("href", "reportes?id=" + data.id);
 
             },
             errorMsg: "Ocurrió un error al obtener la plantilla."
@@ -176,22 +176,22 @@
     $("#addPlantillaBT").click(function (e) {
       $.executePostValid({
         form: $("#plantilla_form"),
-        action: "/plantilla/update",
+       action: "plantilla/update",
         method: "POST",
         dataType: "json",
         success: function (data) {
           $("#id_plantilla").val(data.id);
           $("#headerSection").html(data.nombre);
           $("#plantillaBC").html(data.nombre);
-          $("#plantillaBC").attr("href", "/plantilla?id=" + data.id);
-          $("#agregarBT").attr("href", "/campo?id_plantilla=" + data.id);
+          $("#plantillaBC").attr("href", "plantilla?id=" + data.id);
+          $("#agregarBT").attr("href", "campo?id_plantilla=" + data.id);
           $("#prmisosSection").show();
           $("#camposSection").show(500);
           $("#previewSection").show(500);
           $("#reglasSection").show(500);
-          $("#reglasSection").attr("href", "/reglas?id=" + data.id);
+          $("#reglasSection").attr("href", "reglas?id=" + data.id);
           $("#reportesSection").show(500);
-          $("#reportesSection").attr("href", "/reportes?id=" + data.id);
+          $("#reportesSection").attr("href", "reportes?id=" + data.id);
         },
         successMsg: "Plantilla guardada.",
         errorMsg: "Ocurrió un error al guardar la plantilla."
@@ -205,7 +205,7 @@
       if (permisosTable)
         permisosTable.destroy();
       $.executeFetch({
-        action: "/plantilla/fetchAllPermisos",
+       action: "plantilla/fetchAllPermisos",
         data: {id_plantilla: $("#id_plantilla").val()},
         method: "POST",
         dataType: "json",
@@ -234,7 +234,7 @@
               {"width": "10%"}
             ],
             "language": {
-              "url": "/app/lang/Spanish.json"
+              "url": "app/lang/Spanish.json"
             },
             "order": [[1, "asc"]],
             "aoColumnDefs": [
@@ -246,7 +246,7 @@
           $(".eliminarPermisos").click(function (e) {
             var id = $(this).attr("id_control");
             $.executePost({
-              action: "/plantilla/removePermisos",
+             action: "plantilla/removePermisos",
               method: "POST",
               data: {id: id},
               dataType: "json",
@@ -268,7 +268,7 @@
       $("#id_plantilla_permisos").val($("#id_plantilla").val());
       $.executePostValid({
         form: $("#permisos_form"),
-        action: "/plantilla/savePermisos",
+       action: "plantilla/savePermisos",
         method: "POST",
         dataType: "json",
         success: function (data) {
@@ -286,7 +286,7 @@
         $("#id_usuario_responsable").hide();
 
         $.executeFetch({
-          action: "/empleado/fetchAllTipoEmpleado",
+         action: "empleado/fetchAllTipoEmpleado",
           method: "POST",
           dataType: "json",
           success: function (data) {
@@ -304,7 +304,7 @@
         $("#id_usuario_responsable").show();
 
         $.executeFetch({
-          action: "/usuario/fetchAll",
+         action: "usuario/fetchAll",
           data: {},
           method: "POST",
           dataType: "json",
@@ -337,7 +337,7 @@
         previewTable.destroy();
       }
       $.executeFetch({
-        action: "/campo/fetchAll",
+       action: "campo/fetchAll",
         method: "POST",
         dataType: "json",
         data: {id_plantilla: $("#id_plantilla").val()},
@@ -374,7 +374,7 @@
               + "<td>" + campo.sufijo + "</td>"
               + "<td>" + campo.valor + "</td>"
               + "<td class='text-center'>"
-              + "<a href='/campo?id=" + campo.id + "&id_plantilla=" + campo.id_tab_plantilla + "'>"
+              + "<a href='campo?id=" + campo.id + "&id_plantilla=" + campo.id_tab_plantilla + "'>"
               + "<i class='icon-md icon_search_alt'></i>"
               + "</a>"
               + "</td>"
@@ -454,7 +454,7 @@
               {"width": "5%"}
             ],
             "language": {
-              "url": "/app/lang/Spanish.json"
+              "url": "app/lang/Spanish.json"
             },
             "aoColumnDefs": [
               {'bSortable': false, 'aTargets': [0]}
@@ -474,7 +474,7 @@
               "scrollX": true,
               "bPaginate": false,
               "language": {
-                "url": "/app/lang/Spanish.json"
+                "url": "app/lang/Spanish.json"
               },
               "aoColumnDefs": [
                 {'bSortable': false, 'aTargets': [0]}
@@ -490,7 +490,7 @@
             var id = $(this).attr("id").substring(3);
             var orden = parseInt($(this).attr("orden"));
             $.executeFetch({
-              action: "/campo/orden",
+             action: "campo/orden",
               data: {
                 id: id,
                 id_plantilla: $("#id_plantilla").val(),
@@ -511,7 +511,7 @@
             var id = $(this).attr("id").substring(5);
             var orden = parseInt($(this).attr("orden"));
             $.executeFetch({
-              action: "/campo/orden",
+             action: "campo/orden",
               data: {
                 id: id,
                 id_plantilla: $("#id_plantilla").val(),
@@ -537,7 +537,7 @@
 
     $("#eliminarBT").click(function (e) {
       $.executePost({
-        action: "/campo/remove",
+       action: "campo/remove",
         method: "POST",
         data: {id_campo: $("#id_campo").val()},
         dataType: "json",
@@ -632,7 +632,7 @@
             <div class="form-group">
               <div class="col-lg-offset-2 col-lg-10">
                 <button class="btn btn-primary" type="button" id="addPlantillaBT">Guardar</button>
-                <a class="btn btn-default" href="/plantillas">Regresar</a>
+                <a class="btn btn-default" href="plantillas">Regresar</a>
               </div>
             </div>
           </form>
@@ -672,7 +672,8 @@
                   <option value="1">Generar</option>
                   <option value="2">Consultar</option>
                   <option value="3">Autorizar a Dirección</option>
-                  <option value="4">Autorizar a Nómina</option>
+                  <option value="4">Autorizar a RH</option>
+                  <option value="5">Autorizar a Nómina</option>
                 </select>
               </div>
               <div class="col-lg-2">

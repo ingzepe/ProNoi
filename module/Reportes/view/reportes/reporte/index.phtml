@@ -8,22 +8,22 @@
   $environment = $config['environment'];
 ?>
 
-<link rel="stylesheet" href="/css/daterangepicker.css"/>
-<link rel="stylesheet" href="/assets/color-picker/css/bootstrap-colorpicker.css"/>
-<link rel="stylesheet" href="/css/dataTables.tableTools.css"/>
+<link rel="stylesheet" href="css/daterangepicker.css"/>
+<link rel="stylesheet" href="assets/color-picker/css/bootstrap-colorpicker.css"/>
+<link rel="stylesheet" href="css/dataTables.tableTools.css"/>
 
-<script src="/js/parser-eval.js"></script>
-<script type="text/javascript" src="/js/jquery.validate.min.js"></script>
-<script src="/js/moment.js"></script>
-<script src="/js/daterangepicker.js"></script>
-<script src="/js/jquery.number.js"></script>
-<script src="/assets/color-picker/js/bootstrap-colorpicker.js"></script>
+<script src="js/parser-eval.js"></script>
+<script type="text/javascript" src="js/jquery.validate.min.js"></script>
+<script src="js/moment.js"></script>
+<script src="js/daterangepicker.js"></script>
+<script src="js/jquery.number.js"></script>
+<script src="assets/color-picker/js/bootstrap-colorpicker.js"></script>
 
-<script src="/js/jquery.dataTables.js"></script>
-<script src="/js/dataTables.fixedColumns.js"></script>
-<script src="/js/dataTables.tableTools.js"></script>
+<script src="js/jquery.dataTables.js"></script>
+<script src="js/dataTables.fixedColumns.js"></script>
+<script src="js/dataTables.tableTools.js"></script>
 
-<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+<script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
 
 <script type="text/javascript" charset="utf-8">
   $(document).ready(function () {
@@ -46,7 +46,7 @@
           required: true,
           minlength: 5,
           remote: {
-            url: "/reporte/checkName",
+            url: "reporte/checkName",
             type: "POST",
             async: false,
             data: {
@@ -101,7 +101,7 @@
     });
 
     $.executeFetch({
-      action: "/plantilla/fetch",
+     action: "plantilla/fetch",
       data: {id_plantilla: $("#id_plantilla").val()},
       method: "POST",
       dataType: "json",
@@ -110,12 +110,12 @@
         $("#plantillaBC").html(data.nombre);
         calcularPeriodo = data.periodo == 1 ? true : false;
 //        console.log(calcularPeriodo);
-        $("#plantillaBC").attr("href", "/plantilla?id=" + data.id);
-        $("#reportesBC").attr("href", "/reportes?id=" + data.id);
+        $("#plantillaBC").attr("href", "plantilla?id=" + data.id);
+        $("#reportesBC").attr("href", "reportes?id=" + data.id);
         if ($("#id_reporte").val() == "0") {
-          $("#reporteBC").attr("href", "/reporte?id_plantilla=" + data.id);
+          $("#reporteBC").attr("href", "reporte?id_plantilla=" + data.id);
         } else {
-          $("#reporteBC").attr("href", "/reporte?id=" + $("#id_reporte").val() + "&id_plantilla=" + data.id);
+          $("#reporteBC").attr("href", "reporte?id=" + $("#id_reporte").val() + "&id_plantilla=" + data.id);
         }
       },
       errorMsg: "Ocurrió un error al obtener la plantilla."
@@ -123,7 +123,7 @@
 
     var fetch = function () {
       $.executeFetch({
-        action: "/reporte/fetch",
+       action: "reporte/fetch",
         data: {id_reporte: $("#id_reporte").val()},
         method: "POST",
         dataType: "json",
@@ -184,7 +184,7 @@
             $("#rechazarBT3").hide();
           }
           $("#reporteBC").html(data.nombre);
-          $("#reporteBC").attr("href", "/reportes?id=" + data.id);
+          $("#reporteBC").attr("href", "reportes?id=" + data.id);
           $("#nombre").val(data.nombre);
           $("#descripcion").val(data.descripcion);
           $("#periodo").val(data.periodo);
@@ -196,7 +196,7 @@
     $("#addReporteBT").click(function (e) {
       $.executePostValid({
         form: $("#reporte_form"),
-        action: "/reporte/update",
+       action: "reporte/update",
         method: "POST",
         dataType: "json",
         success: function (data) {
@@ -257,7 +257,7 @@
             $("#rechazarBT3").hide();
           }
           $("#reporteBC").html(data.nombre);
-          $("#reporteBC").attr("href", "/reporte?id=" + data.id);
+          $("#reporteBC").attr("href", "reporte?id=" + data.id);
           refreshTable();
           $("#camposSection").show(500);
         },
@@ -268,7 +268,7 @@
 
     var cambiarEstadoReporte = function(id_estado, comentarios){
       $.executePost({
-        action: "/reporte/cambiarEstadoReporte",
+       action: "reporte/cambiarEstadoReporte",
         method: "POST",
         data: {
           id_reporte: $("#id_reporte").val(),
@@ -321,7 +321,7 @@
         table.destroy();
       }
       $.executeFetch({
-        action: "/campo/fetchAll",
+       action: "campo/fetchAll",
         method: "POST",
         dataType: "json",
         data: {id_plantilla: $("#id_plantilla").val()},
@@ -380,7 +380,7 @@
             ],
             "bSort": false,
             "language": {
-              "url": "/app/lang/Spanish.json"
+              "url": "app/lang/Spanish.json"
             },
             "bPaginate": false
           });
@@ -405,7 +405,7 @@
         var id = $(this).attr("id").substring(3);
         if ($(this).is(":checked")) {
           $.executeFetch({
-            action: "/campo/updateActivo",
+           action: "campo/updateActivo",
             data: {
               id_campo: id,
               activo: true
@@ -419,7 +419,7 @@
           });
         } else {
           $.executeFetch({
-            action: "/campo/updateActivo",
+           action: "campo/updateActivo",
             data: {
               id_campo: id,
               activo: false
@@ -442,7 +442,7 @@
         var id = $("#" + colorId).attr("id").substring(3);
         var color = $("#" + colorId).val();
         $.executeFetch({
-          action: "/campo/updateColor",
+         action: "campo/updateColor",
           data: {
             id_campo: id,
             color: color
@@ -459,7 +459,7 @@
         var id = $(this).attr("id").substring(3);
         var orden = parseInt($(this).attr("orden"));
         $.executeFetch({
-          action: "/campo/orden",
+         action: "campo/orden",
           data: {
             id: id,
             id_plantilla: $("#id_plantilla").val(),
@@ -480,7 +480,7 @@
         var id = $(this).attr("id").substring(5);
         var orden = parseInt($(this).attr("orden"));
         $.executeFetch({
-          action: "/campo/orden",
+         action: "campo/orden",
           data: {
             id: id,
             id_plantilla: $("#id_plantilla").val(),
@@ -529,7 +529,7 @@
     var selectedEmpleado;
 
     $.executeFetch({
-      action: "/regla/fetchAll",
+     action: "regla/fetchAll",
       method: "POST",
       dataType: "json",
       data: {id_plantilla: $("#id_plantilla").val()},
@@ -545,7 +545,7 @@
 
     var refreshAllCamposSection = function(){
       $.executeFetch({
-        action: "/campo/fetchAll",
+       action: "campo/fetchAll",
         method: "POST",
         dataType: "json",
         data: {id_plantilla: $("#id_plantilla").val()},
@@ -707,7 +707,7 @@
     var refreshReporte = function () {
       colsTmpl = new Array();
       $.executeFetch({
-        action: "/campo/fetchAll",
+       action: "campo/fetchAll",
         method: "POST",
         dataType: "json",
         data: {id_plantilla: $("#id_plantilla").val()},
@@ -790,9 +790,9 @@
 
           var empleadosURL;
           if(calcularPeriodo){
-            empleadosURL = "/empleado/fetchAllByIdTipoEmpleadoAndPeriodo";
+            empleadosURL = "empleado/fetchAllByIdTipoEmpleadoAndPeriodo";
           }else{
-            empleadosURL = "/empleado/fetchAllByIdTipoEmpleado";
+            empleadosURL = "empleado/fetchAllByIdTipoEmpleado";
           }
 
           console.log($("#plantilla_id_tipo_empleado").val());
@@ -970,7 +970,7 @@
                     "scrollX": true,
                     "bPaginate": false,
                     "language": {
-                      "url": "/app/lang/Spanish.json"
+                      "url": "app/lang/Spanish.json"
                     }
                   });
                   new $.fn.dataTable.FixedColumns(table2, {
@@ -1077,7 +1077,7 @@
                     selectedEmpleado = allEmpleados[id_empleado];
 
                     $.executeSyncFetch({
-                      action: "/regla/fetch",
+                     action: "regla/fetch",
                       data: {id_regla: id_regla},
                       method: "POST",
                       dataType: "json",
@@ -1136,7 +1136,7 @@
                             if (valid) {
                               //console.log(sql);
                               $.executeSyncFetch({
-                                action: "/regla/sql",
+                               action: "regla/sql",
                                 data: {
                                   db: regla.db,
                                   sql: sql
@@ -1269,7 +1269,7 @@
 //          console.log(sql);
 
           $.executeSyncFetch({
-            action: "/regla/sql",
+           action: "regla/sql",
             data: {
               db: regla.db,
               sql: sql
@@ -1359,7 +1359,7 @@
       }
 
       $.executeFetch({
-        action: "/reporte/saveReporte",
+       action: "reporte/saveReporte",
         data: {
           id_reporte: $("#id_reporte").val(),
           content: reportContent
@@ -1378,7 +1378,7 @@
     var reporteCalculadoTable;
     var drawContenidoReporte = function(){
       $.executeFetch({
-        action: "/reporte/fetchAllContent",
+       action: "reporte/fetchAllContent",
         data: {
           id_reporte: $("#id_reporte").val()
         },
@@ -1414,11 +1414,11 @@
               "scrollX": true,
               "bPaginate": false,
               "language": {
-                "url": "/app/lang/Spanish.json"
+                "url": "app/lang/Spanish.json"
               },
               dom: 'T<"clear">lfrtip',
               tableTools: {
-                "sSwfPath": "../swf/copy_csv_xls_pdf.swf",
+                "sSwfPath": "swf/copy_csv_xls_pdf.swf",
                 "aButtons": [
                   {
                     "sExtends": "copy",
@@ -1549,7 +1549,7 @@
             <div class="form-group">
               <div class="col-lg-offset-2 col-lg-10">
                 <button class="btn btn-primary" type="button" id="addReporteBT">Guardar</button>
-                <a class="btn btn-default" href="/reportes?id=<?php echo $id_plantilla; ?>">Regresar</a>
+                <a class="btn btn-default" href="reportes?id=<?php echo $id_plantilla; ?>">Regresar</a>
               </div>
             </div>
           </form>

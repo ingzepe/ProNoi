@@ -2,6 +2,8 @@
 
 namespace Empleados\Model;
 
+use Application\Model\Application;
+use DateTime;
 use Zend\Db\Adapter\Adapter;
 use Zend\Db\TableGateway\AbstractTableGateway;
 use Zend\Db\Sql\Sql;
@@ -25,7 +27,7 @@ class EmpleadoTable extends AbstractTableGateway
       'id_mitrol' => $empleado->getIdmitrol(),
       'id_rh' => $empleado->getIdRh(),
       'nombre' => $empleado->getNombre(),
-      'fecha_ingreso' => $empleado->getFechaIngreso(),
+      'fecha_ingreso' => Application::transformDate($empleado->getFechaIngreso()),
       'horario' => $empleado->getHorario(),
       'campana' => $empleado->getCampana(),
       'jefe' => $empleado->getJefe(),

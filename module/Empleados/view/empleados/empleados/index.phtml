@@ -5,7 +5,7 @@
 
     var refreshTable = function () {
       $.executeFetch({
-        action: "/empleado/fetchAll",
+       action: "empleado/fetchAll",
         method: "POST",
         dataType: "json",
         success: function (data) {
@@ -18,12 +18,12 @@
               + "<td>" + empleado.unidad_negocio + "</td>"
               + "<td>" + empleado.tipo_empleado + "</td>"
               + "<td class='text-center'>"
-              + "<a href='/usuario?id_empleado=" + empleado.id + "&nombre="+empleado.nombre+"'>"
+              + "<a href='usuario?id_empleado=" + empleado.id + "&nombre="+empleado.nombre+"'>"
               + "<i class='icon-md icon_group'></i>"
               + "</a>"
               + "</td>"
               + "<td class='text-center'>"
-              + "<a href='/empleado?id=" + empleado.id + "'>"
+              + "<a href='empleado?id=" + empleado.id + "'>"
               + "<i class='icon-md icon_search_alt'></i>"
               + "</a>"
               + "</td>"
@@ -47,7 +47,7 @@
               {"width": "5%"}
             ],
             "language": {
-              "url": "/app/lang/Spanish.json"
+              "url": "app/lang/Spanish.json"
             },
             "order": [[1, "asc"]],
             "aoColumnDefs": [
@@ -72,7 +72,7 @@
 
     $("#eliminarBT").click(function (e) {
       $.executePost({
-        action: "/empleado/remove",
+       action: "empleado/remove",
         method: "POST",
         data: {id_empleado: $("#id_empleado").val()},
         dataType: "json",
@@ -97,7 +97,7 @@
     <section class="panel">
       <header class="panel-heading">
         Empleados Disponibles
-        <a href="/empleado" class="btn  btn-primary pull-right">
+        <a href="empleado" class="btn  btn-primary pull-right">
           Agregar
         </a>
       </header>

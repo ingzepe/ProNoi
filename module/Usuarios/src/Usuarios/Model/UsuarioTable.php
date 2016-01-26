@@ -17,13 +17,13 @@ class UsuarioTable extends AbstractTableGateway {
 
     public function save(Entity\Usuario $usuario) {
         $data = array(
-            'id_empleado' => $usuario->getIdEmpleado(),
             'id_rol_usuario' => $usuario->getIdRolUsuario(),
             'nombre' => $usuario->getNombre(),
-            'password' => $usuario->getPassword(),
         );
         $id = (int) $usuario->getId();
         if ($id == 0) {
+            $data['id_empleado'] = $usuario->getIdEmpleado();
+            $data['password'] = $usuario->getPassword();
             if (!$this->insert($data)){
                 return false;
             }else{

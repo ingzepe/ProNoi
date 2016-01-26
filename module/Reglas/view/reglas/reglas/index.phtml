@@ -5,7 +5,7 @@
 
     var refreshTable = function () {
       $.executeFetch({
-        action: "/regla/fetchAll",
+       action: "regla/fetchAll",
         method: "POST",
         dataType: "json",
         data: {id_plantilla: $("#id_plantilla").val()},
@@ -19,7 +19,7 @@
               + "<td>" + regla.tipo_regla + "</td>"
               + "<td class='ellipsis'>" + regla.operacion + "</td>"
               + "<td class='text-center'>"
-              + "<a href='/regla?id=" + regla.id + "&id_plantilla=" + $("#id_plantilla").val() + "'>"
+              + "<a href='regla?id=" + regla.id + "&id_plantilla=" + $("#id_plantilla").val() + "'>"
               + "<i class='icon-md icon_search_alt'></i>"
               + "</a>"
               + "</td>"
@@ -42,7 +42,7 @@
               {"width": "5%"}
             ],
             "language": {
-              "url": "/app/lang/Spanish.json"
+              "url": "app/lang/Spanish.json"
             },
             "order": [[1, "asc"]],
             "aoColumnDefs": [
@@ -67,7 +67,7 @@
 
     $("#eliminarBT").click(function (e) {
       $.executePost({
-        action: "/regla/remove",
+       action: "regla/remove",
         method: "POST",
         data: {id_regla: $("#id_regla").val()},
         dataType: "json",
@@ -85,15 +85,15 @@
     });
 
     $.executeFetch({
-      action: "/plantilla/fetch",
+     action: "plantilla/fetch",
       data: {id_plantilla: $("#id_plantilla").val()},
       method: "POST",
       dataType: "json",
       success: function (data) {
         $("#plantillaBC").html(data.nombre);
-        $("#plantillaBC").attr("href", "/plantilla?id=" + data.id);
-        $("#reglasBC").attr("href", "/reglas?id=" + data.id);
-        $("#backBT").attr("href", "/plantilla?id=" + data.id);
+        $("#plantillaBC").attr("href", "plantilla?id=" + data.id);
+        $("#reglasBC").attr("href", "reglas?id=" + data.id);
+        $("#backBT").attr("href", "plantilla?id=" + data.id);
       },
       errorMsg: "Ocurrió un error al obtener la plantilla."
     });
@@ -108,7 +108,7 @@
     <section class="panel">
       <header class="panel-heading">
         Reglas Disponibles
-        <a href="/regla?id_plantilla=<?php echo $id; ?>" class="btn  btn-primary pull-right">
+        <a href="regla?id_plantilla=<?php echo $id; ?>" class="btn  btn-primary pull-right">
           Agregar
         </a>
       </header>

@@ -170,6 +170,12 @@ return array(
         $log->addWriter($writer);
         return $log;
       },
+      'Logger' => function($sm){
+        $logger = new \Zend\Log\Logger;
+        $writer = new \Zend\Log\Writer\Stream('log/'.date('Y-m-d').'-error.log');
+        $logger->addWriter($writer);
+        return $logger;
+      },
     ),
   ),
   'translator' => array(

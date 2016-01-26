@@ -1,4 +1,4 @@
-<script src="/js/parser-eval.js"></script>
+<script src="js/parser-eval.js"></script>
 
 <script type="text/javascript" charset="utf-8">
   $(document).ready(function () {
@@ -14,7 +14,7 @@
           required: true,
           minlength: 5,
           remote: {
-            url: "/regla/checkName",
+            url: "regla/checkName",
             type: "POST",
             async: false,
             data: {
@@ -63,24 +63,24 @@
 
     var firstEmpleado;
     $.executeFetch({
-      action: "/plantilla/fetch",
+     action: "plantilla/fetch",
       data: {id_plantilla: $("#id_plantilla").val()},
       method: "POST",
       dataType: "json",
       success: function (data) {
         $("#plantillaBC").html(data.nombre);
-        $("#plantillaBC").attr("href", "/plantilla?id=" + data.id);
-        $("#reglasBC").attr("href", "/reglas?id=" + data.id);
+        $("#plantillaBC").attr("href", "plantilla?id=" + data.id);
+        $("#reglasBC").attr("href", "reglas?id=" + data.id);
         if ($("#id_regla").val() === "0") {
-          $("#reglaBC").attr("href", "/regla?id_plantilla=" + data.id);
+          $("#reglaBC").attr("href", "regla?id_plantilla=" + data.id);
         } else {
-          $("#reglaBC").attr("href", "/regla?id=" + $("#id_regla").val() + "&id_plantilla=" + data.id);
+          $("#reglaBC").attr("href", "regla?id=" + $("#id_regla").val() + "&id_plantilla=" + data.id);
         }
         if(data.periodo == 1){
           $(".asistencias").show();
         }
         $.executeFetch({
-          action: "/empleado/fetchAll",
+         action: "empleado/fetchAll",
           data: {id_tipo_empleado: data.id_tipo_empleado},
           method: "POST",
           dataType: "json",
@@ -100,14 +100,14 @@
 
     var fetch = function () {
       $.executeFetch({
-        action: "/regla/fetch",
+       action: "regla/fetch",
         data: {id_regla: $("#id_regla").val()},
         method: "POST",
         dataType: "json",
         success: function (data) {
           $("#headerSection").html(data.nombre);
           $("#reglaBC").html(data.nombre);
-          $("#reglaBC").attr("href", "/reglas?id=" + data.id);
+          $("#reglaBC").attr("href", "reglas?id=" + data.id);
           $("#tipo_regla").val(data.id_tipo_regla);
           $("#tipo_regla").trigger("change");
           if (data.id_tipo_regla === "1") {
@@ -133,15 +133,15 @@
     $("#addReglaBT").click(function (e) {
       $.executePostValid({
         form: $("#regla_form"),
-        action: "/regla/update",
+       action: "regla/update",
         method: "POST",
         dataType: "json",
         success: function (data) {
           $("#id_regla").val(data.id);
           $("#headerSection").html(data.nombre);
           $("#reglaBC").html(data.nombre);
-          $("#reglaBC").attr("href", "/regla?id=" + data.id);
-          $("#agregarBT").attr("href", "/campo?id_regla=" + data.id);
+          $("#reglaBC").attr("href", "regla?id=" + data.id);
+          $("#agregarBT").attr("href", "campo?id_regla=" + data.id);
           $("#camposSection").show(500);
         },
         successMsg: "Regla guardada.",
@@ -171,7 +171,7 @@
     var executeSQL = function () {
       console.log(sql);
       $.executeFetch({
-        action: "/regla/sql",
+       action: "regla/sql",
         data: {
           db: $("#db").val(),
           sql: sql
@@ -284,7 +284,7 @@
      * */
     var allCampos = new Array();
     $.executeFetch({
-      action: "/campo/fetchAll",
+     action: "campo/fetchAll",
       method: "POST",
       dataType: "json",
       data: {id_plantilla: $("#id_plantilla").val()},
@@ -323,7 +323,7 @@
 
     var allReglas = new Array();
     $.executeFetch({
-      action: "/regla/fetchAll",
+     action: "regla/fetchAll",
       method: "POST",
       dataType: "json",
       data: {id_plantilla: $("#id_plantilla").val()},
@@ -561,7 +561,7 @@
             });
           } else {
             $.executeFetch({
-              action: "/regla/sql",
+             action: "regla/sql",
               data: {
                 db: regla.db,
                 sql: regla.operacion
@@ -674,7 +674,7 @@
           console.log(sql);
 
           $.executeSyncFetch({
-            action: "/regla/sql",
+           action: "regla/sql",
             data: {
               db: regla.db,
               sql: sql
@@ -779,6 +779,7 @@
                   <option value="">Seleccionar</option>
                   <option value="pronoi">PRONOI</option>
                   <option value="mitrol">Mitrol</option>
+                  <option value="metlife">Metlife</option>
                 </select>
               </div>
             </div>
@@ -884,7 +885,7 @@
             <div class="form-group">
               <div class="col-lg-offset-2 col-lg-10">
                 <button class="btn btn-primary" type="button" id="addReglaBT" disabled>Guardar</button>
-                <a class="btn btn-default" href="/reglas?id=<?php echo $id_plantilla; ?>">Regresar</a>
+                <a class="btn btn-default" href="reglas?id=<?php echo $id_plantilla; ?>">Regresar</a>
               </div>
             </div>
           </form>

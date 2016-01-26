@@ -15,6 +15,7 @@
 
     $.hideSpinner = function() {
         $_spinner.modal('hide');
+        $(".modal-backdrop").hide();
     }
 
 })(jQuery);

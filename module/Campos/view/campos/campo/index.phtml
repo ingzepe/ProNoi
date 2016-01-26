@@ -1,7 +1,7 @@
-<link rel="stylesheet" href="/css/daterangepicker.css"/>
-<script type="text/javascript" src="/js/jquery.validate.min.js"></script>
-<script src="/js/moment.js"></script>
-<script src="/js/daterangepicker.js"></script>
+<link rel="stylesheet" href="css/daterangepicker.css"/>
+<script type="text/javascript" src="js/jquery.validate.min.js"></script>
+<script src="js/moment.js"></script>
+<script src="js/daterangepicker.js"></script>
 
 <script type="text/javascript" charset="utf-8">
   $(document).ready(function () {
@@ -15,7 +15,7 @@
           required: true,
           minlength: 3,
           remote: {
-            url: "/campo/checkName",
+            url: "campo/checkName",
             type: "POST",
             async: false,
             data: {
@@ -67,7 +67,7 @@
 
     //Load reglas
     $.executeSyncFetch({
-      action: "/regla/fetchAll",
+     action: "regla/fetchAll",
       method: "POST",
       dataType: "json",
       data: {id_plantilla: $("#id_plantilla").val()},
@@ -80,14 +80,14 @@
     });
 
     $.executeFetch({
-      action: "/plantilla/fetch",
+     action: "plantilla/fetch",
       data: {id_plantilla: $("#id_plantilla").val()},
       method: "POST",
       dataType: "json",
       success: function (data) {
         $("#plantillaBC").html(data.nombre);
-        $("#plantillaBC").attr("href", "/plantilla?id=" + data.id);
-        $("#backBT").attr("href", "/plantilla?id=" + data.id);
+        $("#plantillaBC").attr("href", "plantilla?id=" + data.id);
+        $("#backBT").attr("href", "plantilla?id=" + data.id);
       },
       errorMsg: "Ocurrió un error al obtener la plantilla."
     });
@@ -114,14 +114,14 @@
 
     var fetch = function () {
       $.executeFetch({
-        action: "/campo/fetch",
+       action: "campo/fetch",
         data: {id_campo: $("#id_campo").val()},
         method: "POST",
         dataType: "json",
         success: function (data) {
           $("#headerSection").html(data.nombre);
           $("#campoBC").html(data.nombre);
-          $("#campoBC").attr("href", "/campo?id=" + data.id);
+          $("#campoBC").attr("href", "campo?id=" + data.id);
 
           $("#nombre").val(data.nombre);
           $("#clave").val(data.clave);
@@ -169,14 +169,14 @@
       }
       $.executePostValid({
         form: $("#campo_form"),
-        action: "/campo/update",
+       action: "campo/update",
         method: "POST",
         dataType: "json",
         success: function (data) {
           $("#id_campo").val(data.id);
           $("#headerSection").html(data.nombre);
           $("#campoBC").html(data.nombre);
-          $("#campoBC").attr("href", "/campo?id=" + data.id);
+          $("#campoBC").attr("href", "campo?id=" + data.id);
           $("#camposSection").show(500);
         },
         successMsg: "Campo guardado.",
@@ -287,7 +287,7 @@
 
     var table = $('#mainTable').DataTable({
       "language": {
-        "url": "/app/lang/Spanish.json"
+        "url": "app/lang/Spanish.json"
       },
       "order": [[1, "asc"]],
       "aoColumnDefs": [

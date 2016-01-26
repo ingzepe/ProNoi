@@ -8,22 +8,22 @@ $config = $reader->fromFile('config/autoload/config.ini');
 $environment = $config['environment'];
 ?>
 
-<link rel="stylesheet" href="/css/daterangepicker.css"/>
-<link rel="stylesheet" href="/assets/color-picker/css/bootstrap-colorpicker.css"/>
-<link rel="stylesheet" href="/css/dataTables.tableTools.css"/>
+<link rel="stylesheet" href="css/daterangepicker.css"/>
+<link rel="stylesheet" href="assets/color-picker/css/bootstrap-colorpicker.css"/>
+<link rel="stylesheet" href="css/dataTables.tableTools.css"/>
 
-<script src="/js/parser-eval.js"></script>
-<script type="text/javascript" src="/js/jquery.validate.min.js"></script>
-<script src="/js/moment.js"></script>
-<script src="/js/daterangepicker.js"></script>
-<script src="/js/jquery.number.js"></script>
-<script src="/assets/color-picker/js/bootstrap-colorpicker.js"></script>
+<script src="js/parser-eval.js"></script>
+<script type="text/javascript" src="js/jquery.validate.min.js"></script>
+<script src="js/moment.js"></script>
+<script src="js/daterangepicker.js"></script>
+<script src="js/jquery.number.js"></script>
+<script src="assets/color-picker/js/bootstrap-colorpicker.js"></script>
 
-<script src="/js/jquery.dataTables.js"></script>
-<script src="/js/dataTables.fixedColumns.js"></script>
-<script src="/js/dataTables.tableTools.js"></script>
+<script src="js/jquery.dataTables.js"></script>
+<script src="js/dataTables.fixedColumns.js"></script>
+<script src="js/dataTables.tableTools.js"></script>
 
-<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+<script src="/code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
 
 <script type="text/javascript" charset="utf-8">
   $(document).ready(function () {
@@ -79,7 +79,7 @@ $environment = $config['environment'];
       var id_unidad = $(this).val();
       $("#tipo_empleado").val("");
       $.executeFetch({
-        action: "/empleado/fetchAllTipoEmpleadoByIdUnidad",
+       action: "empleado/fetchAllTipoEmpleadoByIdUnidad",
         method: "POST",
         dataType: "json",
         data: {
@@ -98,7 +98,7 @@ $environment = $config['environment'];
 
     var refreshUsuarios = function(){
       $.executeFetch({
-        action: "/usuario/fetchAllByIdRolUsuario",
+       action: "usuario/fetchAllByIdRolUsuario",
         method: "POST",
         dataType: "json",
         data: {id_rol_usuario: ROL_ADMINISTRADOR_ASISTENCIA},
@@ -119,7 +119,7 @@ $environment = $config['environment'];
       if (permisosTable)
         permisosTable.destroy();
       $.executeFetch({
-        action: "/asistencia/fetchAllControlAsistenciaByIdTipoEmpleado",
+       action: "asistencia/fetchAllControlAsistenciaByIdTipoEmpleado",
         data: {
           id_tipo_empleado: id_tipo_empleado
         },
@@ -143,7 +143,7 @@ $environment = $config['environment'];
               {"width": "20%"}
             ],
             "language": {
-              "url": "/app/lang/Spanish.json"
+              "url": "app/lang/Spanish.json"
             },
             "order": [[1, "asc"]],
             "aoColumnDefs": [
@@ -155,7 +155,7 @@ $environment = $config['environment'];
           $(".eliminarPermisos").click(function (e) {
             var id = $(this).attr("id_control");
             $.executePost({
-              action: "/asistencia/removeControlAsistencia",
+             action: "asistencia/removeControlAsistencia",
               method: "POST",
               data: {id: id},
               dataType: "json",
@@ -179,7 +179,7 @@ $environment = $config['environment'];
     $("#saveResponsablesBT").click(function (e) {
       $.executePostValid({
         form: $("#permisos_form"),
-        action: "/asistencia/saveControlAsistencia",
+       action: "asistencia/saveControlAsistencia",
         method: "POST",
         dataType: "json",
         success: function (data) {
@@ -199,7 +199,7 @@ $environment = $config['environment'];
 
     var tipoEmpleadoPermitidos = {};
     $.executeFetch({
-      action: "/asistencia/fetchAllControlAsistenciaByByIdUsuario",
+     action: "asistencia/fetchAllControlAsistenciaByByIdUsuario",
       method: "POST",
       dataType: "json",
       success: function (tipoEmpleadoData) {
@@ -402,7 +402,7 @@ $environment = $config['environment'];
               $("#previewTable").attr("width", tableWidth + "px");
 
               $.executeSyncFetch({
-                action: "/empleado/fetchAllByIdTipoEmpleado",
+               action: "empleado/fetchAllByIdTipoEmpleado",
                 method: "POST",
                 dataType: "json",
                 data: {id_tipo_empleado: $("#asistencia_tipo_empleado").val()},
@@ -437,7 +437,7 @@ $environment = $config['environment'];
                       console.log("Empleado: " + empleado.id);
 
                       $.executeSyncFetch({
-                        action: "/regla/empleadoAsistenciaMitrol",
+                       action: "regla/empleadoAsistenciaMitrol",
                         method: "POST",
                         dataType: "json",
                         data: {
@@ -531,7 +531,7 @@ $environment = $config['environment'];
                       "scrollX": true,
                       "bPaginate": false,
                       "language": {
-                        "url": "/app/lang/Spanish.json"
+                        "url": "app/lang/Spanish.json"
                       }
                     });
                     new $.fn.dataTable.FixedColumns( table2, {
@@ -587,7 +587,7 @@ $environment = $config['environment'];
             $("#previewTable").attr("width", tableWidth + "px");
 
             $.executeSyncFetch({
-              action: "/empleado/fetchAllByIdTipoEmpleado",
+             action: "empleado/fetchAllByIdTipoEmpleado",
               method: "POST",
               dataType: "json",
               data: {id_tipo_empleado: $("#asistencia_tipo_empleado").val()},
@@ -667,7 +667,7 @@ $environment = $config['environment'];
                     "scrollX": true,
                     "bPaginate": false,
                     "language": {
-                      "url": "/app/lang/Spanish.json"
+                      "url": "app/lang/Spanish.json"
                     }
                   });
                   new $.fn.dataTable.FixedColumns( table2, {
@@ -705,7 +705,7 @@ $environment = $config['environment'];
 //      console.log(asistencias);
 
       $.executePost({
-        action: "/asistencia/save",
+       action: "asistencia/save",
         data: {asistencias: asistencias},
         method: "POST",
         dataType: "json",

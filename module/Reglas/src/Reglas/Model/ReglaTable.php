@@ -162,7 +162,12 @@ class ReglaTable extends AbstractTableGateway
       $server = $this->config['mitrol']['server'];
       $user = $this->config['mitrol']['user'];
       $pass = $this->config['mitrol']['pass'];
-    } else {
+    } else if($db == "metlife"){
+      $db = $this->config['metlife']['db'];
+      $server = $this->config['metlife']['server'];
+      $user = $this->config['metlife']['user'];
+      $pass = $this->config['metlife']['pass'];
+    } else{
       $db = $this->config['pronoi']['db'];
       $server = $this->config['pronoi']['server'];
       $user = $this->config['pronoi']['user'];
@@ -192,7 +197,7 @@ class ReglaTable extends AbstractTableGateway
         odbc_close($connection);
         return array('success' => true, 'cols' => $colNames, 'rows' => $rows);
       } else {
-        return array('success' => false, 'message' => "Error al generar ejecutar el script sql:</br>" . $query . "</br>" . $error);
+        return array('success' => false, 'message' => "Error al generar ejecutar el script sql:</br>" . $query . "</br>" . utf8_decode($error));
       }
     } else {
       return array('success' => false, 'message' => "Error al generar la conexión a la base de datos:</br>" . $query . "</br>" . $error);

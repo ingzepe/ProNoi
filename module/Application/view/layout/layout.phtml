@@ -11,7 +11,7 @@
   ?>
 
   <!-- Styles -->
-  <?php echo $this->headLink(array('rel' => 'shortcut icon', 'type' => 'image/vnd.microsoft.icon', 'href' => $this->basePath() . '/img/favicon.ico'))
+    <?php echo $this->headLink(array('rel' => 'shortcut icon', 'type' => 'image/vnd.microsoft.icon', 'href' => $this->basePath() . '/img/logo.png'))
     ->prependStylesheet($this->basePath('/css/style.css'))
     ->prependStylesheet($this->basePath('/css/bootstrap-theme.css'))
     ->prependStylesheet($this->basePath('/css/bootstrap.min.css'))
@@ -61,6 +61,7 @@
     var CONTROL_REPORTE_GENERAR                 = <?php echo Application::CONTROL_REPORTE_GENERAR ?>;
     var CONTROL_REPORTE_CONSULTAR               = <?php echo Application::CONTROL_REPORTE_CONSULTAR ?>;
     var CONTROL_REPORTE_AUTORIZAR_A_DIRECCION   = <?php echo Application::CONTROL_REPORTE_AUTORIZAR_A_DIRECCION ?>;
+    var CONTROL_REPORTE_AUTORIZAR_A_RH          = <?php echo Application::CONTROL_REPORTE_AUTORIZAR_A_RH ?>;
     var CONTROL_REPORTE_AUTORIZAR_A_NOMINA      = <?php echo Application::CONTROL_REPORTE_AUTORIZAR_A_NOMINA ?>;
 
     //Estados
@@ -129,7 +130,7 @@
       <div class="row">
         <div class="col-md-4">
           <!--logo start-->
-          <a href="/inicio" class="logo"><img alt="avatar" src="/images/logo-promass.png"></a>
+          <a href="inicio" class="logo"><img alt="avatar" src="images/logo-promass.png"></a>
           <!--logo end-->
           <div class="nav search-row" id="top_menu">
             <!--  search form start -->
@@ -164,14 +165,14 @@
         <!-- sidebar menu start-->
         <ul class="sidebar-menu">
           <li>
-            <a href="/inicio">
+            <a href="inicio">
               <i class="icon_house"></i>
               <span>Inicio</span>
             </a>
           </li>
           <?php if ($user['id_rol_usuario'] == Application::ROL_ADMINISTRADOR || $user['id_rol_usuario'] == Application::ROL_PERSONAL_RH) { ?>
             <li>
-              <a href="/usuarios">
+              <a href="usuarios">
                 <i class="icon_group"></i>
                 <span>Usuarios</span>
               </a>
@@ -183,7 +184,7 @@
 <!--              </a>-->
 <!--            </li>-->
             <li>
-              <a href="/empleados">
+              <a href="empleados">
                 <i class="icon_id-2_alt"></i>
                 <span>Empleados</span>
               </a>
@@ -191,9 +192,11 @@
           <?php } ?>
           <?php if ($user['id_rol_usuario'] ==  Application::ROL_ADMINISTRADOR
             || $user['id_rol_usuario'] ==  Application::ROL_ADMINISTRADOR_PLANTILLAS
-            || $user['id_rol_usuario'] ==  Application::ROL_ADMINISTRADOR_REPORTES) { ?>
+            || $user['id_rol_usuario'] ==  Application::ROL_ADMINISTRADOR_REPORTES
+            || $user['id_rol_usuario'] ==  Application::ROL_PERSONAL_RH
+            || $user['id_rol_usuario'] ==  Application::ROL_PERSONAL_NOMINA) { ?>
             <li>
-              <a href="/plantillas">
+              <a href="plantillas">
                 <i class="icon_table"></i>
                 <span>Plantillas</span>
               </a>
@@ -202,14 +205,14 @@
           <?php if ($user['id_rol_usuario'] ==  Application::ROL_ADMINISTRADOR
             || $user['id_rol_usuario'] ==  Application::ROL_ADMINISTRADOR_ASISTENCIA) { ?>
             <li>
-              <a href="/asistencia">
+              <a href="asistencia">
                 <i class="icon_calendar"></i>
                 <span>Asistencia</span>
               </a>
             </li>
           <?php } ?>
           <li>
-            <a href="/demos">
+            <a href="demos">
               <i class="icon_film"></i>
               <span>Demos</span>
             </a>
@@ -251,22 +254,22 @@
 } ?>
 
 <!-- nice scroll -->
-<script src="/js/jquery.scrollTo.min.js"></script>
-<script src="/js/jquery.nicescroll.js"></script>
+<script src="js/jquery.scrollTo.min.js"></script>
+<script src="js/jquery.nicescroll.js"></script>
 
 <!-- jquery validate js -->
-<script src="/js/jquery.validate.min.js"></script>
+<script src="js/jquery.validate.min.js"></script>
 
-<script src="/js/jquery.slimscroll.min.js"></script>
-<script src="/js/jquery.dataTables.min.js"></script>
-<script src="/js/dataTables.colReorder.js"></script>
-<script src="/js/dataTables.bootstrap.js"></script>
-<script src="/js/notify.js"></script>
+<script src="js/jquery.slimscroll.min.js"></script>
+<script src="js/jquery.dataTables.min.js"></script>
+<script src="js/dataTables.colReorder.js"></script>
+<script src="js/dataTables.bootstrap.js"></script>
+<script src="js/notify.js"></script>
 
-<script src="/js/spinner.js"></script>
-<script src="/js/message.engine.js"></script>
-<script src="/js/ajax.js"></script>
-<script src="/js/scripts.js"></script>
+<script src="js/spinner.js"></script>
+<script src="js/message.engine.js"></script>
+<script src="js/ajax.js"></script>
+<script src="js/scripts.js"></script>
 
 </body>
 </html>
