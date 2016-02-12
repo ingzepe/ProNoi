@@ -235,6 +235,7 @@ class EmpleadoController extends AbstractActionController
     $empleado->setCampana($post_data['campana']);
     $empleado->setJefe($post_data['jefe']);
     $empleado->setSueldoDiario($post_data['sueldo_diario']);
+    $empleado->setActivo($post_data['activo']);
 
     if (!$empleado_id = $this->getEmpleadoTable()->save($empleado))
       $response->setContent(\Zend\Json\Json::encode(array('status' => false)));

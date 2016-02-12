@@ -11,6 +11,7 @@ class Empleado
   protected $_id_unidad;
   protected $_id_mitrol;
   protected $_id_rh;
+  protected $_activo;
   protected $_tipo_empleado;
   protected $_unidad_negocio;
   //protec
@@ -109,6 +110,14 @@ class Empleado
   public function setIdMitrol($id_mitrol)
   {
     $this->_id_mitrol = $id_mitrol;
+  }
+  
+  public function getActivo(){
+      return $this->_activo;
+  }
+  
+  public function setActivo($activo){
+      $this->_activo = $activo == 'on' ? 1 : 0;
   }
 
   /**
