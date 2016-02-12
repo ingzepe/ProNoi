@@ -795,7 +795,7 @@
             empleadosURL = "empleado/fetchAllByIdTipoEmpleado";
           }
 
-          console.log($("#plantilla_id_tipo_empleado").val());
+//          console.log($("#plantilla_id_tipo_empleado").val());
 
           $.executeSyncFetch({
             action: empleadosURL,
@@ -851,7 +851,7 @@
                 for (var i = 0; i < totalEmpleados; i++) {
                   var empleado = empleados[i];
 
-                  console.log("Empleado: " + empleado.id);
+//                  console.log("Empleado: " + empleado.id);
                   console.log(empleado);
 
                   if (calcularPeriodo && empleado.registro.length < periodos.length) {
@@ -1328,10 +1328,10 @@
       reportContent[0] = [];
 
       //Headers
-      for(i=0; i<numCols; i++){
-        reportContent[0][i] = table2.column(i).header().innerText;
+      for(i=0; i < numCols; i++){
+        reportContent[0][i] = $(table2.column(i).header()).html();
       }
-
+      
       //Cols
       for(i=0; i<data.length; i++){
         reportContent[i+1] = [];
@@ -1357,7 +1357,8 @@
           reportContent[i+1][j] = cell;
         }
       }
-
+      
+      
       $.executeFetch({
        action: "reporte/saveReporte",
         data: {

@@ -191,7 +191,6 @@ class ReporteController extends AbstractActionController
     $status = true;
 
     $this->getContenidoReporteTable()->removeAll($id_reporte);
-    print_r($content);
     for ($i = 0; $i < count($content); $i++) {
       for ($j = 0; $j < count($content[$i]); $j++) {
         $contenido = new \Reportes\Model\Entity\ContenidoReporte();
